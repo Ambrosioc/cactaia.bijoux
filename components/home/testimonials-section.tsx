@@ -34,10 +34,10 @@ const TestimonialsSection = () => {
             Découvrez les témoignages de nos clients qui portent nos créations au quotidien.
           </p>
         </div>
-        
+
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
           {testimonials.map((testimonial, i) => (
-            <motion.div 
+            <motion.div
               key={testimonial.id}
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
@@ -47,18 +47,17 @@ const TestimonialsSection = () => {
             >
               <div className="flex mb-4">
                 {Array.from({ length: 5 }).map((_, i) => (
-                  <Star 
+                  <Star
                     key={i}
-                    className={`h-4 w-4 ${
-                      i < testimonial.rating 
-                        ? 'text-yellow-400 fill-yellow-400' 
-                        : 'text-gray-300'
-                    }`}
+                    className={`h-4 w-4 ${i < testimonial.rating
+                      ? 'text-yellow-400 fill-yellow-400'
+                      : 'text-gray-300'
+                      }`}
                   />
                 ))}
               </div>
               <p className="text-muted-foreground mb-4 italic">
-                "{testimonial.comment}"
+                &quot;{testimonial.comment}&quot;
               </p>
               <p className="font-medium">{testimonial.name}</p>
             </motion.div>

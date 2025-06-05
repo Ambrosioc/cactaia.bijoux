@@ -1,7 +1,7 @@
 'use client';
 
-import Image from 'next/image';
 import { motion } from 'framer-motion';
+import Image from 'next/image';
 
 export default function AboutPage() {
   return (
@@ -21,7 +21,7 @@ export default function AboutPage() {
           <div className="max-w-2xl">
             <h1 className="heading-xl text-white mb-4">Notre histoire</h1>
             <p className="text-white/90 text-lg max-w-xl">
-              Découvrez comment Cactaia.Bijoux est née d'une passion pour les bijoux intemporels et l'élégance naturelle.
+              Découvrez comment Cactaia.Bijoux est née d&apos;une passion pour les bijoux intemporels et l&apos;élégance naturelle.
             </p>
           </div>
         </div>
@@ -37,15 +37,15 @@ export default function AboutPage() {
               viewport={{ once: true }}
               transition={{ duration: 0.5 }}
             >
-              <h2 className="heading-lg mb-6">L'histoire de Cactaia</h2>
+              <h2 className="heading-lg mb-6">L&apos;histoire de Cactaia</h2>
               <p className="text-muted-foreground mb-4">
-                Cactaia.Bijoux est née en 2020, d'une passion partagée pour la joaillerie et la nature. Notre fondatrice, inspirée par la force et la beauté des cactus, a voulu créer des bijoux qui allient durabilité, élégance et caractère.
+                Cactaia.Bijoux est née en 2020, d&apos;une passion partagée pour la joaillerie et la nature. Notre fondatrice, inspirée par la force et la beauté des cactus, a voulu créer des bijoux qui allient durabilité, élégance et caractère.
               </p>
               <p className="text-muted-foreground mb-4">
-                Le nom "Cactaia" évoque ces plantes résistantes mais délicates, capables de s'adapter aux environnements les plus hostiles tout en conservant leur beauté unique. Une métaphore parfaite pour nos créations qui vous accompagnent au quotidien, résistant à l'épreuve du temps.
+                Le nom &quot;Cactaia&quot; évoque ces plantes résistantes mais délicates, capables de s&apos;adapter aux environnements les plus hostiles tout en conservant leur beauté unique. Une métaphore parfaite pour nos créations qui vous accompagnent au quotidien, résistant à l&apos;épreuve du temps.
               </p>
               <p className="text-muted-foreground">
-                Chaque bijou est pensé comme une pièce intemporelle, conçue avec soin pour sublimer votre personnalité sans jamais l'éclipser. Nos créations sont le reflet de notre philosophie : l'élégance dans la simplicité.
+                Chaque bijou est pensé comme une pièce intemporelle, conçue avec soin pour sublimer votre personnalité sans jamais l&apos;éclipser. Nos créations sont le reflet de notre philosophie : l&apos;élégance dans la simplicité.
               </p>
             </motion.div>
             <motion.div
@@ -96,10 +96,10 @@ export default function AboutPage() {
                 Chez Cactaia.Bijoux, nous croyons que les bijoux ne sont pas de simples accessoires, mais des témoins de notre histoire personnelle, des symboles qui nous accompagnent tout au long de notre vie.
               </p>
               <p className="text-muted-foreground mb-4">
-                Notre vision est de créer des bijoux qui transcendent les modes, s'inscrivant dans une démarche d'élégance naturelle et durable. Nous concevons chaque pièce comme un héritage, destiné à être transmis de génération en génération.
+                Notre vision est de créer des bijoux qui transcendent les modes, s&apos;inscrivant dans une démarche d&apos;élégance naturelle et durable. Nous concevons chaque pièce comme un héritage, destiné à être transmis de génération en génération.
               </p>
               <p className="text-muted-foreground">
-                En équilibrant force et sensibilité, nos créations incarnent la dualité qui existe en chacun de nous. Elles sont pensées pour tous, sans distinction de genre, célébrant l'individualité dans toute sa diversité.
+                En équilibrant force et sensibilité, nos créations incarnent la dualité qui existe en chacun de nous. Elles sont pensées pour tous, sans distinction de genre, célébrant l&apos;individualité dans toute sa diversité.
               </p>
             </motion.div>
           </div>
@@ -115,7 +115,7 @@ export default function AboutPage() {
               Des principes qui guident chacune de nos créations et chacun de nos choix.
             </p>
           </div>
-          
+
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             {[
               {
@@ -167,7 +167,7 @@ export default function AboutPage() {
               Des passionnés qui donnent vie à chaque création Cactaia.Bijoux avec savoir-faire et dévouement.
             </p>
           </div>
-          
+
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
             {[
               {

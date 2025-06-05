@@ -1,7 +1,7 @@
 'use client';
 
-import { Shield, Leaf, Clock } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { Clock, Leaf, Shield } from 'lucide-react';
 
 const values = [
   {
@@ -40,10 +40,10 @@ const ValuesSection = () => {
         <div className="text-center mb-12">
           <h2 className="heading-lg mb-4">Nos valeurs</h2>
           <p className="text-muted-foreground max-w-2xl mx-auto">
-            Chez Cactaia.Bijoux, nous croyons en la beauté durable et l'élégance naturelle.
+            Chez Cactaia.Bijoux, nous croyons en la beauté durable et l&apos;élégance naturelle.
           </p>
         </div>
-        
+
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
           {values.map((value, i) => (
             <motion.div

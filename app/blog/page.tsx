@@ -1,10 +1,10 @@
 'use client';
 
-import Link from 'next/link';
-import Image from 'next/image';
 import { formatDate } from '@/lib/utils';
-import { ArrowRight } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { ArrowRight } from 'lucide-react';
+import Image from 'next/image';
+import Link from 'next/link';
 
 // Sample blog data
 const blogPosts = [
@@ -96,7 +96,7 @@ export default function BlogPage() {
           <div className="max-w-2xl">
             <h1 className="heading-xl text-white mb-4">Le Journal Cactaia</h1>
             <p className="text-white/90 text-lg">
-              Découvrez nos articles sur l'univers des bijoux, nos inspirations et nos conseils.
+              Découvrez nos articles sur l&apos;univers des bijoux, nos inspirations et nos conseils.
             </p>
           </div>
         </div>
@@ -105,14 +105,14 @@ export default function BlogPage() {
       <div className="container-custom py-16">
         {/* Categories */}
         <div className="flex flex-wrap gap-3 mb-12 justify-center">
-          <Link 
+          <Link
             href="/blog"
             className="px-4 py-2 rounded-full bg-primary text-white text-sm"
           >
             Tous les articles
           </Link>
           {categories.map(category => (
-            <Link 
+            <Link
               key={category}
               href={`/blog/categorie/${category.toLowerCase()}`}
               className="px-4 py-2 rounded-full bg-secondary hover:bg-secondary/80 text-sm transition-colors"
@@ -121,7 +121,7 @@ export default function BlogPage() {
             </Link>
           ))}
         </div>
-        
+
         {/* Featured Post */}
         <div className="mb-16">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
@@ -142,20 +142,20 @@ export default function BlogPage() {
                 {formatDate(blogPosts[0].date)}
               </p>
               <p className="mb-6">{blogPosts[0].excerpt}</p>
-              <Link 
+              <Link
                 href={`/blog/${blogPosts[0].slug}`}
                 className="inline-flex items-center text-primary hover:text-primary/80 transition-colors"
               >
-                Lire l'article <ArrowRight className="ml-2 h-4 w-4" />
+                Lire l&apos;article <ArrowRight className="ml-2 h-4 w-4" />
               </Link>
             </div>
           </div>
         </div>
-        
+
         {/* Blog Posts Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
           {blogPosts.slice(1).map((post, i) => (
-            <motion.article 
+            <motion.article
               key={post.id}
               custom={i}
               initial="initial"

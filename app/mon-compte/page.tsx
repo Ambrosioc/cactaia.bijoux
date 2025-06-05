@@ -1,26 +1,26 @@
 "use client"
 
-import { useState } from 'react';
 import { motion } from 'framer-motion';
+import { Heart, LogOut, Package, User } from 'lucide-react';
 import Link from 'next/link';
-import { User, Package, Heart, LogOut } from 'lucide-react';
+import { useState } from 'react';
 
 export default function AccountPage() {
   const [activeTab, setActiveTab] = useState('profile');
-  
+
   // This would normally come from your authentication system
   const user = {
     name: 'John Doe',
     email: 'john@example.com',
     joinDate: '2024-01-01'
   };
-  
+
   const menuItems = [
     { id: 'profile', label: 'Mon profil', icon: User },
     { id: 'orders', label: 'Mes commandes', icon: Package },
     { id: 'wishlist', label: 'Ma liste de souhaits', icon: Heart },
   ];
-  
+
   return (
     <div className="pt-24 pb-16">
       <div className="container-custom">
@@ -37,17 +37,16 @@ export default function AccountPage() {
                 <h2 className="font-medium text-lg">Bonjour, {user.name}</h2>
                 <p className="text-sm text-muted-foreground">{user.email}</p>
               </div>
-              
+
               <nav className="space-y-2">
                 {menuItems.map(item => (
                   <button
                     key={item.id}
                     onClick={() => setActiveTab(item.id)}
-                    className={`w-full flex items-center space-x-2 px-4 py-2 rounded-md transition-colors ${
-                      activeTab === item.id
-                        ? 'bg-primary text-white'
-                        : 'hover:bg-secondary'
-                    }`}
+                    className={`w-full flex items-center space-x-2 px-4 py-2 rounded-md transition-colors ${activeTab === item.id
+                      ? 'bg-primary text-white'
+                      : 'hover:bg-secondary'
+                      }`}
                   >
                     <item.icon className="h-4 w-4" />
                     <span>{item.label}</span>
@@ -62,7 +61,7 @@ export default function AccountPage() {
               </nav>
             </div>
           </motion.div>
-          
+
           {/* Content */}
           <motion.div
             initial={{ opacity: 0, x: 20 }}
@@ -113,14 +112,14 @@ export default function AccountPage() {
                   </form>
                 </div>
               )}
-              
+
               {activeTab === 'orders' && (
                 <div>
                   <h2 className="text-2xl font-medium mb-6">Mes commandes</h2>
                   <div className="text-center py-8">
                     <Package className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
                     <p className="text-muted-foreground">
-                      Vous n'avez pas encore passé de commande.
+                      Vous n&apos;avez pas encore passé de commande.
                     </p>
                     <Link
                       href="/boutique"
@@ -131,7 +130,7 @@ export default function AccountPage() {
                   </div>
                 </div>
               )}
-              
+
               {activeTab === 'wishlist' && (
                 <div>
                   <h2 className="text-2xl font-medium mb-6">Ma liste de souhaits</h2>

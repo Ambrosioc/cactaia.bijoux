@@ -1,12 +1,12 @@
 "use client"
 
-import { useState } from 'react';
-import { motion } from 'framer-motion';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
+import { motion } from 'framer-motion';
+import { useState } from 'react';
 
 export default function FaqPage() {
   const [activeCategory, setActiveCategory] = useState("Commandes et livraisons");
-  
+
   return (
     <div className="pt-24 pb-16">
       <div className="container-custom">
@@ -16,7 +16,7 @@ export default function FaqPage() {
             Trouvez des réponses à toutes vos questions concernant nos bijoux, commandes, livraisons et retours.
           </p>
         </div>
-        
+
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
           {/* Category Navigation */}
           <div className="md:col-span-1">
@@ -25,20 +25,19 @@ export default function FaqPage() {
                 <button
                   key={category.category}
                   onClick={() => setActiveCategory(category.category)}
-                  className={`w-full text-left px-4 py-3 rounded-md transition-colors ${
-                    activeCategory === category.category
-                      ? 'bg-primary text-white'
-                      : 'bg-secondary hover:bg-secondary/80'
-                  }`}
+                  className={`w-full text-left px-4 py-3 rounded-md transition-colors ${activeCategory === category.category
+                    ? 'bg-primary text-white'
+                    : 'bg-secondary hover:bg-secondary/80'
+                    }`}
                 >
                   {category.category}
                 </button>
               ))}
             </div>
           </div>
-          
+
           {/* FAQ Accordion */}
-          <motion.div 
+          <motion.div
             className="md:col-span-3"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
@@ -46,13 +45,13 @@ export default function FaqPage() {
           >
             <div className="bg-white p-8 rounded-lg shadow-sm">
               <h2 className="text-2xl font-medium mb-6">{activeCategory}</h2>
-              
+
               <Accordion type="single" collapsible className="space-y-4">
                 {faqData
                   .find(category => category.category === activeCategory)?.items
                   .map((item, i) => (
-                    <AccordionItem 
-                      key={i} 
+                    <AccordionItem
+                      key={i}
                       value={`item-${i}`}
                       className="border border-border rounded-md px-6 overflow-hidden"
                     >
@@ -66,15 +65,15 @@ export default function FaqPage() {
                   ))}
               </Accordion>
             </div>
-            
+
             {/* Contact CTA */}
             <div className="mt-12 bg-primary/5 p-6 rounded-lg text-center">
-              <h3 className="text-xl font-medium mb-3">Vous n'avez pas trouvé la réponse à votre question ?</h3>
+              <h3 className="text-xl font-medium mb-3">Vous n&apos;avez pas trouvé la réponse à votre question ?</h3>
               <p className="text-muted-foreground mb-4">
-                Notre équipe est là pour vous répondre. N'hésitez pas à nous contacter directement.
+                Notre équipe est là pour vous répondre. N&apos;hésitez pas à nous contacter directement.
               </p>
-              <a 
-                href="/contact" 
+              <a
+                href="/contact"
                 className="btn btn-primary px-6 py-2"
               >
                 Nous contacter

@@ -1,8 +1,8 @@
 "use client";
 
-import { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Mail, Phone, MapPin, Instagram } from 'lucide-react';
+import { Instagram, Mail, MapPin, Phone } from 'lucide-react';
+import { useState } from 'react';
 
 const ContactPage = () => {
   const [formData, setFormData] = useState({
@@ -12,10 +12,10 @@ const ContactPage = () => {
     subject: '',
     message: '',
   });
-  
+
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
-  
+
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
     setFormData(prev => ({
@@ -23,11 +23,11 @@ const ContactPage = () => {
       [name]: value
     }));
   };
-  
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
-    
+
     // Simulate form submission
     setTimeout(() => {
       setIsSubmitting(false);
@@ -39,27 +39,27 @@ const ContactPage = () => {
         subject: '',
         message: '',
       });
-      
+
       // Reset success message after 5 seconds
       setTimeout(() => {
         setIsSubmitted(false);
       }, 5000);
     }, 1500);
   };
-  
+
   return (
     <div className="pt-24 pb-16">
       <div className="container-custom">
         <div className="text-center mb-12">
           <h1 className="heading-lg mb-4">Contactez-nous</h1>
           <p className="text-muted-foreground max-w-2xl mx-auto">
-            Besoin d'informations ou d'aide pour votre commande ? Nous sommes là pour vous répondre.
+            Besoin d&apos;informations ou d&apos;aide pour votre commande ? Nous sommes là pour vous répondre.
           </p>
         </div>
-        
+
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">
           {/* Contact Form */}
-          <motion.div 
+          <motion.div
             className="lg:col-span-2"
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -105,7 +105,7 @@ const ContactPage = () => {
                       />
                     </div>
                   </div>
-                  
+
                   <div>
                     <label htmlFor="email" className="block text-sm font-medium mb-2">
                       Email
@@ -120,7 +120,7 @@ const ContactPage = () => {
                       className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                     />
                   </div>
-                  
+
                   <div>
                     <label htmlFor="subject" className="block text-sm font-medium mb-2">
                       Sujet
@@ -140,7 +140,7 @@ const ContactPage = () => {
                       <option value="autre">Autre demande</option>
                     </select>
                   </div>
-                  
+
                   <div>
                     <label htmlFor="message" className="block text-sm font-medium mb-2">
                       Message
@@ -155,7 +155,7 @@ const ContactPage = () => {
                       className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring resize-none"
                     ></textarea>
                   </div>
-                  
+
                   <div>
                     <button
                       type="submit"
@@ -169,7 +169,7 @@ const ContactPage = () => {
               )}
             </div>
           </motion.div>
-          
+
           {/* Contact Info */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -178,7 +178,7 @@ const ContactPage = () => {
           >
             <div className="bg-white p-8 rounded-lg shadow-sm mb-8">
               <h2 className="text-xl font-medium mb-6">Informations de contact</h2>
-              
+
               <div className="space-y-6">
                 <div className="flex items-start">
                   <div className="flex-shrink-0 mt-1">
@@ -193,7 +193,7 @@ const ContactPage = () => {
                     </address>
                   </div>
                 </div>
-                
+
                 <div className="flex items-start">
                   <div className="flex-shrink-0 mt-1">
                     <Mail className="h-5 w-5 text-primary" />
@@ -205,7 +205,7 @@ const ContactPage = () => {
                     </a>
                   </div>
                 </div>
-                
+
                 <div className="flex items-start">
                   <div className="flex-shrink-0 mt-1">
                     <Phone className="h-5 w-5 text-primary" />
@@ -218,16 +218,16 @@ const ContactPage = () => {
                     </p>
                   </div>
                 </div>
-                
+
                 <div className="flex items-start">
                   <div className="flex-shrink-0 mt-1">
                     <Instagram className="h-5 w-5 text-primary" />
                   </div>
                   <div className="ml-3">
                     <p className="font-medium">Instagram</p>
-                    <a 
-                      href="https://instagram.com" 
-                      target="_blank" 
+                    <a
+                      href="https://instagram.com"
+                      target="_blank"
                       rel="noopener noreferrer"
                       className="text-muted-foreground hover:text-primary transition-colors"
                     >
@@ -237,14 +237,14 @@ const ContactPage = () => {
                 </div>
               </div>
             </div>
-            
+
             <div className="bg-primary/10 p-8 rounded-lg">
-              <h3 className="text-lg font-medium mb-4">Besoin d'aide pour votre commande ?</h3>
+              <h3 className="text-lg font-medium mb-4">Besoin d&apos;aide pour votre commande ?</h3>
               <p className="text-muted-foreground mb-6">
                 Consultez notre FAQ pour trouver des réponses rapides à vos questions les plus courantes.
               </p>
-              <a 
-                href="/faq" 
+              <a
+                href="/faq"
                 className="btn btn-primary w-full py-2"
               >
                 Voir la FAQ

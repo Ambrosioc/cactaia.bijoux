@@ -1,12 +1,12 @@
 "use client"
 
-import { useState } from 'react';
-import Link from 'next/link';
-import Image from 'next/image';
-import { motion } from 'framer-motion';
-import { Trash2, ShoppingBag } from 'lucide-react';
-import { formatPrice } from '@/lib/utils';
 import { products } from '@/lib/data/products';
+import { formatPrice } from '@/lib/utils';
+import { motion } from 'framer-motion';
+import { ShoppingBag, Trash2 } from 'lucide-react';
+import Image from 'next/image';
+import Link from 'next/link';
+import { useState } from 'react';
 
 // Sample wishlist items for demonstration
 const initialWishlistItems = [
@@ -17,11 +17,11 @@ const initialWishlistItems = [
 
 export default function WishlistPage() {
   const [wishlistItems, setWishlistItems] = useState(initialWishlistItems);
-  
+
   const removeFromWishlist = (productId: string) => {
     setWishlistItems(items => items.filter(item => item.id !== productId));
   };
-  
+
   if (wishlistItems.length === 0) {
     return (
       <div className="pt-24 pb-16">
@@ -33,7 +33,7 @@ export default function WishlistPage() {
             </div>
             <h2 className="text-2xl font-medium mb-4">Votre liste est vide</h2>
             <p className="text-muted-foreground mb-8">
-              Vous n'avez pas encore ajouté d'articles à votre liste de souhaits. Découvrez nos collections et trouvez des bijoux qui vous ressemblent.
+              Vous n&apos;avez pas encore ajouté d&apos;articles à votre liste de souhaits. Découvrez nos collections et trouvez des bijoux qui vous ressemblent.
             </p>
             <Link href="/boutique" className="btn btn-primary px-8 py-3">
               Découvrir nos bijoux
@@ -43,15 +43,15 @@ export default function WishlistPage() {
       </div>
     );
   }
-  
+
   return (
     <div className="pt-24 pb-16">
       <div className="container-custom">
         <h1 className="heading-lg mb-8">Ma liste de souhaits</h1>
-        
+
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
           {wishlistItems.map((item, i) => (
-            <motion.div 
+            <motion.div
               key={item.id}
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
@@ -65,9 +65,9 @@ export default function WishlistPage() {
                   </div>
                 )}
                 <Link href={`/produit/${item.slug}`}>
-                  <Image 
-                    src={item.images[0]} 
-                    alt={item.name} 
+                  <Image
+                    src={item.images[0]}
+                    alt={item.name}
                     fill
                     className="object-cover transition-transform duration-500 group-hover:scale-105"
                   />
@@ -90,15 +90,14 @@ export default function WishlistPage() {
                 <p className="font-medium">{formatPrice(item.price)}</p>
                 <div className="flex space-x-2">
                   {item.colors.map((color) => (
-                    <div 
+                    <div
                       key={color}
-                      className={`w-3 h-3 rounded-full ${
-                        color === 'gold' 
-                          ? 'bg-yellow-400' 
-                          : color === 'silver' 
-                          ? 'bg-gray-300' 
+                      className={`w-3 h-3 rounded-full ${color === 'gold'
+                        ? 'bg-yellow-400'
+                        : color === 'silver'
+                          ? 'bg-gray-300'
                           : 'bg-pink-300'
-                      }`}
+                        }`}
                       aria-label={`Couleur: ${color}`}
                     />
                   ))}
@@ -111,7 +110,7 @@ export default function WishlistPage() {
             </motion.div>
           ))}
         </div>
-        
+
         <div className="mt-12 text-center">
           <Link href="/boutique" className="btn btn-outline px-8 py-2">
             Continuer mes achats

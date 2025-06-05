@@ -1,12 +1,12 @@
 "use client"
 
-import { useState } from 'react';
-import Link from 'next/link';
-import Image from 'next/image';
-import { Trash2, Minus, Plus, ArrowRight, ShoppingBag } from 'lucide-react';
-import { formatPrice } from '@/lib/utils';
 import { products } from '@/lib/data/products';
+import { formatPrice } from '@/lib/utils';
 import { motion } from 'framer-motion';
+import { ArrowRight, Minus, Plus, ShoppingBag, Trash2 } from 'lucide-react';
+import Image from 'next/image';
+import Link from 'next/link';
+import { useState } from 'react';
 
 // Sample cart items for demonstration
 const initialCartItems = [
@@ -28,28 +28,28 @@ const initialCartItems = [
 
 export default function CartPage() {
   const [cartItems, setCartItems] = useState(initialCartItems);
-  
+
   const updateQuantity = (itemId: string, newQuantity: number) => {
     if (newQuantity < 1) return;
-    setCartItems(items => 
-      items.map(item => 
+    setCartItems(items =>
+      items.map(item =>
         item.id === itemId ? { ...item, quantity: newQuantity } : item
       )
     );
   };
-  
+
   const removeItem = (itemId: string) => {
     setCartItems(items => items.filter(item => item.id !== itemId));
   };
-  
+
   const subtotal = cartItems.reduce(
-    (sum, item) => sum + item.product.price * item.quantity, 
+    (sum, item) => sum + item.product.price * item.quantity,
     0
   );
-  
+
   const shipping = subtotal > 50 ? 0 : 4.95;
   const total = subtotal + shipping;
-  
+
   if (cartItems.length === 0) {
     return (
       <div className="pt-24 pb-16">
@@ -61,7 +61,7 @@ export default function CartPage() {
             </div>
             <h2 className="text-2xl font-medium mb-4">Votre panier est vide</h2>
             <p className="text-muted-foreground mb-8">
-              Vous n'avez pas encore ajouté d'articles à votre panier. Découvrez nos collections et trouvez des bijoux qui vous ressemblent.
+              Vous n&apos;avez pas encore ajouté d&apos;articles à votre panier. Découvrez nos collections et trouvez des bijoux qui vous ressemblent.
             </p>
             <Link href="/boutique" className="btn btn-primary px-8 py-3">
               Découvrir nos bijoux
@@ -71,12 +71,12 @@ export default function CartPage() {
       </div>
     );
   }
-  
+
   return (
     <div className="pt-24 pb-16">
       <div className="container-custom">
         <h1 className="heading-lg mb-8">Votre panier</h1>
-        
+
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">
           {/* Cart Items */}
           <div className="lg:col-span-2">
@@ -86,10 +86,10 @@ export default function CartPage() {
               <div className="col-span-2 text-center">Prix unitaire</div>
               <div className="col-span-2 text-right">Total</div>
             </div>
-            
+
             <div className="space-y-6">
               {cartItems.map((item, i) => (
-                <motion.div 
+                <motion.div
                   key={item.id}
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
@@ -99,8 +99,8 @@ export default function CartPage() {
                   {/* Mobile View */}
                   <div className="md:hidden flex space-x-4">
                     <div className="relative w-20 h-20 flex-shrink-0">
-                      <Image 
-                        src={item.product.images[0]} 
+                      <Image
+                        src={item.product.images[0]}
                         alt={item.product.name}
                         fill
                         className="object-cover rounded"
@@ -143,12 +143,12 @@ export default function CartPage() {
                       </div>
                     </div>
                   </div>
-                  
+
                   {/* Desktop View */}
                   <div className="hidden md:flex md:col-span-6 items-center space-x-4">
                     <div className="relative w-16 h-16 flex-shrink-0">
-                      <Image 
-                        src={item.product.images[0]} 
+                      <Image
+                        src={item.product.images[0]}
                         alt={item.product.name}
                         fill
                         className="object-cover rounded"
@@ -164,7 +164,7 @@ export default function CartPage() {
                       </p>
                     </div>
                   </div>
-                  
+
                   <div className="hidden md:flex md:col-span-2 justify-center">
                     <div className="flex items-center border border-input rounded-md">
                       <button
@@ -184,11 +184,11 @@ export default function CartPage() {
                       </button>
                     </div>
                   </div>
-                  
+
                   <div className="hidden md:block md:col-span-2 text-center">
                     {formatPrice(item.product.price)}
                   </div>
-                  
+
                   <div className="hidden md:flex md:col-span-2 justify-between items-center">
                     <span className="font-medium">{formatPrice(item.product.price * item.quantity)}</span>
                     <button
@@ -202,7 +202,7 @@ export default function CartPage() {
                 </motion.div>
               ))}
             </div>
-            
+
             <div className="mt-8">
               <Link href="/boutique" className="inline-flex items-center text-primary hover:underline">
                 <ArrowRight className="h-4 w-4 mr-2 rotate-180" />
@@ -210,7 +210,7 @@ export default function CartPage() {
               </Link>
             </div>
           </div>
-          
+
           {/* Order Summary */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -220,7 +220,7 @@ export default function CartPage() {
           >
             <div className="bg-secondary p-6 rounded-lg">
               <h2 className="text-xl font-medium mb-4">Récapitulatif</h2>
-              
+
               <div className="space-y-3 mb-6">
                 <div className="flex justify-between">
                   <span>Sous-total</span>
@@ -235,19 +235,19 @@ export default function CartPage() {
                   <span>{formatPrice(total)}</span>
                 </div>
               </div>
-              
-              <Link 
-                href="/checkout" 
+
+              <Link
+                href="/checkout"
                 className="w-full btn btn-primary py-3 flex items-center justify-center gap-2"
               >
                 Passer commande
               </Link>
-              
+
               <p className="text-xs text-muted-foreground text-center mt-4">
-                Livraison gratuite en France métropolitaine à partir de 50€ d'achat
+                Livraison gratuite en France métropolitaine à partir de 50€ d&apos;achat
               </p>
             </div>
-            
+
             {/* Payment Methods */}
             <div className="mt-6 p-4 border border-border rounded-lg">
               <h3 className="text-sm font-medium mb-3">Moyens de paiement acceptés</h3>

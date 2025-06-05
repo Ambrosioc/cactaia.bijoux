@@ -1,4 +1,4 @@
-export { generateStaticParams } from './generateStaticParams';
+
 
 export default function ProductLayout({
     children,
