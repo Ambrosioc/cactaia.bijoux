@@ -1,5 +1,6 @@
 "use client"
 
+import AddToCartButton from '@/components/cart/add-to-cart-button';
 import { createClient } from '@/lib/supabase/client';
 import type { Product } from '@/lib/supabase/types';
 import { motion } from 'framer-motion';
@@ -499,6 +500,14 @@ export default function ShopPage() {
                             )}
                           </div>
                         </Link>
+
+                        {/* Add to Cart Button */}
+                        <div className="mt-3" onClick={(e) => e.preventDefault()}>
+                          <AddToCartButton
+                            product={product}
+                            className="w-full py-2 text-sm"
+                          />
+                        </div>
                       </motion.div>
                     );
                   })}

@@ -159,6 +159,53 @@ export interface Database {
           updated_at?: string
         }
       }
+      commandes: {
+        Row: {
+          id: string
+          user_id: string
+          numero_commande: string
+          produits: Json
+          montant_total: number
+          statut: 'en_attente' | 'payee' | 'echouee' | 'remboursee' | 'annulee'
+          stripe_session_id: string | null
+          stripe_payment_intent_id: string | null
+          adresse_livraison: Json | null
+          facture_url: string | null
+          notes: string | null
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          user_id: string
+          numero_commande?: string
+          produits: Json
+          montant_total: number
+          statut?: 'en_attente' | 'payee' | 'echouee' | 'remboursee' | 'annulee'
+          stripe_session_id?: string | null
+          stripe_payment_intent_id?: string | null
+          adresse_livraison?: Json | null
+          facture_url?: string | null
+          notes?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          user_id?: string
+          numero_commande?: string
+          produits?: Json
+          montant_total?: number
+          statut?: 'en_attente' | 'payee' | 'echouee' | 'remboursee' | 'annulee'
+          stripe_session_id?: string | null
+          stripe_payment_intent_id?: string | null
+          adresse_livraison?: Json | null
+          facture_url?: string | null
+          notes?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+      }
     }
     Views: {
       [_ in never]: never
@@ -188,3 +235,29 @@ export type AddressUpdate = Database['public']['Tables']['addresses']['Update'];
 export type Product = Database['public']['Tables']['produits']['Row'];
 export type ProductInsert = Database['public']['Tables']['produits']['Insert'];
 export type ProductUpdate = Database['public']['Tables']['produits']['Update'];
+
+export type Order = Database['public']['Tables']['commandes']['Row'];
+export type OrderInsert = Database['public']['Tables']['commandes']['Insert'];
+export type OrderUpdate = Database['public']['Tables']['commandes']['Update'];
+
+// Types pour les produits dans les commandes
+export interface OrderProduct {
+  product_id: string;
+  nom: string;
+  prix: number;
+  quantite: number;
+  image?: string;
+  sku?: string;
+  variations?: Record<string, string>;
+}
+
+// Type pour l'adresse de livraison dans les commandes
+export interface OrderAddress {
+  nom_complet: string;
+  ligne_1: string;
+  ligne_2?: string;
+  code_postal: string;
+  ville: string;
+  pays: string;
+  telephone: string;
+}

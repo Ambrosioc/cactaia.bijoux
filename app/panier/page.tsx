@@ -1,56 +1,35 @@
 "use client"
 
-import { products } from '@/lib/data/products';
 import { formatPrice } from '@/lib/utils';
+import { useCart } from '@/stores/cartStore';
 import { motion } from 'framer-motion';
-import { ArrowRight, Minus, Plus, ShoppingBag, Trash2 } from 'lucide-react';
+import { ArrowLeft, ArrowRight, Minus, Plus, ShoppingBag, Trash2 } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { useState } from 'react';
-
-// Sample cart items for demonstration
-const initialCartItems = [
-  {
-    id: '1',
-    product: products[0],
-    quantity: 1,
-    color: 'gold',
-    size: undefined,
-  },
-  {
-    id: '2',
-    product: products[1],
-    quantity: 1,
-    color: 'silver',
-    size: undefined,
-  }
-];
 
 export default function CartPage() {
-  const [cartItems, setCartItems] = useState(initialCartItems);
+  const {
+    items,
+    totalItems,
+    totalPrice,
+    updateQuantity,
+    removeItem
+  } = useCart();
 
-  const updateQuantity = (itemId: string, newQuantity: number) => {
-    if (newQuantity < 1) return;
-    setCartItems(items =>
-      items.map(item =>
-        item.id === itemId ? { ...item, quantity: newQuantity } : item
-      )
-    );
+  const getImageUrl = (images: string[]): string => {
+    return images?.length > 0 ? images[0] : '/placeholder.jpg';
   };
 
-  const removeItem = (itemId: string) => {
-    setCartItems(items => items.filter(item => item.id !== itemId));
+  const getPrice = (product: any) => {
+    return product.prix_promo && product.prix_promo < product.prix
+      ? product.prix_promo
+      : product.prix;
   };
 
-  const subtotal = cartItems.reduce(
-    (sum, item) => sum + item.product.price * item.quantity,
-    0
-  );
+  const shipping = totalPrice > 50 ? 0 : 4.95;
+  const total = totalPrice + shipping;
 
-  const shipping = subtotal > 50 ? 0 : 4.95;
-  const total = subtotal + shipping;
-
-  if (cartItems.length === 0) {
+  if (items.length === 0) {
     return (
       <div className="pt-24 pb-16">
         <div className="container-custom">
@@ -75,7 +54,22 @@ export default function CartPage() {
   return (
     <div className="pt-24 pb-16">
       <div className="container-custom">
-        <h1 className="heading-lg mb-8">Votre panier</h1>
+        {/* Header avec navigation */}
+        <div className="flex items-center space-x-4 mb-8">
+          <Link
+            href="/boutique"
+            className="btn btn-outline flex items-center gap-2 px-4 py-2"
+          >
+            <ArrowLeft className="h-4 w-4" />
+            Continuer mes achats
+          </Link>
+          <div>
+            <h1 className="heading-lg">Votre panier</h1>
+            <p className="text-muted-foreground">
+              {totalItems} {totalItems > 1 ? 'articles' : 'article'} dans votre panier
+            </p>
+          </div>
+        </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">
           {/* Cart Items */}
@@ -88,33 +82,32 @@ export default function CartPage() {
             </div>
 
             <div className="space-y-6">
-              {cartItems.map((item, i) => (
+              {items.map((item, i) => (
                 <motion.div
                   key={item.id}
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.4, delay: i * 0.1 }}
-                  className="grid grid-cols-1 md:grid-cols-12 gap-4 items-center py-4 border-b border-border"
+                  className="grid grid-cols-1 md:grid-cols-12 gap-4 items-center py-6 border-b border-border"
                 >
                   {/* Mobile View */}
                   <div className="md:hidden flex space-x-4">
                     <div className="relative w-20 h-20 flex-shrink-0">
                       <Image
-                        src={item.product.images[0]}
-                        alt={item.product.name}
+                        src={getImageUrl(item.product.images)}
+                        alt={item.product.nom}
                         fill
                         className="object-cover rounded"
                       />
                     </div>
                     <div className="flex-grow">
-                      <Link href={`/produit/${item.product.slug}`} className="font-medium hover:text-primary">
-                        {item.product.name}
+                      <Link href={`/produit/${item.product.sku || item.product.id}`} className="font-medium hover:text-primary">
+                        {item.product.nom}
                       </Link>
                       <p className="text-sm text-muted-foreground mb-1">
-                        Couleur: {item.color}
-                        {item.size && `, Taille: ${item.size}`}
+                        {item.product.categorie}
                       </p>
-                      <p className="font-medium">{formatPrice(item.product.price)}</p>
+                      <p className="font-medium">{formatPrice(getPrice(item.product))}</p>
                       <div className="flex items-center mt-2 space-x-2">
                         <div className="flex items-center border border-input rounded-md">
                           <button
@@ -129,6 +122,7 @@ export default function CartPage() {
                             onClick={() => updateQuantity(item.id, item.quantity + 1)}
                             className="p-1 hover:bg-secondary"
                             aria-label="Augmenter la quantité"
+                            disabled={item.quantity >= item.product.stock}
                           >
                             <Plus className="h-4 w-4" />
                           </button>
@@ -148,20 +142,24 @@ export default function CartPage() {
                   <div className="hidden md:flex md:col-span-6 items-center space-x-4">
                     <div className="relative w-16 h-16 flex-shrink-0">
                       <Image
-                        src={item.product.images[0]}
-                        alt={item.product.name}
+                        src={getImageUrl(item.product.images)}
+                        alt={item.product.nom}
                         fill
                         className="object-cover rounded"
                       />
                     </div>
                     <div>
-                      <Link href={`/produit/${item.product.slug}`} className="font-medium hover:text-primary">
-                        {item.product.name}
+                      <Link href={`/produit/${item.product.sku || item.product.id}`} className="font-medium hover:text-primary">
+                        {item.product.nom}
                       </Link>
                       <p className="text-sm text-muted-foreground">
-                        Couleur: {item.color}
-                        {item.size && `, Taille: ${item.size}`}
+                        {item.product.categorie}
                       </p>
+                      {item.product.stock <= 5 && (
+                        <p className="text-xs text-orange-600">
+                          Plus que {item.product.stock} en stock
+                        </p>
+                      )}
                     </div>
                   </div>
 
@@ -179,6 +177,7 @@ export default function CartPage() {
                         onClick={() => updateQuantity(item.id, item.quantity + 1)}
                         className="p-1 hover:bg-secondary"
                         aria-label="Augmenter la quantité"
+                        disabled={item.quantity >= item.product.stock}
                       >
                         <Plus className="h-4 w-4" />
                       </button>
@@ -186,11 +185,11 @@ export default function CartPage() {
                   </div>
 
                   <div className="hidden md:block md:col-span-2 text-center">
-                    {formatPrice(item.product.price)}
+                    {formatPrice(getPrice(item.product))}
                   </div>
 
                   <div className="hidden md:flex md:col-span-2 justify-between items-center">
-                    <span className="font-medium">{formatPrice(item.product.price * item.quantity)}</span>
+                    <span className="font-medium">{formatPrice(getPrice(item.product) * item.quantity)}</span>
                     <button
                       onClick={() => removeItem(item.id)}
                       className="p-1 text-red-500 hover:bg-red-50 rounded"
@@ -202,13 +201,6 @@ export default function CartPage() {
                 </motion.div>
               ))}
             </div>
-
-            <div className="mt-8">
-              <Link href="/boutique" className="inline-flex items-center text-primary hover:underline">
-                <ArrowRight className="h-4 w-4 mr-2 rotate-180" />
-                Continuer mes achats
-              </Link>
-            </div>
           </div>
 
           {/* Order Summary */}
@@ -218,19 +210,45 @@ export default function CartPage() {
             transition={{ duration: 0.5, delay: 0.2 }}
             className="lg:col-span-1"
           >
-            <div className="bg-secondary p-6 rounded-lg">
-              <h2 className="text-xl font-medium mb-4">Récapitulatif</h2>
+            <div className="bg-white p-6 rounded-lg shadow-sm border border-border sticky top-24">
+              <h2 className="text-xl font-medium mb-6">Récapitulatif</h2>
 
-              <div className="space-y-3 mb-6">
+              <div className="space-y-4 mb-6">
                 <div className="flex justify-between">
-                  <span>Sous-total</span>
-                  <span>{formatPrice(subtotal)}</span>
+                  <span>Sous-total ({totalItems} articles)</span>
+                  <span>{formatPrice(totalPrice)}</span>
                 </div>
                 <div className="flex justify-between">
                   <span>Livraison</span>
-                  <span>{shipping === 0 ? 'Gratuite' : formatPrice(shipping)}</span>
+                  <span className={shipping === 0 ? 'text-green-600' : ''}>
+                    {shipping === 0 ? 'Gratuite' : formatPrice(shipping)}
+                  </span>
                 </div>
-                <div className="pt-3 border-t border-border flex justify-between font-medium">
+
+                {/* Shipping progress */}
+                {totalPrice < 50 && (
+                  <div className="p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                    <p className="text-sm text-blue-800 font-medium mb-2">
+                      Plus que {formatPrice(50 - totalPrice)} pour la livraison gratuite !
+                    </p>
+                    <div className="w-full bg-blue-200 rounded-full h-2">
+                      <div
+                        className="bg-blue-600 h-2 rounded-full transition-all duration-300"
+                        style={{ width: `${Math.min((totalPrice / 50) * 100, 100)}%` }}
+                      />
+                    </div>
+                  </div>
+                )}
+
+                {totalPrice >= 50 && (
+                  <div className="p-3 bg-green-50 border border-green-200 rounded-lg">
+                    <p className="text-sm text-green-800 font-medium">
+                      🎉 Livraison gratuite !
+                    </p>
+                  </div>
+                )}
+
+                <div className="pt-4 border-t border-border flex justify-between font-medium text-lg">
                   <span>Total</span>
                   <span>{formatPrice(total)}</span>
                 </div>
@@ -238,28 +256,53 @@ export default function CartPage() {
 
               <Link
                 href="/checkout"
-                className="w-full btn btn-primary py-3 flex items-center justify-center gap-2"
+                className="w-full btn btn-primary py-3 flex items-center justify-center gap-2 mb-4"
               >
                 Passer commande
+                <ArrowRight className="h-4 w-4" />
               </Link>
 
-              <p className="text-xs text-muted-foreground text-center mt-4">
-                Livraison gratuite en France métropolitaine à partir de 50€ d&apos;achat
+              <p className="text-xs text-muted-foreground text-center mb-4">
+                Paiement sécurisé avec Stripe
               </p>
+
+              {/* Avantages */}
+              <div className="space-y-2 text-xs text-muted-foreground">
+                <div className="flex items-center gap-2">
+                  <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                  <span>Livraison sous 2-3 jours ouvrés</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
+                  <span>Retour gratuit sous 14 jours</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <div className="w-2 h-2 bg-purple-500 rounded-full"></div>
+                  <span>Garantie 1 an</span>
+                </div>
+              </div>
             </div>
 
             {/* Payment Methods */}
-            <div className="mt-6 p-4 border border-border rounded-lg">
+            <div className="mt-6 p-4 bg-white border border-border rounded-lg shadow-sm">
               <h3 className="text-sm font-medium mb-3">Moyens de paiement acceptés</h3>
-              <div className="flex justify-between">
+              <div className="flex justify-between items-center">
                 <div className="flex gap-2">
-                  <div className="w-10 h-6 bg-[#3C4B9A] rounded"></div>
-                  <div className="w-10 h-6 bg-[#F79F1A] rounded"></div>
-                  <div className="w-10 h-6 bg-[#6772E5] rounded"></div>
-                  <div className="w-10 h-6 bg-[#5B9A68] rounded"></div>
+                  <div className="w-10 h-6 bg-[#3C4B9A] rounded flex items-center justify-center text-white text-xs font-bold">
+                    VISA
+                  </div>
+                  <div className="w-10 h-6 bg-[#F79F1A] rounded flex items-center justify-center text-white text-xs font-bold">
+                    MC
+                  </div>
+                  <div className="w-10 h-6 bg-[#6772E5] rounded flex items-center justify-center text-white text-xs font-bold">
+                    💳
+                  </div>
+                  <div className="w-10 h-6 bg-[#5B9A68] rounded flex items-center justify-center text-white text-xs font-bold">
+                    🍎
+                  </div>
                 </div>
                 <div className="flex items-center">
-                  <span className="text-xs text-muted-foreground">Paiement sécurisé</span>
+                  <span className="text-xs text-muted-foreground">Sécurisé par Stripe</span>
                 </div>
               </div>
             </div>

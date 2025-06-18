@@ -1,5 +1,6 @@
 'use client';
 
+import { OrdersList } from '@/components/orders-list';
 import { RoleSwitcher } from '@/components/ui/role-switcher';
 import { createClient } from '@/lib/supabase/client';
 import { useUser } from '@/stores/userStore';
@@ -489,18 +490,7 @@ export default function AccountPage() {
               {activeTab === 'orders' && (
                 <div>
                   <h2 className="text-2xl font-medium mb-6">Mes commandes</h2>
-                  <div className="text-center py-8">
-                    <Package className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
-                    <p className="text-muted-foreground">
-                      Vous n&apos;avez pas encore passé de commande.
-                    </p>
-                    <Link
-                      href="/boutique"
-                      className="btn btn-primary mt-4 px-6 py-2"
-                    >
-                      Découvrir nos produits
-                    </Link>
-                  </div>
+                  <OrdersList />
                 </div>
               )}
 

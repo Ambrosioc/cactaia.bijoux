@@ -1,9 +1,10 @@
 "use client"
 
+import AddToCartButton from '@/components/cart/add-to-cart-button';
 import { createClient } from '@/lib/supabase/client';
 import type { Product } from '@/lib/supabase/types';
 import { motion } from 'framer-motion';
-import { ArrowLeft, ArrowRight, Heart, Minus, Package, Plus, ShoppingBag, Star } from 'lucide-react';
+import { ArrowLeft, ArrowRight, Heart, Package, Star } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
@@ -16,7 +17,6 @@ export default function ProductPage() {
   const [relatedProducts, setRelatedProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [quantity, setQuantity] = useState(1);
   const [currentImage, setCurrentImage] = useState(0);
 
   const supabase = createClient();
@@ -97,18 +97,6 @@ export default function ProductPage() {
       original: product.prix,
       hasPromo
     };
-  };
-
-  const decreaseQuantity = () => {
-    if (quantity > 1) {
-      setQuantity(quantity - 1);
-    }
-  };
-
-  const increaseQuantity = () => {
-    if (product && quantity < product.stock) {
-      setQuantity(quantity + 1);
-    }
   };
 
   const nextImage = () => {
@@ -323,41 +311,15 @@ export default function ProductPage() {
                 )}
               </div>
 
-              {/* Quantity Selector */}
-              {product.stock > 0 && (
-                <div>
-                  <p className="font-medium mb-2">Quantité:</p>
-                  <div className="flex items-center">
-                    <button
-                      onClick={decreaseQuantity}
-                      className="p-2 border border-input rounded-l-md hover:bg-secondary"
-                      disabled={quantity <= 1}
-                    >
-                      <Minus className="h-4 w-4" />
-                    </button>
-                    <div className="px-4 py-2 border-t border-b border-input min-w-[60px] text-center">
-                      {quantity}
-                    </div>
-                    <button
-                      onClick={increaseQuantity}
-                      className="p-2 border border-input rounded-r-md hover:bg-secondary"
-                      disabled={quantity >= product.stock}
-                    >
-                      <Plus className="h-4 w-4" />
-                    </button>
-                  </div>
-                </div>
-              )}
-
               {/* Add to Cart */}
               <div className="flex flex-col sm:flex-row gap-4">
-                <button
-                  className="flex-1 btn btn-primary py-3 flex items-center justify-center gap-2"
-                  disabled={product.stock === 0}
-                >
-                  <ShoppingBag className="h-5 w-5" />
-                  {product.stock === 0 ? 'Rupture de stock' : 'Ajouter au panier'}
-                </button>
+                <div className="flex-1">
+                  <AddToCartButton
+                    product={product}
+                    className="w-full py-3"
+                    showQuantity={true}
+                  />
+                </div>
                 <button className="btn btn-outline py-3 px-4 flex items-center justify-center gap-2">
                   <Heart className="h-5 w-5" />
                   <span className="sr-only md:not-sr-only">Favoris</span>

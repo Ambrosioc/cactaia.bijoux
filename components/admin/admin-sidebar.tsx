@@ -16,6 +16,7 @@ import {
     Palette,
     Receipt,
     Settings,
+    ShoppingCart,
     Truck,
     Users,
     Warehouse
@@ -166,6 +167,16 @@ export default function AdminSidebar() {
                         icon={Image}
                         label="Médias"
                         isActive={isActive('/admin/medias')}
+                    />
+                </SidebarSection>
+
+                {/* Commandes */}
+                <SidebarSection title="Commandes">
+                    <SidebarLink
+                        href="/admin/commandes"
+                        icon={ShoppingCart}
+                        label="Commandes"
+                        isActive={isActive('/admin/commandes')}
                     />
                 </SidebarSection>
 
