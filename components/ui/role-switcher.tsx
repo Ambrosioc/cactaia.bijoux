@@ -1,8 +1,8 @@
 'use client';
 
-import { useUser } from '@/stores/userStore';
-import { Settings, User, Shield } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { useUser } from '@/stores/userStore';
+import { Settings, Shield, User } from 'lucide-react';
 import { useState } from 'react';
 
 interface RoleSwitcherProps {
@@ -11,21 +11,21 @@ interface RoleSwitcherProps {
   showLabel?: boolean;
 }
 
-export function RoleSwitcher({ 
-  variant = 'button', 
+export function RoleSwitcher({
+  variant = 'button',
   className,
-  showLabel = true 
+  showLabel = true
 }: RoleSwitcherProps) {
-  const { 
-    user, 
-    canSwitchToAdmin, 
-    isActiveAdmin, 
-    isActiveUser, 
-    switchRole, 
+  const {
+    user,
+    canSwitchToAdmin,
+    isActiveAdmin,
+    isActiveUser,
+    switchRole,
     currentModeLabel,
-    loading 
+    loading
   } = useUser();
-  
+
   const [switching, setSwitching] = useState(false);
 
   if (!user || !canSwitchToAdmin) {
@@ -34,8 +34,8 @@ export function RoleSwitcher({
       return (
         <span className={cn(
           "inline-flex items-center px-2 py-1 rounded-full text-xs",
-          isActiveAdmin 
-            ? "bg-red-100 text-red-700" 
+          isActiveAdmin
+            ? "bg-red-100 text-red-700"
             : "bg-blue-100 text-blue-700",
           className
         )}>
@@ -49,12 +49,12 @@ export function RoleSwitcher({
 
   const handleSwitch = async () => {
     if (switching || loading) return;
-    
+
     setSwitching(true);
     try {
       const targetRole = isActiveAdmin ? 'user' : 'admin';
       await switchRole(targetRole);
-      
+
       // Redirection après changement de rôle
       if (targetRole === 'admin') {
         window.location.href = '/admin';
@@ -75,8 +75,8 @@ export function RoleSwitcher({
         disabled={switching || loading}
         className={cn(
           "inline-flex items-center px-2 py-1 rounded-full text-xs transition-colors",
-          isActiveAdmin 
-            ? "bg-red-100 text-red-700 hover:bg-red-200" 
+          isActiveAdmin
+            ? "bg-red-100 text-red-700 hover:bg-red-200"
             : "bg-blue-100 text-blue-700 hover:bg-blue-200",
           switching && "opacity-50 cursor-not-allowed",
           className
@@ -103,8 +103,8 @@ export function RoleSwitcher({
         )}
       >
         <Settings className="h-4 w-4" />
-        {switching 
-          ? 'Changement...' 
+        {switching
+          ? 'Changement...'
           : `Passer en mode ${isActiveAdmin ? 'Client' : 'Admin'}`
         }
       </button>
