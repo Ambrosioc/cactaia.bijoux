@@ -113,8 +113,8 @@ export default function AccountPage() {
       // Mettre à jour le profil dans la table users
       await updateProfile({
         email: editableData.email,
-        telephone: editableData.telephone || null,
-        adresse: editableData.adresse || null
+        telephone: editableData.telephone || undefined,
+        adresse: editableData.adresse || undefined
       });
 
       // Si l'email a changé, le mettre à jour aussi dans auth.users

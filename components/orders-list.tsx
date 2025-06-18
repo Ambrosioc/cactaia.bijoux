@@ -26,21 +26,17 @@ export function OrdersList() {
         if (!user) return;
 
         try {
-            console.log('Chargement des commandes pour l\'utilisateur:', user.id);
-
             const { data, error } = await supabase
                 .from('commandes')
                 .select('*')
                 .eq('user_id', user.id)
                 .order('created_at', { ascending: false });
 
-            console.log('Résultat de la requête:', { data, error });
 
             if (error) {
                 throw error;
             }
 
-            console.log('Commandes trouvées:', data?.length || 0);
             setOrders(data || []);
         } catch (error) {
             console.error('Erreur lors du chargement des commandes:', error);
