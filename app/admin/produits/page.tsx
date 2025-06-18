@@ -1,44 +1,172 @@
 'use client';
 
-import { products } from '@/lib/data/products';
+import { createClient } from '@/lib/supabase/client';
+import type { Product } from '@/lib/supabase/types';
 import { useUser } from '@/stores/userStore';
 import { motion } from 'framer-motion';
 import {
     Edit3,
     Eye,
-    MoreHorizontal,
     Package,
     Plus,
     Search,
     Star,
+    ToggleLeft,
+    ToggleRight,
     Trash2
 } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 
 export default function ProductsManagementPage() {
     const { isActiveAdmin } = useUser();
+    const [products, setProducts] = useState<Product[]>([]);
+    const [loading, setLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState('');
     const [selectedCategory, setSelectedCategory] = useState<string>('all');
     const [selectedStatus, setSelectedStatus] = useState<string>('all');
+    const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
+    const [actionLoading, setActionLoading] = useState<string | null>(null);
+
+    const supabase = createClient();
+
+    useEffect(() => {
+        if (isActiveAdmin) {
+            loadProducts();
+        }
+    }, [isActiveAdmin]);
+
+    const loadProducts = async () => {
+        try {
+            setLoading(true);
+
+            const { data, error } = await supabase
+                .from('produits')
+                .select('*')
+                .order('created_at', { ascending: false });
+
+            if (error) {
+                throw error;
+            }
+
+            setProducts(data || []);
+        } catch (error) {
+            console.error('Erreur lors du chargement des produits:', error);
+            setMessage({
+                type: 'error',
+                text: 'Erreur lors du chargement des produits'
+            });
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const toggleProductStatus = async (productId: string, currentStatus: boolean) => {
+        setActionLoading(productId);
+
+        try {
+            const { error } = await supabase
+                .from('produits')
+                .update({ est_actif: !currentStatus })
+                .eq('id', productId);
+
+            if (error) {
+                throw error;
+            }
+
+            setMessage({
+                type: 'success',
+                text: `Produit ${!currentStatus ? 'activé' : 'désactivé'} avec succès`
+            });
+
+            await loadProducts();
+
+            // Effacer le message après 3 secondes
+            setTimeout(() => setMessage(null), 3000);
+
+        } catch (error) {
+            console.error('Erreur lors de la mise à jour:', error);
+            setMessage({
+                type: 'error',
+                text: 'Erreur lors de la mise à jour du produit'
+            });
+        } finally {
+            setActionLoading(null);
+        }
+    };
+
+    const deleteProduct = async (productId: string) => {
+        if (!confirm('Êtes-vous sûr de vouloir supprimer ce produit ? Cette action est irréversible.')) {
+            return;
+        }
+
+        setActionLoading(productId);
+
+        try {
+            // Supprimer les images du storage
+            const product = products.find(p => p.id === productId);
+            if (product?.images.length > 0) {
+                const filePaths = product.images.map(url => {
+                    const urlParts = url.split('/');
+                    const bucketIndex = urlParts.findIndex(part => part === 'produits');
+                    return bucketIndex !== -1 ? urlParts.slice(bucketIndex).join('/') : null;
+                }).filter(Boolean);
+
+                if (filePaths.length > 0) {
+                    await supabase.storage
+                        .from('produits')
+                        .remove(filePaths as string[]);
+                }
+            }
+
+            // Supprimer le produit
+            const { error } = await supabase
+                .from('produits')
+                .delete()
+                .eq('id', productId);
+
+            if (error) throw error;
+
+            setMessage({
+                type: 'success',
+                text: 'Produit supprimé avec succès'
+            });
+
+            await loadProducts();
+
+            // Effacer le message après 5 secondes
+            setTimeout(() => setMessage(null), 5000);
+
+        } catch (error) {
+            console.error('Erreur lors de la suppression:', error);
+            setMessage({
+                type: 'error',
+                text: 'Erreur lors de la suppression du produit'
+            });
+        } finally {
+            setActionLoading(null);
+        }
+    };
 
     // Filtrer les produits
     const filteredProducts = products.filter(product => {
         const matchesSearch =
-            product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            product.category.toLowerCase().includes(searchTerm.toLowerCase());
+            product.nom.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            product.categorie.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            (product.sku && product.sku.toLowerCase().includes(searchTerm.toLowerCase()));
 
-        const matchesCategory = selectedCategory === 'all' || product.category === selectedCategory;
+        const matchesCategory = selectedCategory === 'all' || product.categorie === selectedCategory;
 
         const matchesStatus = selectedStatus === 'all' ||
-            (selectedStatus === 'new' && product.isNew) ||
-            (selectedStatus === 'bestseller' && product.isBestseller);
+            (selectedStatus === 'active' && product.est_actif) ||
+            (selectedStatus === 'inactive' && !product.est_actif) ||
+            (selectedStatus === 'featured' && product.est_mis_en_avant);
 
         return matchesSearch && matchesCategory && matchesStatus;
     });
 
-    const categories = [...new Set(products.map(product => product.category))];
+    const categories = [...new Set(products.map(product => product.categorie))];
 
     if (!isActiveAdmin) {
         return (
@@ -63,11 +191,28 @@ export default function ProductsManagementPage() {
                         Gérez votre catalogue de produits
                     </p>
                 </div>
-                <button className="btn btn-primary flex items-center gap-2 px-4 py-2">
+                <Link
+                    href="/admin/produits/nouveau"
+                    className="btn btn-primary flex items-center gap-2 px-4 py-2"
+                >
                     <Plus className="h-4 w-4" />
                     Ajouter un produit
-                </button>
+                </Link>
             </div>
+
+            {/* Message de feedback */}
+            {message && (
+                <motion.div
+                    initial={{ opacity: 0, y: -10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className={`p-4 rounded-lg mb-6 ${message.type === 'success'
+                        ? 'bg-green-50 border border-green-200 text-green-700'
+                        : 'bg-red-50 border border-red-200 text-red-700'
+                        }`}
+                >
+                    {message.text}
+                </motion.div>
+            )}
 
             {/* Filtres et recherche */}
             <div className="bg-white p-6 rounded-lg shadow-sm mb-6">
@@ -108,8 +253,9 @@ export default function ProductsManagementPage() {
                             className="w-full px-3 py-2 border border-input rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
                         >
                             <option value="all">Tous les statuts</option>
-                            <option value="new">Nouveautés</option>
-                            <option value="bestseller">Meilleures ventes</option>
+                            <option value="active">Actifs</option>
+                            <option value="inactive">Inactifs</option>
+                            <option value="featured">Mis en avant</option>
                         </select>
                     </div>
                 </div>
@@ -122,17 +268,20 @@ export default function ProductsManagementPage() {
                             <span className="ml-2 font-medium">{products.length}</span>
                         </div>
                         <div>
-                            <span className="text-muted-foreground">Nouveautés:</span>
-                            <span className="ml-2 font-medium">{products.filter(p => p.isNew).length}</span>
+                            <span className="text-muted-foreground">Actifs:</span>
+                            <span className="ml-2 font-medium">{products.filter(p => p.est_actif).length}</span>
                         </div>
                         <div>
-                            <span className="text-muted-foreground">Meilleures ventes:</span>
-                            <span className="ml-2 font-medium">{products.filter(p => p.isBestseller).length}</span>
+                            <span className="text-muted-foreground">Mis en avant:</span>
+                            <span className="ml-2 font-medium">{products.filter(p => p.est_mis_en_avant).length}</span>
                         </div>
                         <div>
                             <span className="text-muted-foreground">Prix moyen:</span>
                             <span className="ml-2 font-medium">
-                                {(products.reduce((sum, p) => sum + p.price, 0) / products.length).toFixed(2)}€
+                                {products.length > 0
+                                    ? (products.reduce((sum, p) => sum + p.prix, 0) / products.length).toFixed(2)
+                                    : '0.00'
+                                }€
                             </span>
                         </div>
                     </div>
@@ -141,7 +290,12 @@ export default function ProductsManagementPage() {
 
             {/* Liste des produits */}
             <div className="bg-white rounded-lg shadow-sm overflow-hidden">
-                {filteredProducts.length === 0 ? (
+                {loading ? (
+                    <div className="p-8 text-center">
+                        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
+                        <p className="text-muted-foreground">Chargement des produits...</p>
+                    </div>
+                ) : filteredProducts.length === 0 ? (
                     <div className="p-8 text-center">
                         <Package className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
                         <h3 className="text-lg font-medium mb-2">Aucun produit trouvé</h3>
@@ -167,10 +321,10 @@ export default function ProductsManagementPage() {
                                         Prix
                                     </th>
                                     <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
-                                        Statut
+                                        Stock
                                     </th>
                                     <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
-                                        Collections
+                                        Statut
                                     </th>
                                     <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
                                         Actions
@@ -189,61 +343,77 @@ export default function ProductsManagementPage() {
                                         <td className="px-6 py-4 whitespace-nowrap">
                                             <div className="flex items-center">
                                                 <div className="flex-shrink-0 h-12 w-12">
-                                                    <div className="relative h-12 w-12 rounded-md overflow-hidden">
-                                                        <Image
-                                                            src={product.images[0]}
-                                                            alt={product.name}
-                                                            fill
-                                                            className="object-cover"
-                                                        />
+                                                    <div className="relative h-12 w-12 rounded-md overflow-hidden bg-gray-100">
+                                                        {product?.images?.length > 0 ? (
+                                                            <Image
+                                                                src={product.images[0]}
+                                                                alt={product.nom}
+                                                                fill
+                                                                className="object-cover"
+                                                            />
+                                                        ) : (
+                                                            <div className="flex items-center justify-center h-full">
+                                                                <Package className="h-6 w-6 text-gray-400" />
+                                                            </div>
+                                                        )}
                                                     </div>
                                                 </div>
                                                 <div className="ml-4">
                                                     <div className="text-sm font-medium text-foreground">
-                                                        {product.name}
+                                                        {product.nom}
                                                     </div>
                                                     <div className="text-sm text-muted-foreground">
-                                                        ID: {product.id}
+                                                        SKU: {product.sku || 'N/A'}
                                                     </div>
                                                 </div>
                                             </div>
                                         </td>
                                         <td className="px-6 py-4 whitespace-nowrap">
-                                            <span className="text-sm text-foreground">{product.category}</span>
+                                            <span className="text-sm text-foreground">{product.categorie}</span>
                                         </td>
                                         <td className="px-6 py-4 whitespace-nowrap">
-                                            <span className="text-sm font-medium text-foreground">
-                                                {product.price.toFixed(2)}€
+                                            <div className="text-sm">
+                                                <span className="font-medium text-foreground">
+                                                    {product.prix.toFixed(2)}€
+                                                </span>
+                                                {product.prix_promo && (
+                                                    <div className="text-xs text-red-600">
+                                                        Promo: {product.prix_promo.toFixed(2)}€
+                                                    </div>
+                                                )}
+                                            </div>
+                                        </td>
+                                        <td className="px-6 py-4 whitespace-nowrap">
+                                            <span className={`text-sm ${product.stock === 0 ? 'text-red-600' : 'text-foreground'
+                                                }`}>
+                                                {product.stock}
                                             </span>
                                         </td>
                                         <td className="px-6 py-4 whitespace-nowrap">
                                             <div className="flex flex-col gap-1">
-                                                {product.isNew && (
-                                                    <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                                                        Nouveau
-                                                    </span>
-                                                )}
-                                                {product.isBestseller && (
+                                                <div className="flex items-center">
+                                                    <button
+                                                        onClick={() => toggleProductStatus(product.id, product.est_actif)}
+                                                        disabled={actionLoading === product.id}
+                                                        className="flex items-center"
+                                                    >
+                                                        {actionLoading === product.id ? (
+                                                            <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-primary"></div>
+                                                        ) : product.est_actif ? (
+                                                            <ToggleRight className="h-4 w-4 text-green-600" />
+                                                        ) : (
+                                                            <ToggleLeft className="h-4 w-4 text-gray-400" />
+                                                        )}
+                                                        <span className={`ml-1 text-xs ${product.est_actif ? 'text-green-600' : 'text-gray-500'
+                                                            }`}>
+                                                            {product.est_actif ? 'Actif' : 'Inactif'}
+                                                        </span>
+                                                    </button>
+                                                </div>
+                                                {product.est_mis_en_avant && (
                                                     <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
                                                         <Star className="h-3 w-3 mr-1" />
-                                                        Best-seller
-                                                    </span>
-                                                )}
-                                            </div>
-                                        </td>
-                                        <td className="px-6 py-4">
-                                            <div className="flex flex-wrap gap-1">
-                                                {product.collections.slice(0, 2).map(collection => (
-                                                    <span
-                                                        key={collection}
-                                                        className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800"
-                                                    >
-                                                        {collection}
-                                                    </span>
-                                                ))}
-                                                {product.collections.length > 2 && (
-                                                    <span className="text-xs text-muted-foreground">
-                                                        +{product.collections.length - 2}
+                                                        Featured
                                                     </span>
                                                 )}
                                             </div>
@@ -251,30 +421,31 @@ export default function ProductsManagementPage() {
                                         <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                                             <div className="flex items-center space-x-2">
                                                 <Link
-                                                    href={`/produit/${product.slug}`}
+                                                    href={`/produit/${product.sku || product.id}`}
                                                     target="_blank"
                                                     className="text-blue-600 hover:text-blue-900"
                                                     title="Voir le produit"
                                                 >
                                                     <Eye className="h-4 w-4" />
                                                 </Link>
-                                                <button
+                                                <Link
+                                                    href={`/admin/produits/edit/${product.id}`}
                                                     className="text-green-600 hover:text-green-900"
                                                     title="Modifier"
                                                 >
                                                     <Edit3 className="h-4 w-4" />
-                                                </button>
+                                                </Link>
                                                 <button
+                                                    onClick={() => deleteProduct(product.id)}
+                                                    disabled={actionLoading === product.id}
                                                     className="text-red-600 hover:text-red-900"
                                                     title="Supprimer"
                                                 >
-                                                    <Trash2 className="h-4 w-4" />
-                                                </button>
-                                                <button
-                                                    className="text-gray-600 hover:text-gray-900"
-                                                    title="Plus d'actions"
-                                                >
-                                                    <MoreHorizontal className="h-4 w-4" />
+                                                    {actionLoading === product.id ? (
+                                                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-red-600"></div>
+                                                    ) : (
+                                                        <Trash2 className="h-4 w-4" />
+                                                    )}
                                                 </button>
                                             </div>
                                         </td>

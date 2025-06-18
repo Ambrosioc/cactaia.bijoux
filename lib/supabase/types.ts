@@ -100,6 +100,65 @@ export interface Database {
           created_at?: string
         }
       }
+      produits: {
+        Row: {
+          id: string
+          nom: string
+          description: string | null
+          description_courte: string | null
+          prix: number
+          prix_promo: number | null
+          categorie: string
+          variations: Json
+          stock: number
+          sku: string | null
+          images: string[]
+          est_actif: boolean
+          est_mis_en_avant: boolean
+          poids_grammes: number | null
+          tva_applicable: boolean
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          nom: string
+          description?: string | null
+          description_courte?: string | null
+          prix: number
+          prix_promo?: number | null
+          categorie: string
+          variations?: Json
+          stock?: number
+          sku?: string | null
+          images?: string[]
+          est_actif?: boolean
+          est_mis_en_avant?: boolean
+          poids_grammes?: number | null
+          tva_applicable?: boolean
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          nom?: string
+          description?: string | null
+          description_courte?: string | null
+          prix?: number
+          prix_promo?: number | null
+          categorie?: string
+          variations?: Json
+          stock?: number
+          sku?: string | null
+          images?: string[]
+          est_actif?: boolean
+          est_mis_en_avant?: boolean
+          poids_grammes?: number | null
+          tva_applicable?: boolean
+          created_at?: string
+          updated_at?: string
+        }
+      }
     }
     Views: {
       [_ in never]: never
@@ -125,3 +184,7 @@ export type User = Database['public']['Tables']['users']['Row'];
 export type Address = Database['public']['Tables']['addresses']['Row'];
 export type AddressInsert = Database['public']['Tables']['addresses']['Insert'];
 export type AddressUpdate = Database['public']['Tables']['addresses']['Update'];
+
+export type Product = Database['public']['Tables']['produits']['Row'];
+export type ProductInsert = Database['public']['Tables']['produits']['Insert'];
+export type ProductUpdate = Database['public']['Tables']['produits']['Update'];

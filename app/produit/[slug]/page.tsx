@@ -1,31 +1,166 @@
 "use client"
 
-import { colorClasses, colorNames, getProductBySlug, getRelatedProducts } from '@/lib/data/products';
+import { createClient } from '@/lib/supabase/client';
+import type { Product } from '@/lib/supabase/types';
 import { motion } from 'framer-motion';
-import { ArrowLeft, ArrowRight, Heart, Minus, Plus, ShoppingBag } from 'lucide-react';
+import { ArrowLeft, ArrowRight, Heart, Minus, Package, Plus, ShoppingBag, Star } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 
 export default function ProductPage() {
   const params = useParams();
   const slug = params?.slug as string;
-  const product = getProductBySlug(slug);
-  const relatedProducts = product ? getRelatedProducts(product.id) : [];
-
-  const [selectedColor, setSelectedColor] = useState(product?.colors[0] || '');
-  const [selectedSize, setSelectedSize] = useState(product?.sizes?.[0] || '');
+  const [product, setProduct] = useState<Product | null>(null);
+  const [relatedProducts, setRelatedProducts] = useState<Product[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [quantity, setQuantity] = useState(1);
   const [currentImage, setCurrentImage] = useState(0);
 
-  if (!product) {
+  const supabase = createClient();
+
+  useEffect(() => {
+    if (slug) {
+      loadProduct();
+    }
+  }, [slug]);
+
+  const loadProduct = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+
+      // Essayer de trouver le produit par SKU d'abord, puis par ID
+      let { data: productData, error: productError } = await supabase
+        .from('produits')
+        .select('*')
+        .eq('sku', slug)
+        .eq('est_actif', true)
+        .maybeSingle();
+
+      // Si pas trouvé par SKU, essayer par ID
+      if (!productData && !productError) {
+        const { data: productById, error: errorById } = await supabase
+          .from('produits')
+          .select('*')
+          .eq('id', slug)
+          .eq('est_actif', true)
+          .maybeSingle();
+
+        productData = productById;
+        productError = errorById;
+      }
+
+      if (productError) {
+        throw productError;
+      }
+
+      if (!productData) {
+        setError('Produit non trouvé');
+        return;
+      }
+
+      setProduct(productData);
+
+      // Charger les produits similaires
+      const { data: relatedData } = await supabase
+        .from('produits')
+        .select('*')
+        .eq('categorie', productData.categorie)
+        .eq('est_actif', true)
+        .neq('id', productData.id)
+        .limit(4);
+
+      setRelatedProducts(relatedData || []);
+
+    } catch (error) {
+      console.error('Erreur lors du chargement du produit:', error);
+      setError('Erreur lors du chargement du produit');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const getImageUrl = (product: Product, index: number = 0): string => {
+    if (product.images && product.images.length > index) {
+      return product.images[index];
+    }
+    return '/placeholder.jpg';
+  };
+
+  const getPrice = (product: Product) => {
+    const hasPromo = product.prix_promo && product.prix_promo < product.prix;
+    return {
+      current: hasPromo ? product.prix_promo : product.prix,
+      original: product.prix,
+      hasPromo
+    };
+  };
+
+  const decreaseQuantity = () => {
+    if (quantity > 1) {
+      setQuantity(quantity - 1);
+    }
+  };
+
+  const increaseQuantity = () => {
+    if (product && quantity < product.stock) {
+      setQuantity(quantity + 1);
+    }
+  };
+
+  const nextImage = () => {
+    if (product && product.images.length > 0) {
+      setCurrentImage((prev) =>
+        prev === product.images.length - 1 ? 0 : prev + 1
+      );
+    }
+  };
+
+  const prevImage = () => {
+    if (product && product.images.length > 0) {
+      setCurrentImage((prev) =>
+        prev === 0 ? product.images.length - 1 : prev - 1
+      );
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="pt-24 pb-16 container-custom">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
+          {/* Image skeleton */}
+          <div className="space-y-4">
+            <div className="aspect-square bg-gray-200 rounded-lg animate-pulse"></div>
+            <div className="grid grid-cols-3 gap-4">
+              {Array.from({ length: 3 }).map((_, i) => (
+                <div key={i} className="aspect-square bg-gray-200 rounded-md animate-pulse"></div>
+              ))}
+            </div>
+          </div>
+
+          {/* Content skeleton */}
+          <div className="space-y-4">
+            <div className="h-8 bg-gray-200 rounded animate-pulse"></div>
+            <div className="h-6 bg-gray-200 rounded w-1/3 animate-pulse"></div>
+            <div className="h-20 bg-gray-200 rounded animate-pulse"></div>
+            <div className="h-10 bg-gray-200 rounded w-1/2 animate-pulse"></div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (error || !product) {
     return (
       <div className="pt-24 pb-16 container-custom">
         <div className="flex flex-col items-center justify-center py-24">
+          <Package className="h-16 w-16 text-muted-foreground mb-4" />
           <h1 className="heading-lg mb-4">Produit non trouvé</h1>
           <p className="text-muted-foreground mb-8">
-            Désolé, le produit que vous recherchez n'existe pas.
+            {error || "Désolé, le produit que vous recherchez n'existe pas."}
           </p>
           <Link href="/boutique" className="btn btn-primary px-8 py-3">
             Retour à la boutique
@@ -35,31 +170,13 @@ export default function ProductPage() {
     );
   }
 
-  const decreaseQuantity = () => {
-    if (quantity > 1) {
-      setQuantity(quantity - 1);
-    }
-  };
-
-  const increaseQuantity = () => {
-    setQuantity(quantity + 1);
-  };
-
-  const nextImage = () => {
-    setCurrentImage((prev) =>
-      prev === product.images.length - 1 ? 0 : prev + 1
-    );
-  };
-
-  const prevImage = () => {
-    setCurrentImage((prev) =>
-      prev === 0 ? product.images.length - 1 : prev - 1
-    );
-  };
+  const price = getPrice(product);
+  const hasImages = product.images && product.images.length > 0;
 
   return (
     <div className="pt-24 pb-16">
       <div className="container-custom">
+        {/* Breadcrumb */}
         <nav className="flex items-center py-4 mb-8">
           <ol className="flex text-sm">
             <li className="flex items-center">
@@ -75,7 +192,7 @@ export default function ProductPage() {
               <span className="mx-2">/</span>
             </li>
             <li className="text-muted-foreground">
-              {product.name}
+              {product.nom}
             </li>
           </ol>
         </nav>
@@ -88,53 +205,77 @@ export default function ProductPage() {
             transition={{ duration: 0.5 }}
           >
             <div className="relative aspect-square bg-secondary/30 rounded-lg overflow-hidden mb-4">
-              {product.isNew && (
-                <div className="absolute top-4 left-4 z-10 bg-primary text-white text-xs px-2 py-1 rounded">
-                  Nouveau
-                </div>
-              )}
+              {/* Badges */}
+              <div className="absolute top-4 left-4 z-10 flex flex-col gap-2">
+                {product.est_mis_en_avant && (
+                  <div className="bg-yellow-500 text-white text-xs px-2 py-1 rounded flex items-center gap-1">
+                    <Star className="h-3 w-3" />
+                    Featured
+                  </div>
+                )}
+                {price.hasPromo && (
+                  <div className="bg-red-500 text-white text-xs px-2 py-1 rounded">
+                    Promotion
+                  </div>
+                )}
+              </div>
+
               <Image
-                src={product.images[currentImage]}
-                alt={product.name}
+                src={getImageUrl(product, currentImage)}
+                alt={product.nom}
                 fill
                 className="object-cover"
+                onError={(e) => {
+                  const target = e.target as HTMLImageElement;
+                  target.src = '/placeholder.jpg';
+                }}
               />
 
               {/* Navigation arrows */}
-              <button
-                onClick={prevImage}
-                className="absolute left-4 top-1/2 -translate-y-1/2 p-2 rounded-full bg-white/80 hover:bg-white transition-colors"
-                aria-label="Image précédente"
-              >
-                <ArrowLeft className="h-5 w-5" />
-              </button>
-              <button
-                onClick={nextImage}
-                className="absolute right-4 top-1/2 -translate-y-1/2 p-2 rounded-full bg-white/80 hover:bg-white transition-colors"
-                aria-label="Image suivante"
-              >
-                <ArrowRight className="h-5 w-5" />
-              </button>
+              {hasImages && product.images.length > 1 && (
+                <>
+                  <button
+                    onClick={prevImage}
+                    className="absolute left-4 top-1/2 -translate-y-1/2 p-2 rounded-full bg-white/80 hover:bg-white transition-colors"
+                    aria-label="Image précédente"
+                  >
+                    <ArrowLeft className="h-5 w-5" />
+                  </button>
+                  <button
+                    onClick={nextImage}
+                    className="absolute right-4 top-1/2 -translate-y-1/2 p-2 rounded-full bg-white/80 hover:bg-white transition-colors"
+                    aria-label="Image suivante"
+                  >
+                    <ArrowRight className="h-5 w-5" />
+                  </button>
+                </>
+              )}
             </div>
 
             {/* Thumbnails */}
-            <div className="grid grid-cols-3 gap-4">
-              {product.images.map((image, i) => (
-                <button
-                  key={i}
-                  onClick={() => setCurrentImage(i)}
-                  className={`relative aspect-square rounded-md overflow-hidden ${currentImage === i ? 'ring-2 ring-primary' : ''
-                    }`}
-                >
-                  <Image
-                    src={image}
-                    alt={`${product.name} - vue ${i + 1}`}
-                    fill
-                    className="object-cover"
-                  />
-                </button>
-              ))}
-            </div>
+            {hasImages && product.images.length > 1 && (
+              <div className="grid grid-cols-3 gap-4">
+                {product.images.slice(0, 3).map((image, i) => (
+                  <button
+                    key={i}
+                    onClick={() => setCurrentImage(i)}
+                    className={`relative aspect-square rounded-md overflow-hidden ${currentImage === i ? 'ring-2 ring-primary' : ''
+                      }`}
+                  >
+                    <Image
+                      src={image}
+                      alt={`${product.nom} - vue ${i + 1}`}
+                      fill
+                      className="object-cover"
+                      onError={(e) => {
+                        const target = e.target as HTMLImageElement;
+                        target.src = '/placeholder.jpg';
+                      }}
+                    />
+                  </button>
+                ))}
+              </div>
+            )}
           </motion.div>
 
           {/* Product Details */}
@@ -143,118 +284,111 @@ export default function ProductPage() {
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.5 }}
           >
-            <h1 className="heading-lg mb-2">{product.name}</h1>
-            <p className="text-2xl font-medium mb-4">{product.price.toFixed(2)}€</p>
+            <div className="space-y-6">
+              {/* Header */}
+              <div>
+                <p className="text-sm text-muted-foreground mb-2">{product.categorie}</p>
+                <h1 className="heading-lg mb-4">{product.nom}</h1>
 
-            <p className="text-muted-foreground mb-6">
-              {product.description}
-            </p>
-
-            {/* Color Selection */}
-            <div className="mb-6">
-              <p className="font-medium mb-2">Couleur: {colorNames[selectedColor as keyof typeof colorNames] || ''}</p>
-              <div className="flex space-x-3">
-                {product.colors.map((color) => (
-                  <button
-                    key={color}
-                    onClick={() => setSelectedColor(color)}
-                    className={`w-8 h-8 rounded-full flex items-center justify-center ${colorClasses[color]
-                      } ${selectedColor === color
-                        ? 'ring-2 ring-primary ring-offset-2'
-                        : ''
-                      }`}
-                    title={colorNames[color]}
-                  />
-                ))}
+                {/* Price */}
+                <div className="flex items-center gap-3 mb-4">
+                  <span className="text-3xl font-medium">
+                    {price?.current?.toFixed(2)}€
+                  </span>
+                  {price.hasPromo && (
+                    <span className="text-xl text-muted-foreground line-through">
+                      {price.original.toFixed(2)}€
+                    </span>
+                  )}
+                </div>
               </div>
-            </div>
 
-            {/* Size Selection (if applicable) */}
-            {product.sizes && (
-              <div className="mb-6">
-                <p className="font-medium mb-2">Taille:</p>
-                <div className="flex flex-wrap gap-2">
-                  {product.sizes.map((size) => (
+              {/* Description */}
+              {product.description && (
+                <div>
+                  <p className="text-muted-foreground leading-relaxed">
+                    {product.description}
+                  </p>
+                </div>
+              )}
+
+              {/* Stock Status */}
+              <div>
+                {product.stock === 0 ? (
+                  <p className="text-red-600 font-medium">Rupture de stock</p>
+                ) : product.stock <= 5 ? (
+                  <p className="text-orange-600">Plus que {product.stock} en stock</p>
+                ) : (
+                  <p className="text-green-600">En stock</p>
+                )}
+              </div>
+
+              {/* Quantity Selector */}
+              {product.stock > 0 && (
+                <div>
+                  <p className="font-medium mb-2">Quantité:</p>
+                  <div className="flex items-center">
                     <button
-                      key={size}
-                      onClick={() => setSelectedSize(size)}
-                      className={`px-3 py-2 border rounded-md ${selectedSize === size
-                        ? 'bg-primary text-white border-primary'
-                        : 'border-input hover:border-primary'
-                        }`}
+                      onClick={decreaseQuantity}
+                      className="p-2 border border-input rounded-l-md hover:bg-secondary"
+                      disabled={quantity <= 1}
                     >
-                      {size}
+                      <Minus className="h-4 w-4" />
                     </button>
-                  ))}
+                    <div className="px-4 py-2 border-t border-b border-input min-w-[60px] text-center">
+                      {quantity}
+                    </div>
+                    <button
+                      onClick={increaseQuantity}
+                      className="p-2 border border-input rounded-r-md hover:bg-secondary"
+                      disabled={quantity >= product.stock}
+                    >
+                      <Plus className="h-4 w-4" />
+                    </button>
+                  </div>
                 </div>
-              </div>
-            )}
+              )}
 
-            {/* Quantity Selector */}
-            <div className="mb-6">
-              <p className="font-medium mb-2">Quantité:</p>
-              <div className="flex items-center">
+              {/* Add to Cart */}
+              <div className="flex flex-col sm:flex-row gap-4">
                 <button
-                  onClick={decreaseQuantity}
-                  className="p-2 border border-input rounded-l-md hover:bg-secondary"
+                  className="flex-1 btn btn-primary py-3 flex items-center justify-center gap-2"
+                  disabled={product.stock === 0}
                 >
-                  <Minus className="h-4 w-4" />
+                  <ShoppingBag className="h-5 w-5" />
+                  {product.stock === 0 ? 'Rupture de stock' : 'Ajouter au panier'}
                 </button>
-                <div className="px-4 py-2 border-t border-b border-input min-w-[40px] text-center">
-                  {quantity}
-                </div>
-                <button
-                  onClick={increaseQuantity}
-                  className="p-2 border border-input rounded-r-md hover:bg-secondary"
-                >
-                  <Plus className="h-4 w-4" />
+                <button className="btn btn-outline py-3 px-4 flex items-center justify-center gap-2">
+                  <Heart className="h-5 w-5" />
+                  <span className="sr-only md:not-sr-only">Favoris</span>
                 </button>
               </div>
-            </div>
 
-            {/* Add to Cart */}
-            <div className="flex flex-col sm:flex-row gap-4 mb-8">
-              <button className="flex-1 btn btn-primary py-3 flex items-center justify-center gap-2">
-                <ShoppingBag className="h-5 w-5" />
-                Ajouter au panier
-              </button>
-              <button className="btn btn-outline py-3 px-4 flex items-center justify-center gap-2">
-                <Heart className="h-5 w-5" />
-                <span className="sr-only md:not-sr-only">Ajouter aux favoris</span>
-              </button>
-            </div>
-
-            {/* Product Details */}
-            <div className="border-t border-border pt-6 mb-8">
-              <h3 className="text-lg font-medium mb-3">Détails du produit</h3>
-              <p className="text-muted-foreground mb-4">
-                {product.details}
-              </p>
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <p className="font-medium">Matériaux</p>
-                  <p className="text-muted-foreground">Acier inoxydable 316L</p>
+              {/* Product Details */}
+              <div className="border-t border-border pt-6">
+                <h3 className="text-lg font-medium mb-3">Détails du produit</h3>
+                <div className="grid grid-cols-2 gap-4 text-sm">
+                  <div>
+                    <p className="font-medium">SKU</p>
+                    <p className="text-muted-foreground">{product.sku || 'N/A'}</p>
+                  </div>
+                  <div>
+                    <p className="font-medium">Catégorie</p>
+                    <p className="text-muted-foreground">{product.categorie}</p>
+                  </div>
+                  {product.poids_grammes && (
+                    <div>
+                      <p className="font-medium">Poids</p>
+                      <p className="text-muted-foreground">{product.poids_grammes}g</p>
+                    </div>
+                  )}
+                  <div>
+                    <p className="font-medium">TVA</p>
+                    <p className="text-muted-foreground">
+                      {product.tva_applicable ? 'Applicable' : 'Non applicable'}
+                    </p>
+                  </div>
                 </div>
-                <div>
-                  <p className="font-medium">Hypoallergénique</p>
-                  <p className="text-muted-foreground">Oui</p>
-                </div>
-              </div>
-            </div>
-
-            {/* Collections */}
-            <div className="border-t border-border pt-6">
-              <h3 className="text-lg font-medium mb-3">Collections</h3>
-              <div className="flex flex-wrap gap-2">
-                {product.collections.map(collection => (
-                  <Link
-                    key={collection}
-                    href={`/collections/${collection.toLowerCase()}`}
-                    className="px-3 py-1 bg-secondary rounded-md text-sm hover:bg-secondary/80 transition-colors"
-                  >
-                    {collection}
-                  </Link>
-                ))}
               </div>
             </div>
           </motion.div>
@@ -265,32 +399,51 @@ export default function ProductPage() {
           <section className="mt-20">
             <h2 className="heading-md mb-8">Vous aimerez aussi</h2>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
-              {relatedProducts.map((relatedProduct, i) => (
-                <motion.div
-                  key={relatedProduct.id}
-                  initial={{ opacity: 0, y: 20 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  viewport={{ once: true }}
-                  transition={{ duration: 0.4, delay: i * 0.1 }}
-                  className="group"
-                >
-                  <Link href={`/produit/${relatedProduct.slug}`}>
-                    <div className="relative aspect-square mb-4 overflow-hidden rounded-md bg-secondary/30">
-                      <Image
-                        src={relatedProduct.images[0]}
-                        alt={relatedProduct.name}
-                        fill
-                        className="object-cover transition-transform duration-500 group-hover:scale-105"
-                      />
-                    </div>
-                    <div className="space-y-1">
-                      <p className="text-sm text-muted-foreground">{relatedProduct.category}</p>
-                      <h3 className="font-medium">{relatedProduct.name}</h3>
-                      <p className="font-medium">{relatedProduct.price.toFixed(2)}€</p>
-                    </div>
-                  </Link>
-                </motion.div>
-              ))}
+              {relatedProducts.map((relatedProduct, i) => {
+                const relatedPrice = getPrice(relatedProduct);
+
+                return (
+                  <motion.div
+                    key={relatedProduct.id}
+                    initial={{ opacity: 0, y: 20 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: true }}
+                    transition={{ duration: 0.4, delay: i * 0.1 }}
+                    className="group"
+                  >
+                    <Link href={`/produit/${relatedProduct.sku || relatedProduct.id}`}>
+                      <div className="relative aspect-square mb-4 overflow-hidden rounded-md bg-secondary/30">
+                        <Image
+                          src={getImageUrl(relatedProduct)}
+                          alt={relatedProduct.nom}
+                          fill
+                          className="object-cover transition-transform duration-500 group-hover:scale-105"
+                          onError={(e) => {
+                            const target = e.target as HTMLImageElement;
+                            target.src = '/placeholder.jpg';
+                          }}
+                        />
+                      </div>
+                      <div className="space-y-1">
+                        <p className="text-sm text-muted-foreground">{relatedProduct.categorie}</p>
+                        <h3 className="font-medium group-hover:text-primary transition-colors">
+                          {relatedProduct.nom}
+                        </h3>
+                        <div className="flex items-center gap-2">
+                          <span className="font-medium">
+                            {relatedPrice?.current?.toFixed(2)}€
+                          </span>
+                          {relatedPrice.hasPromo && (
+                            <span className="text-sm text-muted-foreground line-through">
+                              {relatedPrice.original.toFixed(2)}€
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                    </Link>
+                  </motion.div>
+                );
+              })}
             </div>
           </section>
         )}
