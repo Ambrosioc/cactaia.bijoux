@@ -6,6 +6,7 @@ import Link from 'next/link';
 import { motion } from 'framer-motion';
 import { Eye, EyeOff, Mail, Lock } from 'lucide-react';
 import { createClient } from '@/lib/supabase/client';
+import { useUser } from '@/stores/userStore';
 
 export default function LoginPage() {
   const [email, setEmail] = useState('');
@@ -15,6 +16,7 @@ export default function LoginPage() {
   const [error, setError] = useState('');
   const router = useRouter();
   const supabase = createClient();
+  const { refreshUser } = useUser();
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -32,6 +34,10 @@ export default function LoginPage() {
         return;
       }
 
+      // Rafraîchir le profil utilisateur dans le store
+      await refreshUser();
+
+      // Le middleware se chargera de la redirection appropriée
       router.push('/compte');
     } catch (error) {
       setError('Une erreur est survenue');

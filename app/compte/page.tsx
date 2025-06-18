@@ -1,44 +1,88 @@
 'use client';
 
-import { useAuth } from '@/lib/auth/auth-context';
 import { motion } from 'framer-motion';
 import { Heart, LogOut, Package, Settings, User } from 'lucide-react';
 import Link from 'next/link';
-import { useState } from 'react';
+import { useRouter } from 'next/navigation';
+import { useEffect, useState } from 'react';
+import { useUser } from '@/stores/userStore';
+import { RoleSwitcher } from '@/components/ui/role-switcher';
+import { createClient } from '@/lib/supabase/client';
 
 export default function AccountPage() {
-  const { user, userProfile, signOut, switchRole } = useAuth();
+  const { 
+    user, 
+    isAuthenticated, 
+    isActiveUser, 
+    displayName, 
+    loading: userLoading 
+  } = useUser();
   const [activeTab, setActiveTab] = useState('profile');
-  const [switching, setSwitching] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const router = useRouter();
+  const supabase = createClient();
 
+  useEffect(() => {
+    const checkAccess = async () => {
+      if (userLoading) return; // Attendre que le store soit initialisé
 
+      if (!isAuthenticated) {
+        router.push('/connexion');
+        return;
+      }
 
-  if (!user || !userProfile) {
+      if (!user) {
+        return; // Attendre que le profil soit chargé
+      }
+
+      // Vérifier que l'utilisateur est en mode user
+      if (!isActiveUser) {
+        router.push('/admin');
+        return;
+      }
+
+      setLoading(false);
+    };
+
+    checkAccess();
+  }, [isAuthenticated, user, isActiveUser, userLoading, router]);
+
+  const handleSignOut = async () => {
+    try {
+      await supabase.auth.signOut();
+      router.push('/');
+    } catch (error) {
+      console.error('Erreur lors de la déconnexion:', error);
+    }
+  };
+
+  if (loading || userLoading || !user) {
     return (
       <div className="pt-24 pb-16 min-h-screen flex items-center justify-center">
         <div className="text-center">
-          <h1 className="heading-lg mb-4">Accès non autorisé</h1>
-          <Link href="/connexion" className="btn btn-primary">
-            Se connecter
-          </Link>
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
+          <p className="text-muted-foreground">Chargement...</p>
         </div>
       </div>
     );
   }
 
-  const handleSwitchToAdmin = async () => {
-    if (userProfile.role !== 'admin') return;
-
-    setSwitching(true);
-    try {
-      await switchRole('admin');
-      window.location.href = '/admin';
-    } catch (error) {
-      console.error('Erreur lors du changement de rôle:', error);
-    } finally {
-      setSwitching(false);
-    }
-  };
+  // Double vérification côté client
+  if (!isActiveUser) {
+    return (
+      <div className="pt-24 pb-16 min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <h1 className="heading-lg mb-4">Accès non autorisé</h1>
+          <p className="text-muted-foreground mb-6">
+            Vous devez être en mode utilisateur pour accéder à cette page.
+          </p>
+          <Link href="/admin" className="btn btn-primary">
+            Aller à l'administration
+          </Link>
+        </div>
+      </div>
+    );
+  }
 
   const menuItems = [
     { id: 'profile', label: 'Mon profil', icon: User },
@@ -61,13 +105,11 @@ export default function AccountPage() {
             <div className="bg-white p-6 rounded-lg shadow-sm">
               <div className="mb-6">
                 <h2 className="font-medium text-lg">
-                  Bonjour, {userProfile.prenom || 'Utilisateur'}
+                  Bonjour, {displayName}
                 </h2>
-                <p className="text-sm text-muted-foreground">{userProfile.email}</p>
-                <div className="mt-2">
-                  <span className="inline-flex items-center px-2 py-1 rounded-full text-xs bg-primary/10 text-primary">
-                    {userProfile.active_role === 'admin' ? 'Administrateur' : 'Client'}
-                  </span>
+                <p className="text-sm text-muted-foreground">{user.email}</p>
+                <div className="mt-3">
+                  <RoleSwitcher variant="badge" />
                 </div>
               </div>
 
@@ -86,19 +128,8 @@ export default function AccountPage() {
                   </button>
                 ))}
 
-                {userProfile.role === 'admin' && (
-                  <button
-                    onClick={handleSwitchToAdmin}
-                    disabled={switching}
-                    className="w-full flex items-center space-x-2 px-4 py-2 rounded-md bg-green-50 text-green-700 hover:bg-green-100 transition-colors"
-                  >
-                    <Settings className="h-4 w-4" />
-                    <span>{switching ? 'Changement...' : 'Espace Admin'}</span>
-                  </button>
-                )}
-
                 <button
-                  onClick={signOut}
+                  onClick={handleSignOut}
                   className="w-full flex items-center space-x-2 px-4 py-2 rounded-md text-red-500 hover:bg-red-50 transition-colors"
                 >
                   <LogOut className="h-4 w-4" />
@@ -127,7 +158,7 @@ export default function AccountPage() {
                         </label>
                         <input
                           type="text"
-                          defaultValue={userProfile.prenom}
+                          defaultValue={user.prenom}
                           className="w-full rounded-md border border-input bg-background px-3 py-2"
                         />
                       </div>
@@ -137,7 +168,7 @@ export default function AccountPage() {
                         </label>
                         <input
                           type="text"
-                          defaultValue={userProfile.nom}
+                          defaultValue={user.nom}
                           className="w-full rounded-md border border-input bg-background px-3 py-2"
                         />
                       </div>
@@ -148,7 +179,7 @@ export default function AccountPage() {
                       </label>
                       <input
                         type="email"
-                        defaultValue={userProfile.email}
+                        defaultValue={user.email}
                         className="w-full rounded-md border border-input bg-background px-3 py-2"
                         disabled
                       />
@@ -159,7 +190,7 @@ export default function AccountPage() {
                       </label>
                       <input
                         type="tel"
-                        defaultValue={userProfile.telephone || ''}
+                        defaultValue={user.telephone || ''}
                         placeholder="Votre numéro de téléphone"
                         className="w-full rounded-md border border-input bg-background px-3 py-2"
                       />
@@ -169,7 +200,7 @@ export default function AccountPage() {
                         Adresse
                       </label>
                       <textarea
-                        defaultValue={userProfile.adresse || ''}
+                        defaultValue={user.adresse || ''}
                         placeholder="Votre adresse complète"
                         rows={3}
                         className="w-full rounded-md border border-input bg-background px-3 py-2"

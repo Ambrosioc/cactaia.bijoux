@@ -5,12 +5,15 @@ import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Menu, ShoppingBag, Heart, X, Search, User } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { useAuth } from '@/lib/auth/auth-context';
+import { useUser } from '@/stores/userStore';
+import { RoleSwitcher } from '@/components/ui/role-switcher';
+import { createClient } from '@/lib/supabase/client';
 
 const Header = () => {
   const [isScrolled, setIsScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const { user, userProfile, signOut } = useAuth();
+  const { user, isAuthenticated, displayName } = useUser();
+  const supabase = createClient();
 
   useEffect(() => {
     const handleScroll = () => {
@@ -29,6 +32,25 @@ const Header = () => {
     { name: 'Contact', href: '/contact' },
     { name: 'FAQ', href: '/faq' },
   ];
+
+  const handleSignOut = async () => {
+    try {
+      await supabase.auth.signOut();
+      setMobileMenuOpen(false);
+    } catch (error) {
+      console.error('Erreur lors de la déconnexion:', error);
+    }
+  };
+
+  const getAccountLink = () => {
+    if (!user) return '/compte';
+    return user.active_role === 'admin' ? '/admin' : '/compte';
+  };
+
+  const getAccountLabel = () => {
+    if (!user) return 'Mon compte';
+    return user.active_role === 'admin' ? 'Administration' : 'Mon compte';
+  };
 
   return (
     <header className={cn(
@@ -65,17 +87,15 @@ const Header = () => {
             <span className="sr-only md:not-sr-only">Recherche</span>
           </button>
           
-          {user ? (
+          {isAuthenticated ? (
             <div className="hidden md:flex items-center space-x-4">
-              <Link href="/compte" className="flex items-center text-sm hover:text-primary transition-colors">
+              <Link href={getAccountLink()} className="flex items-center text-sm hover:text-primary transition-colors">
                 <User className="h-4 w-4 mr-1" />
-                <span>{userProfile?.prenom || 'Mon compte'}</span>
+                <span>{displayName}</span>
               </Link>
-              {userProfile?.role === 'admin' && userProfile?.active_role === 'user' && (
-                <Link href="/admin" className="text-xs bg-green-100 text-green-700 px-2 py-1 rounded">
-                  Admin
-                </Link>
-              )}
+              
+              {/* Role Switcher */}
+              <RoleSwitcher variant="badge" showLabel={false} />
             </div>
           ) : (
             <div className="hidden md:flex items-center space-x-4">
@@ -133,29 +153,23 @@ const Header = () => {
               </Link>
             ))}
             
-            {user ? (
+            {isAuthenticated ? (
               <>
                 <Link 
-                  href="/compte" 
+                  href={getAccountLink()} 
                   className="text-lg font-medium hover:text-primary transition-colors"
                   onClick={() => setMobileMenuOpen(false)}
                 >
-                  Mon compte
+                  {getAccountLabel()}
                 </Link>
-                {userProfile?.role === 'admin' && (
-                  <Link 
-                    href="/admin" 
-                    className="text-lg font-medium text-green-600 hover:text-green-700 transition-colors"
-                    onClick={() => setMobileMenuOpen(false)}
-                  >
-                    Administration
-                  </Link>
-                )}
+                
+                {/* Mobile Role Switcher */}
+                <div className="py-2">
+                  <RoleSwitcher variant="button" className="w-full justify-center" />
+                </div>
+                
                 <button 
-                  onClick={() => {
-                    signOut();
-                    setMobileMenuOpen(false);
-                  }}
+                  onClick={handleSignOut}
                   className="text-lg font-medium text-red-600 hover:text-red-700 transition-colors text-left"
                 >
                   Déconnexion

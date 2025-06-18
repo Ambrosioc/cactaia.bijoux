@@ -6,6 +6,7 @@ import Link from 'next/link';
 import { motion } from 'framer-motion';
 import { Eye, EyeOff, Mail, Lock, User } from 'lucide-react';
 import { createClient } from '@/lib/supabase/client';
+import { useUser } from '@/stores/userStore';
 
 export default function SignupPage() {
   const [formData, setFormData] = useState({
@@ -21,6 +22,7 @@ export default function SignupPage() {
   const [error, setError] = useState('');
   const router = useRouter();
   const supabase = createClient();
+  const { refreshUser } = useUser();
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData(prev => ({
@@ -71,6 +73,10 @@ export default function SignupPage() {
           console.error('Erreur lors de la mise à jour du profil:', updateError);
         }
 
+        // Rafraîchir le profil utilisateur dans le store
+        await refreshUser();
+
+        // Rediriger vers le compte utilisateur
         router.push('/compte');
       }
     } catch (error) {
