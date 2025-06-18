@@ -1,6 +1,6 @@
 'use client';
 
-import { useAuth } from '@/lib/auth/auth-context';
+import { useUser } from '@/stores/userStore';
 import { motion } from 'framer-motion';
 import {
   ArrowLeft,
@@ -11,36 +11,84 @@ import {
   Users
 } from 'lucide-react';
 import Link from 'next/link';
-import { useState } from 'react';
+import { useRouter } from 'next/navigation';
+import { useEffect, useState } from 'react';
+import { RoleSwitcher } from '@/components/ui/role-switcher';
+import { createClient } from '@/lib/supabase/client';
 
 export default function AdminDashboard() {
-  const { userProfile, switchRole } = useAuth();
-  const [switching, setSwitching] = useState(false);
+  const { 
+    user, 
+    isAuthenticated, 
+    isActiveAdmin, 
+    displayName, 
+    loading: userLoading 
+  } = useUser();
+  const [loading, setLoading] = useState(true);
+  const router = useRouter();
+  const supabase = createClient();
 
-  if (!userProfile || userProfile.role !== 'admin' || userProfile.active_role !== 'admin') {
+  useEffect(() => {
+    const checkAdminAccess = async () => {
+      if (userLoading) return; // Attendre que le store soit initialisé
+
+      if (!isAuthenticated) {
+        router.push('/connexion');
+        return;
+      }
+
+      if (!user) {
+        return; // Attendre que le profil soit chargé
+      }
+
+      // Vérifier que l'utilisateur est admin ET en mode admin
+      if (!isActiveAdmin) {
+        router.push('/compte');
+        return;
+      }
+
+      setLoading(false);
+    };
+
+    checkAdminAccess();
+  }, [isAuthenticated, user, isActiveAdmin, userLoading, router]);
+
+  const handleSignOut = async () => {
+    try {
+      await supabase.auth.signOut();
+      router.push('/');
+    } catch (error) {
+      console.error('Erreur lors de la déconnexion:', error);
+    }
+  };
+
+  if (loading || userLoading || !user) {
+    return (
+      <div className="pt-24 pb-16 min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
+          <p className="text-muted-foreground">Chargement...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Double vérification côté client
+  if (!isActiveAdmin) {
     return (
       <div className="pt-24 pb-16 min-h-screen flex items-center justify-center">
         <div className="text-center">
           <h1 className="heading-lg mb-4">Accès non autorisé</h1>
-          <Link href="/connexion" className="btn btn-primary">
+          <p className="text-muted-foreground mb-6">
+            Vous devez être administrateur et en mode admin pour accéder à cette page.
+          </p>
+          <Link href="/compte" className="btn btn-primary">
             Retour au compte
           </Link>
         </div>
       </div>
     );
   }
-
-  const handleSwitchToUser = async () => {
-    setSwitching(true);
-    try {
-      await switchRole('user');
-      window.location.href = '/compte';
-    } catch (error) {
-      console.error('Erreur lors du changement de rôle:', error);
-    } finally {
-      setSwitching(false);
-    }
-  };
 
   const stats = [
     {
@@ -85,18 +133,13 @@ export default function AdminDashboard() {
           <div>
             <h1 className="heading-lg">Dashboard Administrateur</h1>
             <p className="text-muted-foreground">
-              Bienvenue, {userProfile.prenom} {userProfile.nom}
+              Bienvenue, {displayName}
             </p>
+            <div className="mt-3">
+              <RoleSwitcher variant="badge" />
+            </div>
           </div>
           <div className="flex gap-3">
-            <button
-              onClick={handleSwitchToUser}
-              disabled={switching}
-              className="btn btn-outline flex items-center gap-2"
-            >
-              <ArrowLeft className="h-4 w-4" />
-              {switching ? 'Changement...' : 'Espace Client'}
-            </button>
             <Link href="/admin/settings" className="btn btn-primary flex items-center gap-2">
               <Settings className="h-4 w-4" />
               Paramètres

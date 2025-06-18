@@ -1,6 +1,6 @@
 import Footer from '@/components/layout/footer';
 import Header from '@/components/layout/header';
-import { AuthProvider } from '@/lib/auth/auth-context';
+import { AuthProvider } from '@/lib/auth/auth-provider';
 import { ThemeProvider } from '@/components/theme-provider';
 import type { Metadata } from 'next';
 import { Inter } from 'next/font/google';
