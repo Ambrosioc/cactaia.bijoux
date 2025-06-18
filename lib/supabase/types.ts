@@ -59,6 +59,47 @@ export interface Database {
           created_at?: string
         }
       }
+      addresses: {
+        Row: {
+          id: string
+          user_id: string
+          nom_complet: string
+          ligne_1: string
+          ligne_2: string | null
+          code_postal: string
+          ville: string
+          pays: string
+          telephone: string
+          est_principale: boolean
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          user_id: string
+          nom_complet: string
+          ligne_1: string
+          ligne_2?: string | null
+          code_postal: string
+          ville: string
+          pays?: string
+          telephone: string
+          est_principale?: boolean
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          user_id?: string
+          nom_complet?: string
+          ligne_1?: string
+          ligne_2?: string | null
+          code_postal?: string
+          ville?: string
+          pays?: string
+          telephone?: string
+          est_principale?: boolean
+          created_at?: string
+        }
+      }
     }
     Views: {
       [_ in never]: never
@@ -81,3 +122,6 @@ export interface Database {
 }
 
 export type User = Database['public']['Tables']['users']['Row'];
+export type Address = Database['public']['Tables']['addresses']['Row'];
+export type AddressInsert = Database['public']['Tables']['addresses']['Insert'];
+export type AddressUpdate = Database['public']['Tables']['addresses']['Update'];
