@@ -1,7 +1,8 @@
-import { create } from 'zustand';
 import { createClient } from '@/lib/supabase/client';
+import { create } from 'zustand';
 
 export type Role = 'user' | 'admin';
+export type Genre = 'Homme' | 'Femme' | 'Autre';
 
 export interface UserProfile {
   id: string;
@@ -12,6 +13,11 @@ export interface UserProfile {
   active_role: Role;
   telephone?: string;
   adresse?: string;
+  genre?: Genre;
+  date_naissance?: string;
+  newsletter: boolean;
+  cgv_accepted: boolean;
+  cgv_accepted_at?: string;
   created_at: string;
 }
 

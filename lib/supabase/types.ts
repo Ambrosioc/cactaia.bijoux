@@ -17,6 +17,11 @@ export interface Database {
           prenom: string
           telephone: string | null
           adresse: string | null
+          genre: 'Homme' | 'Femme' | 'Autre' | null
+          date_naissance: string | null
+          newsletter: boolean
+          cgv_accepted: boolean
+          cgv_accepted_at: string | null
           role: 'user' | 'admin'
           active_role: 'user' | 'admin'
           created_at: string
@@ -28,6 +33,11 @@ export interface Database {
           prenom?: string
           telephone?: string | null
           adresse?: string | null
+          genre?: 'Homme' | 'Femme' | 'Autre' | null
+          date_naissance?: string | null
+          newsletter?: boolean
+          cgv_accepted?: boolean
+          cgv_accepted_at?: string | null
           role?: 'user' | 'admin'
           active_role?: 'user' | 'admin'
           created_at?: string
@@ -39,6 +49,11 @@ export interface Database {
           prenom?: string
           telephone?: string | null
           adresse?: string | null
+          genre?: 'Homme' | 'Femme' | 'Autre' | null
+          date_naissance?: string | null
+          newsletter?: boolean
+          cgv_accepted?: boolean
+          cgv_accepted_at?: string | null
           role?: 'user' | 'admin'
           active_role?: 'user' | 'admin'
           created_at?: string

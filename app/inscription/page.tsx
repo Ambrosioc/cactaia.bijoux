@@ -1,76 +1,165 @@
 'use client';
 
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
-import Link from 'next/link';
-import { motion } from 'framer-motion';
-import { Eye, EyeOff, Mail, Lock, User } from 'lucide-react';
 import { createClient } from '@/lib/supabase/client';
 import { useUser } from '@/stores/userStore';
+import { motion } from 'framer-motion';
+import { Calendar, Check, Eye, EyeOff, Lock, Mail, User } from 'lucide-react';
+import Image from 'next/image';
+import Link from 'next/link';
+import { useRouter } from 'next/navigation';
+import { useState } from 'react';
+
+interface FormData {
+  email: string;
+  password: string;
+  confirmPassword: string;
+  nom: string;
+  prenom: string;
+  genre: 'Homme' | 'Femme' | 'Autre' | '';
+  dateNaissance: string;
+  cgvAccepted: boolean;
+  newsletter: boolean;
+}
 
 export default function SignupPage() {
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<FormData>({
     email: '',
     password: '',
     confirmPassword: '',
     nom: '',
     prenom: '',
+    genre: '',
+    dateNaissance: '',
+    cgvAccepted: false,
+    newsletter: false,
   });
+
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
+  const [errors, setErrors] = useState<Record<string, string>>({});
   const router = useRouter();
   const supabase = createClient();
   const { refreshUser } = useUser();
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setFormData(prev => ({
-      ...prev,
-      [e.target.name]: e.target.value
-    }));
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+    const { name, value, type } = e.target;
+
+    if (type === 'checkbox') {
+      const checked = (e.target as HTMLInputElement).checked;
+      setFormData(prev => ({
+        ...prev,
+        [name]: checked
+      }));
+    } else {
+      setFormData(prev => ({
+        ...prev,
+        [name]: value
+      }));
+    }
+
+    // Effacer l'erreur du champ modifié
+    if (errors[name]) {
+      setErrors(prev => ({
+        ...prev,
+        [name]: ''
+      }));
+    }
+  };
+
+  const validateForm = (): boolean => {
+    const newErrors: Record<string, string> = {};
+
+    // Validation du genre (en premier)
+    if (!formData.genre) {
+      newErrors.genre = 'Le genre est obligatoire';
+    }
+
+    // Validation des champs obligatoires
+    if (!formData.nom.trim()) {
+      newErrors.nom = 'Le nom est obligatoire';
+    }
+    if (!formData.prenom.trim()) {
+      newErrors.prenom = 'Le prénom est obligatoire';
+    }
+    if (!formData.dateNaissance) {
+      newErrors.dateNaissance = 'La date de naissance est obligatoire';
+    } else {
+      // Vérifier que l'utilisateur a au moins 13 ans
+      const birthDate = new Date(formData.dateNaissance);
+      const today = new Date();
+      const age = today.getFullYear() - birthDate.getFullYear();
+      const monthDiff = today.getMonth() - birthDate.getMonth();
+
+      if (age < 13 || (age === 13 && monthDiff < 0) || (age === 13 && monthDiff === 0 && today.getDate() < birthDate.getDate())) {
+        newErrors.dateNaissance = 'Vous devez avoir au moins 13 ans';
+      }
+    }
+    if (!formData.email.trim()) {
+      newErrors.email = 'L\'email est obligatoire';
+    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
+      newErrors.email = 'Format d\'email invalide';
+    }
+    if (!formData.password) {
+      newErrors.password = 'Le mot de passe est obligatoire';
+    } else if (formData.password.length < 6) {
+      newErrors.password = 'Le mot de passe doit contenir au moins 6 caractères';
+    }
+    if (formData.password !== formData.confirmPassword) {
+      newErrors.confirmPassword = 'Les mots de passe ne correspondent pas';
+    }
+    if (!formData.cgvAccepted) {
+      newErrors.cgvAccepted = 'Vous devez accepter les conditions générales';
+    }
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
   };
 
   const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    if (!validateForm()) {
+      return;
+    }
+
     setLoading(true);
-    setError('');
-
-    if (formData.password !== formData.confirmPassword) {
-      setError('Les mots de passe ne correspondent pas');
-      setLoading(false);
-      return;
-    }
-
-    if (formData.password.length < 6) {
-      setError('Le mot de passe doit contenir au moins 6 caractères');
-      setLoading(false);
-      return;
-    }
 
     try {
+      // Créer l'utilisateur dans auth.users
       const { data, error } = await supabase.auth.signUp({
         email: formData.email,
         password: formData.password,
       });
 
       if (error) {
-        setError(error.message);
+        if (error.message.includes('already registered')) {
+          setErrors({ email: 'Cette adresse email est déjà utilisée' });
+        } else {
+          setErrors({ general: error.message });
+        }
         return;
       }
 
       if (data.user) {
-        // Mettre à jour le profil utilisateur avec nom et prénom
+        // Mettre à jour le profil utilisateur avec les informations supplémentaires
         const { error: updateError } = await supabase
           .from('users')
           .update({
             nom: formData.nom,
             prenom: formData.prenom,
+            genre: formData.genre as 'Homme' | 'Femme' | 'Autre',
+            date_naissance: formData.dateNaissance,
+            newsletter: formData.newsletter,
+            cgv_accepted: formData.cgvAccepted,
+            cgv_accepted_at: new Date().toISOString(),
           })
           .eq('id', data.user.id);
 
         if (updateError) {
           console.error('Erreur lors de la mise à jour du profil:', updateError);
+          setErrors({ general: 'Erreur lors de la création du profil' });
+          return;
         }
 
         // Rafraîchir le profil utilisateur dans le store
@@ -80,163 +169,350 @@ export default function SignupPage() {
         router.push('/compte');
       }
     } catch (error) {
-      setError('Une erreur est survenue');
+      console.error('Erreur lors de l\'inscription:', error);
+      setErrors({ general: 'Une erreur est survenue lors de l\'inscription' });
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="pt-24 pb-16 min-h-screen bg-gradient-to-br from-primary/5 to-secondary">
-      <div className="container-custom">
-        <div className="max-w-md mx-auto">
+    <div className="min-h-screen bg-gradient-to-br from-primary/5 to-secondary">
+      <div className="grid grid-cols-1 lg:grid-cols-2 min-h-screen">
+        {/* Colonne gauche - Image illustrative */}
+        <motion.div
+          initial={{ opacity: 0, x: -20 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ duration: 0.6 }}
+          className="hidden lg:flex relative bg-gradient-to-br from-primary/10 to-primary/5"
+        >
+          <div className="absolute inset-0">
+            <Image
+              src="https://images.pexels.com/photos/5370795/pexels-photo-5370795.jpeg"
+              alt="Bijoux élégants Cactaia"
+              fill
+              className="object-cover"
+              priority
+            />
+            <div className="absolute inset-0 bg-black/20" />
+          </div>
+
+          <div className="relative z-10 flex flex-col justify-center items-start p-12 text-white">
+            <div className="max-w-md">
+              <h1 className="font-playfair text-4xl font-medium mb-6">
+                Rejoignez la communauté Cactaia
+              </h1>
+              <p className="text-white/90 text-lg mb-8">
+                Découvrez nos bijoux écoresponsables et élégants. Créez votre compte pour accéder à des offres exclusives et suivre vos commandes.
+              </p>
+              <div className="space-y-4">
+                <div className="flex items-center space-x-3">
+                  <div className="w-2 h-2 bg-white rounded-full"></div>
+                  <span className="text-white/90">Bijoux hypoallergéniques</span>
+                </div>
+                <div className="flex items-center space-x-3">
+                  <div className="w-2 h-2 bg-white rounded-full"></div>
+                  <span className="text-white/90">Livraison gratuite dès 50€</span>
+                </div>
+                <div className="flex items-center space-x-3">
+                  <div className="w-2 h-2 bg-white rounded-full"></div>
+                  <span className="text-white/90">Garantie 1 an</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </motion.div>
+
+        {/* Colonne droite - Formulaire */}
+        <div className="flex items-center justify-center p-6 lg:p-12">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5 }}
-            className="bg-white p-8 rounded-lg shadow-sm"
+            transition={{ duration: 0.6, delay: 0.2 }}
+            className="w-full max-w-md"
           >
-            <div className="text-center mb-8">
-              <h1 className="heading-lg mb-2">Créer un compte</h1>
-              <p className="text-muted-foreground">
-                Rejoignez la communauté Cactaia.Bijoux
-              </p>
-            </div>
-
-            {error && (
-              <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-md mb-6">
-                {error}
+            <div className="bg-white p-8 rounded-2xl shadow-xl">
+              <div className="text-center mb-8">
+                <h2 className="font-playfair text-3xl font-medium mb-2">Créer un compte</h2>
+                <p className="text-muted-foreground">
+                  Rejoignez la communauté Cactaia.Bijoux
+                </p>
               </div>
-            )}
 
-            <form onSubmit={handleSignup} className="space-y-6">
-              <div className="grid grid-cols-2 gap-4">
+              {errors.general && (
+                <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg mb-6">
+                  {errors.general}
+                </div>
+              )}
+
+              <form onSubmit={handleSignup} className="space-y-6">
+                {/* Genre - EN PREMIER */}
                 <div>
-                  <label htmlFor="prenom" className="block text-sm font-medium mb-2">
-                    Prénom
+                  <label htmlFor="genre" className="block text-sm font-medium mb-2">
+                    Genre *
                   </label>
-                  <div className="relative">
-                    <User className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                    <input
-                      type="text"
-                      id="prenom"
-                      name="prenom"
-                      value={formData.prenom}
-                      onChange={handleChange}
-                      className="w-full pl-10 pr-3 py-2 border border-input rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
-                      placeholder="Prénom"
-                      required
-                    />
+                  <select
+                    id="genre"
+                    name="genre"
+                    value={formData.genre}
+                    onChange={handleChange}
+                    className={`w-full px-3 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary transition-colors ${errors.genre ? 'border-red-300 focus:ring-red-500' : 'border-input'
+                      }`}
+                  >
+                    <option value="">Sélectionner</option>
+                    <option value="Homme">Homme</option>
+                    <option value="Femme">Femme</option>
+                    <option value="Autre">Autre</option>
+                  </select>
+                  {errors.genre && (
+                    <p className="text-red-500 text-xs mt-1">{errors.genre}</p>
+                  )}
+                </div>
+
+                {/* Nom et Prénom */}
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label htmlFor="prenom" className="block text-sm font-medium mb-2">
+                      Prénom *
+                    </label>
+                    <div className="relative">
+                      <User className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                      <input
+                        type="text"
+                        id="prenom"
+                        name="prenom"
+                        value={formData.prenom}
+                        onChange={handleChange}
+                        className={`w-full pl-10 pr-3 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary transition-colors ${errors.prenom ? 'border-red-300 focus:ring-red-500' : 'border-input'
+                          }`}
+                        placeholder="Prénom"
+                      />
+                    </div>
+                    {errors.prenom && (
+                      <p className="text-red-500 text-xs mt-1">{errors.prenom}</p>
+                    )}
+                  </div>
+
+                  <div>
+                    <label htmlFor="nom" className="block text-sm font-medium mb-2">
+                      Nom *
+                    </label>
+                    <div className="relative">
+                      <User className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                      <input
+                        type="text"
+                        id="nom"
+                        name="nom"
+                        value={formData.nom}
+                        onChange={handleChange}
+                        className={`w-full pl-10 pr-3 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary transition-colors ${errors.nom ? 'border-red-300 focus:ring-red-500' : 'border-input'
+                          }`}
+                        placeholder="Nom"
+                      />
+                    </div>
+                    {errors.nom && (
+                      <p className="text-red-500 text-xs mt-1">{errors.nom}</p>
+                    )}
                   </div>
                 </div>
 
+                {/* Date de naissance - APRÈS nom et prénom */}
                 <div>
-                  <label htmlFor="nom" className="block text-sm font-medium mb-2">
-                    Nom
+                  <label htmlFor="dateNaissance" className="block text-sm font-medium mb-2">
+                    Date de naissance *
                   </label>
                   <div className="relative">
-                    <User className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                    <Calendar className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                     <input
-                      type="text"
-                      id="nom"
-                      name="nom"
-                      value={formData.nom}
+                      type="date"
+                      id="dateNaissance"
+                      name="dateNaissance"
+                      value={formData.dateNaissance}
                       onChange={handleChange}
-                      className="w-full pl-10 pr-3 py-2 border border-input rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
-                      placeholder="Nom"
-                      required
+                      max={new Date(new Date().setFullYear(new Date().getFullYear() - 13)).toISOString().split('T')[0]}
+                      className={`w-full pl-10 pr-3 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary transition-colors ${errors.dateNaissance ? 'border-red-300 focus:ring-red-500' : 'border-input'
+                        }`}
                     />
                   </div>
+                  {errors.dateNaissance && (
+                    <p className="text-red-500 text-xs mt-1">{errors.dateNaissance}</p>
+                  )}
                 </div>
-              </div>
 
-              <div>
-                <label htmlFor="email" className="block text-sm font-medium mb-2">
-                  Email
-                </label>
-                <div className="relative">
-                  <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                  <input
-                    type="email"
-                    id="email"
-                    name="email"
-                    value={formData.email}
-                    onChange={handleChange}
-                    className="w-full pl-10 pr-3 py-2 border border-input rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
-                    placeholder="votre@email.com"
-                    required
-                  />
+                {/* Email */}
+                <div>
+                  <label htmlFor="email" className="block text-sm font-medium mb-2">
+                    Adresse email *
+                  </label>
+                  <div className="relative">
+                    <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                    <input
+                      type="email"
+                      id="email"
+                      name="email"
+                      value={formData.email}
+                      onChange={handleChange}
+                      className={`w-full pl-10 pr-3 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary transition-colors ${errors.email ? 'border-red-300 focus:ring-red-500' : 'border-input'
+                        }`}
+                      placeholder="votre@email.com"
+                    />
+                  </div>
+                  {errors.email && (
+                    <p className="text-red-500 text-xs mt-1">{errors.email}</p>
+                  )}
                 </div>
-              </div>
 
-              <div>
-                <label htmlFor="password" className="block text-sm font-medium mb-2">
-                  Mot de passe
-                </label>
-                <div className="relative">
-                  <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                  <input
-                    type={showPassword ? 'text' : 'password'}
-                    id="password"
-                    name="password"
-                    value={formData.password}
-                    onChange={handleChange}
-                    className="w-full pl-10 pr-10 py-2 border border-input rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
-                    placeholder="••••••••"
-                    required
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-3 top-1/2 transform -translate-y-1/2 text-muted-foreground hover:text-foreground"
-                  >
-                    {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                  </button>
+                {/* Mots de passe */}
+                <div className="grid grid-cols-1 gap-4">
+                  <div>
+                    <label htmlFor="password" className="block text-sm font-medium mb-2">
+                      Mot de passe *
+                    </label>
+                    <div className="relative">
+                      <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                      <input
+                        type={showPassword ? 'text' : 'password'}
+                        id="password"
+                        name="password"
+                        value={formData.password}
+                        onChange={handleChange}
+                        className={`w-full pl-10 pr-10 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary transition-colors ${errors.password ? 'border-red-300 focus:ring-red-500' : 'border-input'
+                          }`}
+                        placeholder="••••••••"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowPassword(!showPassword)}
+                        className="absolute right-3 top-1/2 transform -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                      >
+                        {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                      </button>
+                    </div>
+                    {errors.password && (
+                      <p className="text-red-500 text-xs mt-1">{errors.password}</p>
+                    )}
+                  </div>
+
+                  <div>
+                    <label htmlFor="confirmPassword" className="block text-sm font-medium mb-2">
+                      Confirmer le mot de passe *
+                    </label>
+                    <div className="relative">
+                      <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                      <input
+                        type={showConfirmPassword ? 'text' : 'password'}
+                        id="confirmPassword"
+                        name="confirmPassword"
+                        value={formData.confirmPassword}
+                        onChange={handleChange}
+                        className={`w-full pl-10 pr-10 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary transition-colors ${errors.confirmPassword ? 'border-red-300 focus:ring-red-500' : 'border-input'
+                          }`}
+                        placeholder="••••••••"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                        className="absolute right-3 top-1/2 transform -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                      >
+                        {showConfirmPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                      </button>
+                    </div>
+                    {errors.confirmPassword && (
+                      <p className="text-red-500 text-xs mt-1">{errors.confirmPassword}</p>
+                    )}
+                  </div>
                 </div>
-              </div>
 
-              <div>
-                <label htmlFor="confirmPassword" className="block text-sm font-medium mb-2">
-                  Confirmer le mot de passe
-                </label>
-                <div className="relative">
-                  <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                  <input
-                    type={showConfirmPassword ? 'text' : 'password'}
-                    id="confirmPassword"
-                    name="confirmPassword"
-                    value={formData.confirmPassword}
-                    onChange={handleChange}
-                    className="w-full pl-10 pr-10 py-2 border border-input rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
-                    placeholder="••••••••"
-                    required
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                    className="absolute right-3 top-1/2 transform -translate-y-1/2 text-muted-foreground hover:text-foreground"
-                  >
-                    {showConfirmPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                  </button>
+                {/* Cases à cocher */}
+                <div className="space-y-4">
+                  {/* CGV obligatoire */}
+                  <div>
+                    <label className="flex items-start space-x-3 cursor-pointer">
+                      <div className="relative flex-shrink-0 mt-1">
+                        <input
+                          type="checkbox"
+                          name="cgvAccepted"
+                          checked={formData.cgvAccepted}
+                          onChange={handleChange}
+                          className="sr-only"
+                        />
+                        <div className={`w-5 h-5 border-2 rounded flex items-center justify-center transition-colors ${formData.cgvAccepted
+                          ? 'bg-primary border-primary'
+                          : errors.cgvAccepted
+                            ? 'border-red-300'
+                            : 'border-input'
+                          }`}>
+                          {formData.cgvAccepted && (
+                            <Check className="w-3 h-3 text-white" />
+                          )}
+                        </div>
+                      </div>
+                      <span className="text-sm text-muted-foreground leading-relaxed">
+                        En cliquant sur « Créer mon compte », vous confirmez que vous acceptez les{' '}
+                        <Link href="/cgv" className="text-primary hover:underline">
+                          Conditions générales de vente
+                        </Link>{' '}
+                        et notre{' '}
+                        <Link href="/politique-de-confidentialite" className="text-primary hover:underline">
+                          politique de confidentialité
+                        </Link>{' '}
+                        qui vous informe des modalités de traitement de vos données personnelles ainsi que de vos droits sur ces données. *
+                      </span>
+                    </label>
+                    {errors.cgvAccepted && (
+                      <p className="text-red-500 text-xs mt-1">{errors.cgvAccepted}</p>
+                    )}
+                  </div>
+
+                  {/* Newsletter facultative */}
+                  <div>
+                    <label className="flex items-start space-x-3 cursor-pointer">
+                      <div className="relative flex-shrink-0 mt-1">
+                        <input
+                          type="checkbox"
+                          name="newsletter"
+                          checked={formData.newsletter}
+                          onChange={handleChange}
+                          className="sr-only"
+                        />
+                        <div className={`w-5 h-5 border-2 rounded flex items-center justify-center transition-colors ${formData.newsletter ? 'bg-primary border-primary' : 'border-input'
+                          }`}>
+                          {formData.newsletter && (
+                            <Check className="w-3 h-3 text-white" />
+                          )}
+                        </div>
+                      </div>
+                      <span className="text-sm text-muted-foreground">
+                        Je souhaite recevoir les informations sur les offres spéciales, les soldes et les actualités.
+                      </span>
+                    </label>
+                  </div>
                 </div>
+
+                <button
+                  type="submit"
+                  disabled={loading}
+                  className="w-full btn btn-primary py-4 text-lg font-medium rounded-lg disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 hover:shadow-lg"
+                >
+                  {loading ? (
+                    <div className="flex items-center justify-center space-x-2">
+                      <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
+                      <span>Création en cours...</span>
+                    </div>
+                  ) : (
+                    'Créer mon compte'
+                  )}
+                </button>
+              </form>
+
+              <div className="mt-8 text-center">
+                <p className="text-muted-foreground">
+                  Déjà un compte ?{' '}
+                  <Link href="/connexion" className="text-primary hover:underline font-medium">
+                    Se connecter
+                  </Link>
+                </p>
               </div>
-
-              <button
-                type="submit"
-                disabled={loading}
-                className="w-full btn btn-primary py-3"
-              >
-                {loading ? 'Création...' : 'Créer mon compte'}
-              </button>
-            </form>
-
-            <div className="mt-6 text-center">
-              <p className="text-muted-foreground">
-                Déjà un compte ?{' '}
-                <Link href="/connexion" className="text-primary hover:underline">
-                  Se connecter
-                </Link>
-              </p>
             </div>
           </motion.div>
         </div>
