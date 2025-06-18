@@ -26,5 +26,12 @@ export const STRIPE_CONFIG = {
 export const WEBHOOK_EVENTS = {
   CHECKOUT_SESSION_COMPLETED: 'checkout.session.completed',
   PAYMENT_INTENT_SUCCEEDED: 'payment_intent.succeeded',
+  PAYMENT_INTENT_CREATED: 'payment_intent.created',
   INVOICE_PAYMENT_SUCCEEDED: 'invoice.payment_succeeded',
+  INVOICE_PAID: 'invoice.paid',
+  INVOICE_PAYMENT_PAID: 'invoice_payment.paid',
+  INVOICE_CREATED: 'invoice.created',
+  INVOICE_FINALIZED: 'invoice.finalized',
+  CHARGE_SUCCEEDED: 'charge.succeeded',
+  CHARGE_UPDATED: 'charge.updated',
 } as const;
