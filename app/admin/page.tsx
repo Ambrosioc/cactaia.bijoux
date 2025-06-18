@@ -2,13 +2,13 @@
 
 import { useAuth } from '@/lib/auth/auth-context';
 import { motion } from 'framer-motion';
-import { 
-  Users, 
-  Package, 
-  ShoppingCart, 
-  TrendingUp, 
+import {
   ArrowLeft,
-  Settings
+  Package,
+  Settings,
+  ShoppingCart,
+  TrendingUp,
+  Users
 } from 'lucide-react';
 import Link from 'next/link';
 import { useState } from 'react';
@@ -22,7 +22,7 @@ export default function AdminDashboard() {
       <div className="pt-24 pb-16 min-h-screen flex items-center justify-center">
         <div className="text-center">
           <h1 className="heading-lg mb-4">Accès non autorisé</h1>
-          <Link href="/compte" className="btn btn-primary">
+          <Link href="/connexion" className="btn btn-primary">
             Retour au compte
           </Link>
         </div>
