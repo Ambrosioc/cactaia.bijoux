@@ -131,7 +131,7 @@ export default function OrderDetailPage() {
                     <p className="text-muted-foreground mb-6">
                         {error || 'La commande que vous recherchez n\'existe pas.'}
                     </p>
-                    <Link href="/compte/commandes" className="btn btn-primary">
+                    <Link href="/compte" className="btn btn-primary">
                         Retour aux commandes
                     </Link>
                 </div>
@@ -149,7 +149,7 @@ export default function OrderDetailPage() {
                 <div className="flex items-center justify-between mb-8">
                     <div className="flex items-center space-x-4">
                         <Link
-                            href="/compte/commandes"
+                            href="/compte"
                             className="btn btn-outline flex items-center gap-2 px-4 py-2"
                         >
                             <ArrowLeft className="h-4 w-4" />

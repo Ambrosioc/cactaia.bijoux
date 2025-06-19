@@ -9,9 +9,9 @@ import { ArrowRight, CheckCircle, CreditCard, MapPin, Package } from 'lucide-rea
 import Image from 'next/image';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import { Suspense, useEffect, useState } from 'react';
 
-export default function ConfirmationPage() {
+function ConfirmationContent() {
     const searchParams = useSearchParams();
     const sessionId = searchParams.get('session_id');
     const { clearCart } = useCart();
@@ -309,7 +309,7 @@ export default function ConfirmationPage() {
 
                             <div className="mt-6 p-4 bg-blue-50 rounded-lg">
                                 <p className="text-sm text-blue-800 font-medium mb-1">
-                                    Besoin d'aide ?
+                                    Besoin d&apos;aide ?
                                 </p>
                                 <p className="text-xs text-blue-700 mb-3">
                                     Notre équipe est là pour vous accompagner
@@ -326,5 +326,20 @@ export default function ConfirmationPage() {
                 </div>
             </div>
         </div>
+    );
+}
+
+export default function ConfirmationPage() {
+    return (
+        <Suspense fallback={
+            <div className="pt-24 pb-16 min-h-screen flex items-center justify-center">
+                <div className="text-center">
+                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
+                    <p className="text-muted-foreground">Chargement...</p>
+                </div>
+            </div>
+        }>
+            <ConfirmationContent />
+        </Suspense>
     );
 }

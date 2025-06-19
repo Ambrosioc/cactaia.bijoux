@@ -162,6 +162,22 @@ export default function SignupPage() {
           return;
         }
 
+        // Déclencher l'envoi de l'email de bienvenue
+        try {
+          await fetch('/api/emails/welcome', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              userId: data.user.id,
+            }),
+          });
+        } catch (emailError) {
+          console.error('Erreur lors de l\'envoi de l\'email de bienvenue:', emailError);
+          // On continue même si l'email échoue
+        }
+
         // Rafraîchir le profil utilisateur dans le store
         await refreshUser();
 
