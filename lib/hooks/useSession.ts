@@ -92,35 +92,35 @@ export function useSession() {
       }
     );
 
-    // Écouter les changements de profil utilisateur (pour les changements de rôle)
-    const channel = supabase
-      .channel('user_profile_changes')
-      .on(
-        'postgres_changes',
-        {
-          event: 'UPDATE',
-          schema: 'public',
-          table: 'users',
-          filter: session?.user ? `id=eq.${session.user.id}` : undefined
-        },
-        async (payload) => {
-          // Rafraîchir la session quand le profil change
-          if (session?.user) {
-            const sessionData: CachedSession = {
-              user: session.user,
-              userProfile: payload.new as any,
-              timestamp: Date.now()
-            };
-            cacheSession(sessionData);
-            setSession(sessionData);
-          }
-        }
-      )
-      .subscribe();
+    // Désactiver temporairement la subscription Realtime pour éviter les erreurs WebSocket
+    // const channel = supabase
+    //   .channel('user_profile_changes')
+    //   .on(
+    //     'postgres_changes',
+    //     {
+    //       event: 'UPDATE',
+    //       schema: 'public',
+    //       table: 'users',
+    //       filter: session?.user ? `id=eq.${session.user.id}` : undefined
+    //     },
+    //     async (payload) => {
+    //       // Rafraîchir la session quand le profil change
+    //       if (session?.user) {
+    //         const sessionData: CachedSession = {
+    //           user: session.user,
+    //           userProfile: payload.new as any,
+    //           timestamp: Date.now()
+    //         };
+    //         cacheSession(sessionData);
+    //         setSession(sessionData);
+    //       }
+    //     }
+    //   )
+    //   .subscribe();
 
     return () => {
       subscription.unsubscribe();
-      supabase.removeChannel(channel);
+      // supabase.removeChannel(channel);
     };
   }, [supabase.auth, session?.user?.id]);
 
