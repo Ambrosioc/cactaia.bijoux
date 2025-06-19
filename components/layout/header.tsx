@@ -1,7 +1,6 @@
 "use client"
 
 import CartSidebar from '@/components/cart/cart-sidebar';
-import { RoleSwitcher } from '@/components/ui/role-switcher';
 import { createClient } from '@/lib/supabase/client';
 import { cn } from '@/lib/utils';
 import { useCart } from '@/stores/cartStore';
@@ -99,9 +98,6 @@ const Header = () => {
                   <User className="h-4 w-4 mr-1" />
                   <span>{displayName}</span>
                 </Link>
-
-                {/* Role Switcher */}
-                <RoleSwitcher variant="badge" showLabel={false} />
               </div>
             ) : (
               <div className="hidden md:flex items-center space-x-4">
@@ -178,11 +174,6 @@ const Header = () => {
                   >
                     {getAccountLabel()}
                   </Link>
-
-                  {/* Mobile Role Switcher */}
-                  <div className="py-2">
-                    <RoleSwitcher variant="button" className="w-full justify-center" />
-                  </div>
 
                   <button
                     onClick={handleSignOut}

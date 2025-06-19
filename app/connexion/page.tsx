@@ -1,12 +1,13 @@
 'use client';
 
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
-import Link from 'next/link';
-import { motion } from 'framer-motion';
-import { Eye, EyeOff, Mail, Lock } from 'lucide-react';
+import { useSession } from '@/lib/hooks/useSession';
 import { createClient } from '@/lib/supabase/client';
 import { useUser } from '@/stores/userStore';
+import { motion } from 'framer-motion';
+import { Eye, EyeOff, Lock, Mail } from 'lucide-react';
+import Link from 'next/link';
+import { useRouter, useSearchParams } from 'next/navigation';
+import { useEffect, useState } from 'react';
 
 export default function LoginPage() {
   const [email, setEmail] = useState('');
@@ -15,8 +16,22 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const redirectTo = searchParams.get('redirect') || '/compte';
   const supabase = createClient();
   const { refreshUser } = useUser();
+  const { session, loading: sessionLoading, isAdmin, isUser } = useSession();
+
+  // Rediriger si déjà connecté
+  useEffect(() => {
+    if (!sessionLoading && session) {
+      if (isAdmin) {
+        router.push('/admin');
+      } else {
+        router.push(redirectTo);
+      }
+    }
+  }, [session, sessionLoading, isAdmin, isUser, router, redirectTo]);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -37,14 +52,30 @@ export default function LoginPage() {
       // Rafraîchir le profil utilisateur dans le store
       await refreshUser();
 
-      // Le middleware se chargera de la redirection appropriée
-      router.push('/compte');
+      // La redirection sera gérée par le useEffect ci-dessus
     } catch (error) {
       setError('Une erreur est survenue');
     } finally {
       setLoading(false);
     }
   };
+
+  // Afficher un loader pendant la vérification de session
+  if (sessionLoading) {
+    return (
+      <div className="pt-24 pb-16 min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
+          <p className="text-muted-foreground">Vérification de la session...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Ne rien afficher si déjà connecté (redirection en cours)
+  if (session) {
+    return null;
+  }
 
   return (
     <div className="pt-24 pb-16 min-h-screen bg-gradient-to-br from-primary/5 to-secondary">
