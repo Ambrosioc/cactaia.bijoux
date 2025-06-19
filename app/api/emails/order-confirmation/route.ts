@@ -1,5 +1,6 @@
+import { sendOrderConfirmationEmail } from '@/lib/email';
 import { createServerClient } from '@/lib/supabase/server';
-import { sendConfirmationEmail } from '@/lib/email';
+
 import { NextRequest, NextResponse } from 'next/server';
 
 export async function POST(request: NextRequest) {
@@ -57,7 +58,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Envoyer l'email de confirmation
-    const result = await sendConfirmationEmail({
+    const result = await sendOrderConfirmationEmail({
       order: orderData,
       user: orderData.users,
       siteUrl

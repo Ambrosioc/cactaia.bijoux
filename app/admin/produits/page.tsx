@@ -105,9 +105,9 @@ export default function ProductsManagementPage() {
 
         try {
             // Supprimer les images du storage
-            const product = products.find(p => p.id === productId);
-            if (product?.images.length > 0) {
-                const filePaths = product.images.map(url => {
+            const product = products?.find(p => p.id === productId);
+            if (product?.images?.length && product.images.length > 0) {
+                const filePaths = product.images?.map(url => {
                     const urlParts = url.split('/');
                     const bucketIndex = urlParts.findIndex(part => part === 'produits');
                     return bucketIndex !== -1 ? urlParts.slice(bucketIndex).join('/') : null;
