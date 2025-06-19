@@ -7,9 +7,9 @@ import { motion } from 'framer-motion';
 import { Eye, EyeOff, Lock, Mail } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import { Suspense, useEffect, useState } from 'react';
 
-export default function LoginPage() {
+function LoginForm() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
@@ -165,5 +165,41 @@ export default function LoginPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+function LoginFormSkeleton() {
+  return (
+    <div className="pt-24 pb-16 min-h-screen bg-gradient-to-br from-primary/5 to-secondary">
+      <div className="container-custom">
+        <div className="max-w-md mx-auto">
+          <div className="bg-white p-8 rounded-lg shadow-sm">
+            <div className="text-center mb-8">
+              <div className="h-8 bg-gray-200 rounded mb-2"></div>
+              <div className="h-4 bg-gray-200 rounded w-3/4 mx-auto"></div>
+            </div>
+            <div className="space-y-6">
+              <div>
+                <div className="h-4 bg-gray-200 rounded w-16 mb-2"></div>
+                <div className="h-10 bg-gray-200 rounded"></div>
+              </div>
+              <div>
+                <div className="h-4 bg-gray-200 rounded w-24 mb-2"></div>
+                <div className="h-10 bg-gray-200 rounded"></div>
+              </div>
+              <div className="h-12 bg-gray-200 rounded"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense fallback={<LoginFormSkeleton />}>
+      <LoginForm />
+    </Suspense>
   );
 }
