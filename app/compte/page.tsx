@@ -164,22 +164,6 @@ export default function AccountPage() {
     );
   }
 
-  if (!isActiveUser) {
-    return (
-      <div className="pt-24 pb-16 min-h-screen flex items-center justify-center">
-        <div className="text-center">
-          <h1 className="heading-lg mb-4">Accès non autorisé</h1>
-          <p className="text-muted-foreground mb-6">
-            Vous devez être en mode utilisateur pour accéder à cette page.
-          </p>
-          <Link href="/admin" className="btn btn-primary">
-            Aller à l'administration
-          </Link>
-        </div>
-      </div>
-    );
-  }
-
   const menuItems = [
     { id: 'profile', label: 'Mon profil', icon: User },
     { id: 'addresses', label: 'Mes adresses', icon: MapPin },
