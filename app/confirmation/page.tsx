@@ -91,7 +91,7 @@ function ConfirmationContent() {
                         {error || 'Commande non trouvée'}
                     </p>
                     <Link href="/boutique" className="btn btn-primary">
-                        Retour à la boutique
+                        Retour au shop
                     </Link>
                 </div>
             </div>

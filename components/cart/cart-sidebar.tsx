@@ -1,10 +1,10 @@
 'use client';
 
+import OptimizedImage from '@/components/ui/optimized-image';
 import { formatPrice } from '@/lib/utils';
 import { useCart } from '@/stores/cartStore';
 import { AnimatePresence, motion } from 'framer-motion';
 import { ArrowRight, Minus, Plus, ShoppingBag, Trash2, X } from 'lucide-react';
-import Image from 'next/image';
 import Link from 'next/link';
 
 export default function CartSidebar() {
@@ -95,11 +95,12 @@ export default function CartSidebar() {
                                         >
                                             {/* Image */}
                                             <div className="relative w-16 h-16 flex-shrink-0">
-                                                <Image
+                                                <OptimizedImage
                                                     src={getImageUrl(item.product.images)}
                                                     alt={item.product.nom}
                                                     fill
                                                     className="object-cover rounded-md"
+                                                    sizes="64px"
                                                 />
                                             </div>
 

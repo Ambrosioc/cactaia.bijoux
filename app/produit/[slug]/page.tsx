@@ -1,11 +1,11 @@
 "use client"
 
 import AddToCartButton from '@/components/cart/add-to-cart-button';
+import OptimizedImage from '@/components/ui/optimized-image';
 import { createClient } from '@/lib/supabase/client';
 import type { Product } from '@/lib/supabase/types';
 import { motion } from 'framer-motion';
 import { ArrowLeft, ArrowRight, Heart, Package, Star } from 'lucide-react';
-import Image from 'next/image';
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
@@ -151,7 +151,7 @@ export default function ProductPage() {
             {error || "Désolé, le produit que vous recherchez n'existe pas."}
           </p>
           <Link href="/boutique" className="btn btn-primary px-8 py-3">
-            Retour à la boutique
+            Retour au shop
           </Link>
         </div>
       </div>
@@ -175,7 +175,7 @@ export default function ProductPage() {
             </li>
             <li className="flex items-center">
               <Link href="/boutique" className="text-muted-foreground hover:text-primary">
-                Boutique
+                Shop
               </Link>
               <span className="mx-2">/</span>
             </li>
@@ -208,15 +208,13 @@ export default function ProductPage() {
                 )}
               </div>
 
-              <Image
+              <OptimizedImage
                 src={getImageUrl(product, currentImage)}
                 alt={product.nom}
                 fill
                 className="object-cover"
-                onError={(e) => {
-                  const target = e.target as HTMLImageElement;
-                  target.src = '/placeholder.jpg';
-                }}
+                priority={currentImage === 0}
+                sizes="(max-width: 768px) 100vw, 50vw"
               />
 
               {/* Navigation arrows */}
@@ -250,15 +248,12 @@ export default function ProductPage() {
                     className={`relative aspect-square rounded-md overflow-hidden ${currentImage === i ? 'ring-2 ring-primary' : ''
                       }`}
                   >
-                    <Image
+                    <OptimizedImage
                       src={image}
                       alt={`${product.nom} - vue ${i + 1}`}
                       fill
                       className="object-cover"
-                      onError={(e) => {
-                        const target = e.target as HTMLImageElement;
-                        target.src = '/placeholder.jpg';
-                      }}
+                      sizes="(max-width: 768px) 33vw, 15vw"
                     />
                   </button>
                 ))}
@@ -375,15 +370,12 @@ export default function ProductPage() {
                   >
                     <Link href={`/produit/${relatedProduct.sku || relatedProduct.id}`}>
                       <div className="relative aspect-square mb-4 overflow-hidden rounded-md bg-secondary/30">
-                        <Image
+                        <OptimizedImage
                           src={getImageUrl(relatedProduct)}
                           alt={relatedProduct.nom}
                           fill
                           className="object-cover transition-transform duration-500 group-hover:scale-105"
-                          onError={(e) => {
-                            const target = e.target as HTMLImageElement;
-                            target.src = '/placeholder.jpg';
-                          }}
+                          sizes="(max-width: 768px) 50vw, (max-width: 1200px) 25vw, 20vw"
                         />
                       </div>
                       <div className="space-y-1">

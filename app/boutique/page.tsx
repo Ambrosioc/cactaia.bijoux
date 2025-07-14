@@ -1,11 +1,11 @@
 "use client"
 
 import AddToCartButton from '@/components/cart/add-to-cart-button';
+import OptimizedImage from '@/components/ui/optimized-image';
 import { createClient } from '@/lib/supabase/client';
 import type { Product } from '@/lib/supabase/types';
 import { motion } from 'framer-motion';
 import { ChevronLeft, ChevronRight, Heart, Package, Search, SlidersHorizontal, Star, X } from 'lucide-react';
-import Image from 'next/image';
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
 
@@ -199,17 +199,19 @@ export default function ShopPage() {
       {/* Hero Banner */}
       <section className="relative h-[30vh] min-h-[200px] mb-8">
         <div className="absolute inset-0">
-          <Image
-            src="https://images.pexels.com/photos/8100784/pexels-photo-8100784.jpeg"
-            alt="Boutique Cactaia"
+          <OptimizedImage
+            src="/images/cactaïa-small-23.jpg"
+            alt="Shop Cactaia"
             fill
             className="object-cover"
+            priority
+            sizes="100vw"
           />
           <div className="absolute inset-0 bg-black/40" />
         </div>
         <div className="relative h-full container-custom flex items-center">
           <div>
-            <h1 className="heading-xl text-white mb-2">Boutique</h1>
+            <h1 className="heading-xl text-white mb-2">Shop</h1>
             <p className="text-white/80 max-w-xl">
               Découvrez notre collection de bijoux écoresponsables et élégants
             </p>
@@ -450,15 +452,12 @@ export default function ShopPage() {
                             </button>
 
                             {/* Product Image */}
-                            <Image
+                            <OptimizedImage
                               src={getImageUrl(product)}
                               alt={product.nom}
                               fill
                               className="object-cover transition-transform duration-500 group-hover:scale-105"
-                              onError={(e) => {
-                                const target = e.target as HTMLImageElement;
-                                target.src = '/placeholder.jpg';
-                              }}
+                              sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                             />
                           </div>
 

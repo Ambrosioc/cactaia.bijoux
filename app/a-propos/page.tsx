@@ -10,7 +10,7 @@ export default function AboutPage() {
       <section className="relative h-[50vh] min-h-[400px]">
         <div className="absolute inset-0">
           <Image
-            src="https://images.pexels.com/photos/5370795/pexels-photo-5370795.jpeg"
+            src="/images/cactaïa-14.jpg"
             alt="Notre atelier"
             fill
             className="object-cover"

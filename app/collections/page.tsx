@@ -1,9 +1,10 @@
 "use client"
 
-import Link from 'next/link';
-import Image from 'next/image';
-import { motion } from 'framer-motion';
+import OptimizedImage from '@/components/ui/optimized-image';
 import { collections } from '@/lib/data/products';
+import { motion } from 'framer-motion';
+import Image from 'next/image';
+import Link from 'next/link';
 
 const fadeInUp = {
   initial: { opacity: 0, y: 20 },
@@ -24,10 +25,9 @@ export default function CollectionsPage() {
       <section className="relative h-[40vh] min-h-[300px]">
         <div className="absolute inset-0">
           <Image
-            src="https://images.pexels.com/photos/7276787/pexels-photo-7276787.jpeg"
-            alt="Collections Cactaia"
+            src="/images/cactaïa-04.jpg"
             fill
-            className="object-cover"
+            alt="Collections Cactaia" className="object-cover"
           />
           <div className="absolute inset-0 bg-black/30" />
         </div>
@@ -57,11 +57,12 @@ export default function CollectionsPage() {
               >
                 <Link href={`/collections/${collection.id}`}>
                   <div className="relative aspect-[3/4] mb-4 overflow-hidden rounded-lg">
-                    <Image
-                      src={`https://images.pexels.com/photos/${5370968 + i}/pexels-photo-${5370968 + i}.jpeg`}
+                    <OptimizedImage
+                      src={`${collection.image}`}
                       alt={collection.name}
                       fill
                       className="object-cover transition-transform duration-700 group-hover:scale-105"
+                      sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                     />
                     <div className="absolute inset-0 bg-black/10 group-hover:bg-black/30 transition-colors duration-300" />
                     <div className="absolute bottom-0 left-0 right-0 p-6 text-white">

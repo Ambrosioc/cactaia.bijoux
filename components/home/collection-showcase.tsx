@@ -1,26 +1,26 @@
 'use client';
 
-import Link from 'next/link';
-import Image from 'next/image';
+import OptimizedImage from '@/components/ui/optimized-image';
 import { motion } from 'framer-motion';
+import Link from 'next/link';
 
 const collections = [
   {
     id: 'femme',
     name: 'Femme',
-    image: 'https://images.pexels.com/photos/5442465/pexels-photo-5442465.jpeg',
+    image: '/images/cactaïa-12.jpg',
     description: 'Des bijoux délicats et élégants pour sublimer votre féminité',
   },
   {
     id: 'homme',
     name: 'Homme',
-    image: 'https://images.pexels.com/photos/1681010/pexels-photo-1681010.jpeg',
+    image: '/images/cactaïa-07.jpg',
     description: 'Des pièces épurées et modernes pour un style authentique',
   },
   {
     id: 'mixte',
     name: 'Mixte',
-    image: 'https://images.pexels.com/photos/9428800/pexels-photo-9428800.jpeg',
+    image: '/images/cactaïa-10.jpg',
     description: 'Des créations intemporelles et universelles pour tous',
   },
 ];
@@ -47,10 +47,10 @@ const CollectionShowcase = () => {
             Découvrez nos collections inspirées par la nature et conçues pour durer. Des bijoux qui accompagnent tous vos moments de vie.
           </p>
         </div>
-        
+
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
           {collections.map((collection, i) => (
-            <motion.div 
+            <motion.div
               key={collection.id}
               custom={i}
               initial="initial"
@@ -61,11 +61,12 @@ const CollectionShowcase = () => {
             >
               <Link href={`/collections/${collection.id}`}>
                 <div className="relative aspect-[3/4] mb-4 overflow-hidden rounded-lg">
-                  <Image 
-                    src={collection.image} 
-                    alt={collection.name} 
+                  <OptimizedImage
+                    src={collection.image}
+                    alt={collection.name}
                     fill
                     className="object-cover transition-transform duration-700 group-hover:scale-105"
+                    sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                   />
                   <div className="absolute inset-0 bg-black/10 group-hover:bg-black/30 transition-colors duration-300"></div>
                   <div className="absolute bottom-0 left-0 right-0 p-6 text-white">

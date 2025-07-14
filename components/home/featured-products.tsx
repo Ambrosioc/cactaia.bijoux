@@ -1,10 +1,10 @@
 "use client"
 
-import Link from 'next/link';
-import Image from 'next/image';
-import { useState } from 'react';
-import { ArrowLeft, ArrowRight, Heart } from 'lucide-react';
+import OptimizedImage from '@/components/ui/optimized-image';
 import { motion } from 'framer-motion';
+import { ArrowLeft, ArrowRight, Heart } from 'lucide-react';
+import Link from 'next/link';
+import { useState } from 'react';
 
 // Sample product data
 const featuredProducts = [
@@ -49,19 +49,19 @@ const featuredProducts = [
 const FeaturedProducts = () => {
   const [startIndex, setStartIndex] = useState(0);
   const visibleProducts = 3; // Number of products visible at once
-  
+
   const nextProducts = () => {
-    setStartIndex((prevIndex) => 
+    setStartIndex((prevIndex) =>
       (prevIndex + 1) % featuredProducts.length
     );
   };
-  
+
   const prevProducts = () => {
-    setStartIndex((prevIndex) => 
+    setStartIndex((prevIndex) =>
       prevIndex === 0 ? featuredProducts.length - 1 : prevIndex - 1
     );
   };
-  
+
   // Get the products to display
   const displayProducts = [...featuredProducts, ...featuredProducts].slice(
     startIndex,
@@ -90,10 +90,10 @@ const FeaturedProducts = () => {
             </button>
           </div>
         </div>
-        
+
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
           {displayProducts.map((product, i) => (
-            <motion.div 
+            <motion.div
               key={`${product.id}-${i}`}
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
@@ -113,11 +113,12 @@ const FeaturedProducts = () => {
                   >
                     <Heart className="h-4 w-4" />
                   </button>
-                  <Image 
-                    src={product.image} 
-                    alt={product.name} 
+                  <OptimizedImage
+                    src={product.image}
+                    alt={product.name}
                     fill
                     className="object-cover transition-transform duration-500 group-hover:scale-105"
+                    sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                   />
                 </div>
                 <div className="space-y-1">
@@ -128,15 +129,14 @@ const FeaturedProducts = () => {
               </Link>
               <div className="mt-3 flex space-x-2">
                 {product.colors.map((color) => (
-                  <div 
+                  <div
                     key={color}
-                    className={`w-3 h-3 rounded-full ${
-                      color === 'gold' 
-                        ? 'bg-yellow-400' 
-                        : color === 'silver' 
-                        ? 'bg-gray-300' 
-                        : 'bg-pink-300'
-                    }`}
+                    className={`w-3 h-3 rounded-full ${color === 'gold'
+                        ? 'bg-yellow-400'
+                        : color === 'silver'
+                          ? 'bg-gray-300'
+                          : 'bg-pink-300'
+                      }`}
                     aria-label={`Couleur: ${color}`}
                   />
                 ))}
@@ -144,10 +144,10 @@ const FeaturedProducts = () => {
             </motion.div>
           ))}
         </div>
-        
+
         <div className="mt-12 text-center">
-          <Link 
-            href="/boutique" 
+          <Link
+            href="/boutique"
             className="btn btn-outline px-8 py-2"
           >
             Voir tous les produits

@@ -7,6 +7,7 @@ import { useCart } from '@/stores/cartStore';
 import { useUser } from '@/stores/userStore';
 import { motion } from 'framer-motion';
 import { Heart, Menu, Search, ShoppingBag, User, X } from 'lucide-react';
+import Image from 'next/image';
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
 
@@ -29,7 +30,7 @@ const Header = () => {
   }, []);
 
   const navLinks = [
-    { name: 'Boutique', href: '/boutique' },
+    { name: 'Shop', href: '/boutique' },
     { name: 'Collections', href: '/collections' },
     { name: 'À propos', href: '/a-propos' },
     { name: 'Blog', href: '/blog' },
@@ -66,10 +67,20 @@ const Header = () => {
       )}>
         <div className="container-custom flex items-center justify-between">
           {/* Logo */}
-          <Link href="/" className="relative z-50">
-            <h1 className="font-playfair text-2xl font-medium">
-              Cactaia<span className="text-primary">.</span>Bijoux
-            </h1>
+          <Link href="/" className="relative z-50 flex items-center h-14 w-auto" style={{ minWidth: 56 }}>
+            <Image
+              src="/CACTAIA%20LOGO_CACTAIA%20LOGO%20TERRA-07.png"
+              alt="Cactaia Bijoux Logo"
+              width={56}
+              height={56}
+              priority
+              className={cn(
+                "transition-all duration-300 h-14 w-auto",
+                isScrolled
+                  ? "filter-none"
+                  : "filter brightness-0 saturate-100 invert"
+              )}
+            />
           </Link>
 
           {/* Desktop Navigation */}
@@ -78,7 +89,10 @@ const Header = () => {
               <Link
                 key={link.name}
                 href={link.href}
-                className="text-sm font-medium transition-colors hover:text-primary"
+                className={cn(
+                  "text-sm font-medium transition-colors",
+                  isScrolled ? "text-primary hover:text-primary/80" : "text-white hover:text-primary/80"
+                )}
               >
                 {link.name}
               </Link>
@@ -87,40 +101,58 @@ const Header = () => {
 
           {/* Header Icons */}
           <div className="flex items-center space-x-4">
-            <button className="hidden md:flex items-center text-sm hover:text-primary transition-colors">
-              <Search className="h-4 w-4 mr-1" />
+            <button className={cn(
+              "hidden md:flex items-center text-sm transition-colors",
+              isScrolled ? "text-primary hover:text-primary/80" : "text-white hover:text-primary/80"
+            )}>
+              <Search className={cn("h-4 w-4 mr-1", isScrolled ? "text-primary" : "text-white")} />
               <span className="sr-only md:not-sr-only">Recherche</span>
             </button>
 
             {isAuthenticated ? (
               <div className="hidden md:flex items-center space-x-4">
-                <Link href={getAccountLink()} className="flex items-center text-sm hover:text-primary transition-colors">
-                  <User className="h-4 w-4 mr-1" />
+                <Link href={getAccountLink()} className={cn(
+                  "flex items-center text-sm transition-colors",
+                  isScrolled ? "text-primary hover:text-primary/80" : "text-white hover:text-primary/80"
+                )}>
+                  <User className={cn("h-4 w-4 mr-1", isScrolled ? "text-primary" : "text-white")} />
                   <span>{displayName}</span>
                 </Link>
               </div>
             ) : (
               <div className="hidden md:flex items-center space-x-4">
-                <Link href="/connexion" className="text-sm hover:text-primary transition-colors">
+                <Link href="/connexion" className={cn(
+                  "text-sm transition-colors",
+                  isScrolled ? "text-primary hover:text-primary/80" : "text-white hover:text-primary/80"
+                )}>
                   Connexion
                 </Link>
-                <Link href="/inscription" className="btn btn-primary text-sm px-4 py-1">
+                <Link href="/inscription" className={cn(
+                  "btn text-sm px-4 py-1 transition-colors",
+                  isScrolled ? "bg-primary text-white hover:bg-primary/90 border border-primary" : "bg-white text-primary hover:bg-white/80 border border-white"
+                )}>
                   Inscription
                 </Link>
               </div>
             )}
 
-            <Link href="/wishlist" className="flex items-center text-sm hover:text-primary transition-colors">
-              <Heart className="h-4 w-4" />
+            <Link href="/wishlist" className={cn(
+              "flex items-center text-sm transition-colors",
+              isScrolled ? "text-primary hover:text-primary/80" : "text-white hover:text-primary/80"
+            )}>
+              <Heart className={cn("h-4 w-4", isScrolled ? "text-primary" : "text-white")} />
               <span className="sr-only">Wishlist</span>
             </Link>
 
             {/* Cart Button */}
             <button
               onClick={toggleCart}
-              className="relative flex items-center text-sm hover:text-primary transition-colors"
+              className={cn(
+                "relative flex items-center text-sm transition-colors",
+                isScrolled ? "text-primary hover:text-primary/80" : "text-white hover:text-primary/80"
+              )}
             >
-              <ShoppingBag className="h-4 w-4" />
+              <ShoppingBag className={cn("h-4 w-4", isScrolled ? "text-primary" : "text-white")} />
               {mounted && totalItems > 0 && (
                 <span className="absolute -top-2 -right-2 bg-primary text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
                   {totalItems}
@@ -132,13 +164,16 @@ const Header = () => {
             {/* Mobile menu button */}
             <button
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className="md:hidden flex items-center"
+              className={cn(
+                "md:hidden flex items-center transition-colors",
+                isScrolled ? "text-primary hover:text-primary/80" : "text-white hover:text-primary/80"
+              )}
               aria-label="Toggle menu"
             >
               {mobileMenuOpen ? (
-                <X className="h-5 w-5" />
+                <X className={cn("h-5 w-5", isScrolled ? "text-primary" : "text-white")} />
               ) : (
-                <Menu className="h-5 w-5" />
+                <Menu className={cn("h-5 w-5", isScrolled ? "text-primary" : "text-white")} />
               )}
             </button>
           </div>

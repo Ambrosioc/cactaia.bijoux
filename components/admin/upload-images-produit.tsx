@@ -1,9 +1,9 @@
 'use client';
 
+import OptimizedImage from '@/components/ui/optimized-image';
 import { createClient } from '@/lib/supabase/client';
 import { AnimatePresence, motion } from 'framer-motion';
 import { Image as ImageIcon, Loader2, Upload, X } from 'lucide-react';
-import Image from 'next/image';
 import { useCallback, useState } from 'react';
 
 interface UploadImagesProduitProps {
@@ -200,11 +200,12 @@ export default function UploadImagesProduit({
                                 transition={{ duration: 0.2 }}
                                 className="relative group aspect-square bg-gray-100 rounded-lg overflow-hidden"
                             >
-                                <Image
+                                <OptimizedImage
                                     src={imageUrl}
                                     alt={`Image ${index + 1}`}
                                     fill
                                     className="object-cover"
+                                    sizes="(max-width: 768px) 50vw, (max-width: 1200px) 25vw, 20vw"
                                 />
 
                                 {/* Badge image principale */}

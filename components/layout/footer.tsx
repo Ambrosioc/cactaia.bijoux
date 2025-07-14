@@ -1,9 +1,9 @@
+import { Facebook, Instagram } from 'lucide-react';
 import Link from 'next/link';
-import { Instagram, Facebook } from 'lucide-react';
 
 const Footer = () => {
   const currentYear = new Date().getFullYear();
-  
+
   return (
     <footer className="bg-secondary py-16">
       <div className="container-custom">
@@ -27,14 +27,14 @@ const Footer = () => {
               </Link>
             </div>
           </div>
-          
+
           {/* Navigation */}
           <div>
             <h4 className="font-medium mb-4">Navigation</h4>
             <ul className="space-y-2">
               <li>
                 <Link href="/boutique" className="text-muted-foreground text-sm hover:text-primary transition-colors">
-                  Boutique
+                  Shop
                 </Link>
               </li>
               <li>
@@ -59,7 +59,7 @@ const Footer = () => {
               </li>
             </ul>
           </div>
-          
+
           {/* Informations */}
           <div>
             <h4 className="font-medium mb-4">Informations</h4>
@@ -91,7 +91,7 @@ const Footer = () => {
               </li>
             </ul>
           </div>
-          
+
           {/* Contact */}
           <div>
             <h4 className="font-medium mb-4">Contact</h4>
@@ -110,7 +110,7 @@ const Footer = () => {
             </address>
           </div>
         </div>
-        
+
         <div className="border-t border-border mt-12 pt-8 flex flex-col md:flex-row justify-between items-center">
           <p className="text-muted-foreground text-xs">
             © {currentYear} Cactaia.Bijoux. Tous droits réservés.
