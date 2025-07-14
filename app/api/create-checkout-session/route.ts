@@ -4,6 +4,7 @@ import { NextRequest, NextResponse } from 'next/server';
 
 export async function POST(request: NextRequest) {
   try {
+    const supabase = await createServerClient();
     const { items, addressId } = await request.json();
 
     if (!items || !Array.isArray(items) || items.length === 0) {
@@ -19,9 +20,6 @@ export async function POST(request: NextRequest) {
         { status: 400 }
       );
     }
-
-    // Créer le client Supabase
-    const supabase = createServerClient();
 
     // Vérifier l'authentification
     const { data: { user }, error: authError } = await supabase.auth.getUser();

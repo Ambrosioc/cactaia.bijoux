@@ -128,6 +128,18 @@ export default function AdminSidebar() {
                         label="Dashboard"
                         isActive={isActive('/admin') && pathname === '/admin'}
                     />
+                    <SidebarLink
+                        href="/admin/analytics"
+                        icon={BarChart3}
+                        label="Analytics"
+                        isActive={isActive('/admin/analytics')}
+                    />
+                    <SidebarLink
+                        href="/admin/stocks"
+                        icon={Package}
+                        label="Stocks"
+                        isActive={isActive('/admin/stocks')}
+                    />
                 </SidebarSection>
 
                 {/* Gestion des produits */}

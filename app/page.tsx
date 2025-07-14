@@ -1,41 +1,13 @@
-import { CollectionShowcase, FeaturedProducts, TestimonialsSection, ValuesSection } from '@/components/client/dynamic-imports';
+import { CollectionShowcase, FeaturedProducts, HeroCarousel, TestimonialsSection, ValuesSection } from '@/components/client/dynamic-imports';
+import OptimizedImage from '@/components/ui/optimized-image';
 import { ArrowRight } from 'lucide-react';
-import Image from 'next/image';
 import Link from 'next/link';
 
 export default function Home() {
   return (
     <div className="flex flex-col min-h-screen">
-      {/* Hero Section */}
-      <section className="relative h-screen w-full">
-        <div className="absolute inset-0">
-          <Image
-            src="https://images.pexels.com/photos/6766288/pexels-photo-6766288.jpeg"
-            alt="Cactaia Bijoux"
-            fill
-            className="object-cover"
-            priority
-          />
-          <div className="absolute inset-0 bg-black/30" />
-        </div>
-
-        <div className="relative container mx-auto h-full flex flex-col justify-center items-start px-4 sm:px-6 lg:px-8 z-10">
-          <div className="max-w-lg animate-fadeIn">
-            <h1 className="heading-xl text-white mb-6">
-              Des bijoux inspirés par la nature
-            </h1>
-            <p className="text-white/90 mb-8 text-lg">
-              Découvrez nos collections de bijoux écoresponsables, élégants et intemporels qui célèbrent la beauté de la nature.
-            </p>
-            <Link
-              href="/boutique"
-              className="btn btn-primary px-8 py-3"
-            >
-              Découvrir nos collections
-            </Link>
-          </div>
-        </div>
-      </section>
+      {/* Hero Section with Carousel */}
+      <HeroCarousel />
 
       {/* Collections Highlight */}
       <CollectionShowcase />
@@ -66,11 +38,12 @@ export default function Home() {
               </Link>
             </div>
             <div className="relative h-96">
-              <Image
-                src="https://images.pexels.com/photos/5866231/pexels-photo-5866231.jpeg"
+              <OptimizedImage
+                src="/images/cactaïa-18.jpg"
                 alt="Notre atelier"
                 fill
                 className="object-cover rounded-md"
+                sizes="(max-width: 768px) 100vw, 50vw"
               />
             </div>
           </div>
@@ -87,11 +60,12 @@ export default function Home() {
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
             {Array.from({ length: 6 }).map((_, i) => (
               <div key={i} className="aspect-square relative rounded-md overflow-hidden group">
-                <Image
+                <OptimizedImage
                   src={`https://images.pexels.com/photos/${5370968 + i}/pexels-photo-${5370968 + i}.jpeg`}
                   alt={`Instagram post ${i + 1}`}
                   fill
                   className="object-cover transition-transform duration-500 group-hover:scale-110"
+                  sizes="(max-width: 768px) 50vw, (max-width: 1200px) 33vw, 16vw"
                 />
                 <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors duration-300"></div>
               </div>

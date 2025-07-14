@@ -1,31 +1,19 @@
 'use client';
 
+import HeroSection from '@/components/ui/hero-section';
 import { motion } from 'framer-motion';
 import Image from 'next/image';
 
 export default function AboutPage() {
   return (
-    <div className="pt-24 pb-16">
+    <div className="pb-16">
       {/* Hero Banner */}
-      <section className="relative h-[50vh] min-h-[400px]">
-        <div className="absolute inset-0">
-          <Image
-            src="https://images.pexels.com/photos/5370795/pexels-photo-5370795.jpeg"
-            alt="Notre atelier"
-            fill
-            className="object-cover"
-          />
-          <div className="absolute inset-0 bg-black/20" />
-        </div>
-        <div className="relative h-full container-custom flex items-center">
-          <div className="max-w-2xl">
-            <h1 className="heading-xl text-white mb-4">Notre histoire</h1>
-            <p className="text-white/90 text-lg max-w-xl">
-              Découvrez comment Cactaia.Bijoux est née d&apos;une passion pour les bijoux intemporels et l&apos;élégance naturelle.
-            </p>
-          </div>
-        </div>
-      </section>
+      <HeroSection image="/images/cactaïa-14.jpg" alt="Notre atelier" priority>
+        <h1 className="heading-xl text-white mb-4">Notre histoire</h1>
+        <p className="text-white/90 text-lg max-w-xl">
+          Découvrez comment Cactaia.Bijoux est née d&apos;une passion pour les bijoux intemporels et l&apos;élégance naturelle.
+        </p>
+      </HeroSection>
 
       {/* Our Story */}
       <section className="py-20">

@@ -15,8 +15,17 @@ module.exports = {
         background: 'hsl(var(--background))',
         foreground: 'hsl(var(--foreground))',
         primary: {
-          DEFAULT: 'hsl(var(--primary))',
-          foreground: 'hsl(var(--primary-foreground))',
+          DEFAULT: '#B86B4B', // Terra Cotta
+          50:  '#f9ede8',
+          100: '#f3d6c9',
+          200: '#e7b29a',
+          300: '#db8d6b',
+          400: '#cf6842',
+          500: '#b86b4b', // Couleur principale
+          600: '#a05a3d',
+          700: '#87482f',
+          800: '#6e3721',
+          900: '#552513',
         },
         secondary: {
           DEFAULT: 'hsl(var(--secondary))',

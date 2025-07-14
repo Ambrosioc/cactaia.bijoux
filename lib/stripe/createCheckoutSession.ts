@@ -20,7 +20,7 @@ export async function createCheckoutSession({
   successUrl,
   cancelUrl,
 }: CreateCheckoutSessionParams) {
-  const supabase = createServerClient();
+  const supabase = await createServerClient();
 
   // Vérifier les produits et calculer le total
   const productIds = items.map(item => item.product.id);

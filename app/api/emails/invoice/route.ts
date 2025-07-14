@@ -1,20 +1,20 @@
-import { sendInvoiceEmail } from '@/lib/email';
+import { sendInvoiceEmail } from '@/lib/email/sendInvoiceEmail';
 import { createServerClient } from '@/lib/supabase/server';
 import { NextRequest, NextResponse } from 'next/server';
 
 export async function POST(request: NextRequest) {
   try {
-    const { orderId } = await request.json();
+    const supabase = await createServerClient();
+    const body = await request.json();
+    
+    const { order_id } = body;
 
-    if (!orderId) {
+    if (!order_id) {
       return NextResponse.json(
-        { error: 'ID de commande requis' },
+        { error: 'order_id est requis' },
         { status: 400 }
       );
     }
-
-    const supabase = createServerClient();
-    const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000';
 
     // Vérifier l'authentification
     const { data: { user: authUser }, error: authError } = await supabase.auth.getUser();
@@ -30,7 +30,7 @@ export async function POST(request: NextRequest) {
     const { data: orderData, error: orderError } = await supabase
       .from('commandes')
       .select('*, users:user_id(id, email, prenom, nom)')
-      .eq('id', orderId)
+      .eq('id', order_id)
       .single();
 
     if (orderError || !orderData) {
@@ -69,7 +69,7 @@ export async function POST(request: NextRequest) {
       order: orderData,
       user: orderData.users,
       invoiceUrl: orderData.facture_url,
-      siteUrl
+      siteUrl: process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'
     });
 
     if (!result.success) {

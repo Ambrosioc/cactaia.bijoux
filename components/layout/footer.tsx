@@ -1,18 +1,24 @@
+import { Instagram } from 'lucide-react';
+import Image from 'next/image';
 import Link from 'next/link';
-import { Instagram, Facebook } from 'lucide-react';
 
 const Footer = () => {
   const currentYear = new Date().getFullYear();
-  
+
   return (
     <footer className="bg-secondary py-16">
       <div className="container-custom">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
           {/* Brand */}
           <div className="space-y-4 md:col-span-1">
-            <h3 className="font-playfair text-2xl font-medium">
-              Cactaia<span className="text-primary">.</span>Bijoux
-            </h3>
+            <div className="w-48 h-16 relative">
+              <Image
+                src="/CACTAIA LOGO_CACTAIA LOGO TERRA-07.png"
+                alt="Cactaia Bijoux Logo"
+                fill
+                className="object-contain"
+              />
+            </div>
             <p className="text-muted-foreground text-sm max-w-xs">
               Des bijoux écoresponsables, mixtes et élégants avec des valeurs de durabilité, simplicité et force symbolique.
             </p>
@@ -21,20 +27,17 @@ const Footer = () => {
                 <Instagram className="h-5 w-5" />
                 <span className="sr-only">Instagram</span>
               </Link>
-              <Link href="https://facebook.com" target="_blank" rel="noopener noreferrer" className="text-foreground hover:text-primary transition-colors">
-                <Facebook className="h-5 w-5" />
-                <span className="sr-only">Facebook</span>
-              </Link>
+              {/* Facebook supprimé */}
             </div>
           </div>
-          
+
           {/* Navigation */}
           <div>
             <h4 className="font-medium mb-4">Navigation</h4>
             <ul className="space-y-2">
               <li>
                 <Link href="/boutique" className="text-muted-foreground text-sm hover:text-primary transition-colors">
-                  Boutique
+                  Shop
                 </Link>
               </li>
               <li>
@@ -59,7 +62,7 @@ const Footer = () => {
               </li>
             </ul>
           </div>
-          
+
           {/* Informations */}
           <div>
             <h4 className="font-medium mb-4">Informations</h4>
@@ -70,12 +73,12 @@ const Footer = () => {
                 </Link>
               </li>
               <li>
-                <Link href="/politique-de-retour" className="text-muted-foreground text-sm hover:text-primary transition-colors">
+                <Link href="/retours" className="text-muted-foreground text-sm hover:text-primary transition-colors">
                   Politique de retour
                 </Link>
               </li>
               <li>
-                <Link href="/politique-de-livraison" className="text-muted-foreground text-sm hover:text-primary transition-colors">
+                <Link href="/livraison" className="text-muted-foreground text-sm hover:text-primary transition-colors">
                   Politique de livraison
                 </Link>
               </li>
@@ -91,7 +94,7 @@ const Footer = () => {
               </li>
             </ul>
           </div>
-          
+
           {/* Contact */}
           <div>
             <h4 className="font-medium mb-4">Contact</h4>
@@ -110,14 +113,17 @@ const Footer = () => {
             </address>
           </div>
         </div>
-        
+
         <div className="border-t border-border mt-12 pt-8 flex flex-col md:flex-row justify-between items-center">
           <p className="text-muted-foreground text-xs">
-            © {currentYear} Cactaia.Bijoux. Tous droits réservés.
+            © {currentYear} <span className="align-middle inline-block w-6 h-6 relative"><Image src="/CACTAIA LOGO_CACTAIA LOGO TERRA-07.png" alt="Cactaia Bijoux Logo" fill className="object-contain" /></span> Tous droits réservés.
           </p>
           <div className="mt-4 md:mt-0">
             <p className="text-muted-foreground text-xs">
               Des bijoux avec des valeurs de durabilité, simplicité et force symbolique.
+            </p>
+            <p className="text-muted-foreground text-xs mt-1">
+              Site créé par <a href="https://acdinnovservices.com" target="_blank" rel="noopener noreferrer" className="hover:text-primary transition-colors">acdinnovservices.com</a>
             </p>
           </div>
         </div>

@@ -191,11 +191,9 @@ export const products: Product[] = [
 ];
 
 export const collections = [
-  { id: 'desert', name: 'Désert', description: 'Une collection inspirée par les paysages arides et minimalistes des déserts' },
-  { id: 'cactus', name: 'Cactus', description: 'Des bijoux évoquant la force et la résilience du cactus, symbole de notre marque' },
-  { id: 'femme', name: 'Femme', description: 'Des créations délicates et élégantes pour sublimer la féminité' },
-  { id: 'homme', name: 'Homme', description: 'Des pièces épurées aux lignes fortes pour un style affirmé' },
-  { id: 'mixte', name: 'Mixte', description: 'Des bijoux intemporels qui transcendent les genres' }
+  { id: 'femme',image : '/images/cactaïa-12.jpg', name: 'Femme', description: 'Des créations délicates et élégantes pour sublimer la féminité' },
+  { id: 'homme',image : '/images/cactaïa-07.jpg', name: 'Homme', description: 'Des pièces épurées aux lignes fortes pour un style affirmé' },
+  { id: 'mixte',image : '/images/cactaïa-10.jpg', name: 'Mixte', description: 'Des bijoux intemporels qui transcendent les genres' }
 ];
 
 export const getProductBySlug = (slug: string): Product | undefined => {
