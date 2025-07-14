@@ -9,6 +9,7 @@ import { motion } from 'framer-motion';
 import { Heart, Menu, Search, ShoppingBag, User, X } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 import { useEffect, useState } from 'react';
 
 const Header = () => {
@@ -18,6 +19,22 @@ const Header = () => {
   const { totalItems, toggleCart } = useCart();
   const supabase = createClient();
   const [mounted, setMounted] = useState(false);
+  const pathname = usePathname();
+
+  // Liste des pages où le header doit toujours être Terra Cotta
+  const terraCottaPages = [
+    '/cgv',
+    '/retours',
+    '/livraison',
+    '/mentions-legales',
+    '/faq',
+    '/contact',
+    '/wishlist',
+    '/connexion',
+    '/inscription',
+    '/produit',
+  ];
+  const forceTerraCotta = terraCottaPages.some(page => pathname.startsWith(page));
 
   useEffect(() => {
     setMounted(true);
@@ -76,7 +93,7 @@ const Header = () => {
               priority
               className={cn(
                 "transition-all duration-300 h-14 w-auto",
-                isScrolled
+                isScrolled || forceTerraCotta
                   ? "filter-none"
                   : "filter brightness-0 saturate-100 invert"
               )}
@@ -91,7 +108,9 @@ const Header = () => {
                 href={link.href}
                 className={cn(
                   "text-sm font-medium transition-colors",
-                  isScrolled ? "text-primary hover:text-primary/80" : "text-white hover:text-primary/80"
+                  (isScrolled || forceTerraCotta)
+                    ? "text-primary hover:text-primary/80"
+                    : "text-white hover:text-primary/80"
                 )}
               >
                 {link.name}
@@ -103,9 +122,11 @@ const Header = () => {
           <div className="flex items-center space-x-4">
             <button className={cn(
               "hidden md:flex items-center text-sm transition-colors",
-              isScrolled ? "text-primary hover:text-primary/80" : "text-white hover:text-primary/80"
+              (isScrolled || forceTerraCotta)
+                ? "text-primary hover:text-primary/80"
+                : "text-white hover:text-primary/80"
             )}>
-              <Search className={cn("h-4 w-4 mr-1", isScrolled ? "text-primary" : "text-white")} />
+              <Search className={cn("h-4 w-4 mr-1", (isScrolled || forceTerraCotta) ? "text-primary" : "text-white")} />
               <span className="sr-only md:not-sr-only">Recherche</span>
             </button>
 
@@ -113,9 +134,11 @@ const Header = () => {
               <div className="hidden md:flex items-center space-x-4">
                 <Link href={getAccountLink()} className={cn(
                   "flex items-center text-sm transition-colors",
-                  isScrolled ? "text-primary hover:text-primary/80" : "text-white hover:text-primary/80"
+                  (isScrolled || forceTerraCotta)
+                    ? "text-primary hover:text-primary/80"
+                    : "text-white hover:text-primary/80"
                 )}>
-                  <User className={cn("h-4 w-4 mr-1", isScrolled ? "text-primary" : "text-white")} />
+                  <User className={cn("h-4 w-4 mr-1", (isScrolled || forceTerraCotta) ? "text-primary" : "text-white")} />
                   <span>{displayName}</span>
                 </Link>
               </div>
@@ -123,13 +146,17 @@ const Header = () => {
               <div className="hidden md:flex items-center space-x-4">
                 <Link href="/connexion" className={cn(
                   "text-sm transition-colors",
-                  isScrolled ? "text-primary hover:text-primary/80" : "text-white hover:text-primary/80"
+                  (isScrolled || forceTerraCotta)
+                    ? "text-primary hover:text-primary/80"
+                    : "text-white hover:text-primary/80"
                 )}>
                   Connexion
                 </Link>
                 <Link href="/inscription" className={cn(
                   "btn text-sm px-4 py-1 transition-colors",
-                  isScrolled ? "bg-primary text-white hover:bg-primary/90 border border-primary" : "bg-white text-primary hover:bg-white/80 border border-white"
+                  (isScrolled || forceTerraCotta)
+                    ? "bg-primary text-white hover:bg-primary/90 border border-primary"
+                    : "bg-white text-primary hover:bg-white/80 border border-white"
                 )}>
                   Inscription
                 </Link>
@@ -138,9 +165,11 @@ const Header = () => {
 
             <Link href="/wishlist" className={cn(
               "flex items-center text-sm transition-colors",
-              isScrolled ? "text-primary hover:text-primary/80" : "text-white hover:text-primary/80"
+              (isScrolled || forceTerraCotta)
+                ? "text-primary hover:text-primary/80"
+                : "text-white hover:text-primary/80"
             )}>
-              <Heart className={cn("h-4 w-4", isScrolled ? "text-primary" : "text-white")} />
+              <Heart className={cn("h-4 w-4", (isScrolled || forceTerraCotta) ? "text-primary" : "text-white")} />
               <span className="sr-only">Wishlist</span>
             </Link>
 
@@ -149,10 +178,12 @@ const Header = () => {
               onClick={toggleCart}
               className={cn(
                 "relative flex items-center text-sm transition-colors",
-                isScrolled ? "text-primary hover:text-primary/80" : "text-white hover:text-primary/80"
+                (isScrolled || forceTerraCotta)
+                  ? "text-primary hover:text-primary/80"
+                  : "text-white hover:text-primary/80"
               )}
             >
-              <ShoppingBag className={cn("h-4 w-4", isScrolled ? "text-primary" : "text-white")} />
+              <ShoppingBag className={cn("h-4 w-4", (isScrolled || forceTerraCotta) ? "text-primary" : "text-white")} />
               {mounted && totalItems > 0 && (
                 <span className="absolute -top-2 -right-2 bg-primary text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
                   {totalItems}
@@ -166,14 +197,16 @@ const Header = () => {
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
               className={cn(
                 "md:hidden flex items-center transition-colors",
-                isScrolled ? "text-primary hover:text-primary/80" : "text-white hover:text-primary/80"
+                (isScrolled || forceTerraCotta)
+                  ? "text-primary hover:text-primary/80"
+                  : "text-white hover:text-primary/80"
               )}
               aria-label="Toggle menu"
             >
               {mobileMenuOpen ? (
-                <X className={cn("h-5 w-5", isScrolled ? "text-primary" : "text-white")} />
+                <X className={cn("h-5 w-5", (isScrolled || forceTerraCotta) ? "text-primary" : "text-white")} />
               ) : (
-                <Menu className={cn("h-5 w-5", isScrolled ? "text-primary" : "text-white")} />
+                <Menu className={cn("h-5 w-5", (isScrolled || forceTerraCotta) ? "text-primary" : "text-white")} />
               )}
             </button>
           </div>

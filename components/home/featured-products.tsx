@@ -100,7 +100,7 @@ const FeaturedProducts = () => {
               transition={{ duration: 0.4, delay: i * 0.1 }}
               className="group"
             >
-              <Link href={`/produit/${product.id}`}>
+              <Link href={`/produit/${product.slug || product.id}`}>
                 <div className="relative aspect-square mb-4 overflow-hidden rounded-md bg-secondary/30">
                   {product.new && (
                     <div className="absolute top-2 left-2 z-10 bg-primary text-white text-xs px-2 py-1 rounded">
@@ -132,10 +132,10 @@ const FeaturedProducts = () => {
                   <div
                     key={color}
                     className={`w-3 h-3 rounded-full ${color === 'gold'
-                        ? 'bg-yellow-400'
-                        : color === 'silver'
-                          ? 'bg-gray-300'
-                          : 'bg-pink-300'
+                      ? 'bg-yellow-400'
+                      : color === 'silver'
+                        ? 'bg-gray-300'
+                        : 'bg-pink-300'
                       }`}
                     aria-label={`Couleur: ${color}`}
                   />

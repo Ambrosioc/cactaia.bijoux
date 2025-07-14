@@ -2,32 +2,50 @@
 
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { motion } from 'framer-motion';
+import { ArrowRight, HelpCircle } from 'lucide-react';
+import Image from 'next/image';
+import Link from 'next/link';
 import { useState } from 'react';
 
 export default function FaqPage() {
   const [activeCategory, setActiveCategory] = useState("Commandes et livraisons");
 
   return (
-    <div className="pt-24 pb-16">
-      <div className="container-custom">
-        <div className="text-center mb-12">
-          <h1 className="heading-lg mb-4">Questions fréquentes</h1>
-          <p className="text-muted-foreground max-w-2xl mx-auto">
-            Trouvez des réponses à toutes vos questions concernant nos bijoux, commandes, livraisons et retours.
-          </p>
-        </div>
+    <div className="min-h-screen flex">
+      {/* Section gauche - Contenu */}
+      <div className="w-full lg:w-1/2 flex items-center justify-center p-8 lg:p-16">
+        <motion.div
+          initial={{ opacity: 0, x: -50 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ duration: 0.6 }}
+          className="w-full max-w-md"
+        >
+          {/* Logo */}
+          <div className="text-center mb-8">
+            <div className="w-32 h-12 relative mx-auto mb-6">
+              <Image
+                src="/CACTAIA LOGO_CACTAIA LOGO TERRA-07.png"
+                alt="Cactaia Bijoux Logo"
+                fill
+                className="object-contain"
+              />
+            </div>
+            <h1 className="text-3xl font-light text-gray-900 mb-2">Questions fréquentes</h1>
+            <p className="text-gray-600">
+              Trouvez des réponses à toutes vos questions
+            </p>
+          </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
-          {/* Category Navigation */}
-          <div className="md:col-span-1">
-            <div className="sticky top-24 space-y-2">
+          {/* Navigation des catégories */}
+          <div className="mb-6">
+            <div className="flex flex-wrap gap-2">
               {faqData.map(category => (
                 <button
                   key={category.category}
                   onClick={() => setActiveCategory(category.category)}
-                  className={`w-full text-left px-4 py-3 rounded-md transition-colors ${activeCategory === category.category
-                    ? 'bg-primary text-white'
-                    : 'bg-secondary hover:bg-secondary/80'
+                  className={`px-3 py-2 text-xs rounded-lg transition-all duration-200 ${activeCategory === category.category
+                      ? 'bg-primary text-white shadow-lg'
+                      : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
                     }`}
                 >
                   {category.category}
@@ -37,48 +55,85 @@ export default function FaqPage() {
           </div>
 
           {/* FAQ Accordion */}
+          <div className="bg-white/50 backdrop-blur-sm rounded-xl p-6 border border-gray-200">
+            <h2 className="text-lg font-medium text-gray-900 mb-4">{activeCategory}</h2>
+
+            <Accordion type="single" collapsible className="space-y-3">
+              {faqData
+                .find(category => category.category === activeCategory)?.items
+                .map((item, i) => (
+                  <AccordionItem
+                    key={i}
+                    value={`item-${i}`}
+                    className="border border-gray-200 rounded-lg overflow-hidden bg-white/70"
+                  >
+                    <AccordionTrigger className="text-left py-3 px-4 hover:no-underline text-sm font-medium text-gray-900">
+                      {item.question}
+                    </AccordionTrigger>
+                    <AccordionContent className="text-gray-600 text-sm py-3 px-4 leading-relaxed">
+                      {item.answer}
+                    </AccordionContent>
+                  </AccordionItem>
+                ))}
+            </Accordion>
+          </div>
+
+          {/* Contact CTA */}
+          <div className="mt-6 bg-primary/10 p-6 rounded-xl text-center">
+            <h3 className="text-lg font-medium text-gray-900 mb-2">Vous n&apos;avez pas trouvé la réponse ?</h3>
+            <p className="text-gray-600 text-sm mb-4">
+              Notre équipe est là pour vous répondre
+            </p>
+            <Link
+              href="/contact"
+              className="inline-flex items-center gap-2 bg-primary text-white px-6 py-3 rounded-xl font-medium hover:bg-primary/90 transition-all duration-200 shadow-lg shadow-primary/25"
+            >
+              Nous contacter
+              <ArrowRight className="h-4 w-4" />
+            </Link>
+          </div>
+
+          {/* Liens utiles */}
+          <div className="mt-8 pt-8 border-t border-gray-100">
+            <div className="flex justify-center space-x-6 text-sm">
+              <Link href="/contact" className="text-gray-500 hover:text-primary transition-colors">
+                Contact
+              </Link>
+              <Link href="/boutique" className="text-gray-500 hover:text-primary transition-colors">
+                Découvrir nos bijoux
+              </Link>
+            </div>
+          </div>
+        </motion.div>
+      </div>
+
+      {/* Section droite - Image immersive */}
+      <div className="hidden lg:block lg:w-1/2 relative overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-transparent to-secondary/10"></div>
+        <Image
+          src="/images/cactaïa-13.jpg"
+          alt="Bijoux Cactaia"
+          fill
+          className="object-cover"
+          priority
+        />
+        <div className="absolute inset-0 bg-black/20"></div>
+
+        {/* Overlay avec texte */}
+        <div className="absolute inset-0 flex items-center justify-center">
           <motion.div
-            className="md:col-span-3"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ duration: 0.4 }}
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8, delay: 0.3 }}
+            className="text-center text-white p-8"
           >
-            <div className="bg-white p-8 rounded-lg shadow-sm">
-              <h2 className="text-2xl font-medium mb-6">{activeCategory}</h2>
-
-              <Accordion type="single" collapsible className="space-y-4">
-                {faqData
-                  .find(category => category.category === activeCategory)?.items
-                  .map((item, i) => (
-                    <AccordionItem
-                      key={i}
-                      value={`item-${i}`}
-                      className="border border-border rounded-md px-6 overflow-hidden"
-                    >
-                      <AccordionTrigger className="text-left py-4 hover:no-underline">
-                        {item.question}
-                      </AccordionTrigger>
-                      <AccordionContent className="text-muted-foreground py-4">
-                        {item.answer}
-                      </AccordionContent>
-                    </AccordionItem>
-                  ))}
-              </Accordion>
+            <div className="w-20 h-20 bg-white/20 rounded-full flex items-center justify-center mx-auto mb-6">
+              <HelpCircle className="h-10 w-10 text-white" />
             </div>
-
-            {/* Contact CTA */}
-            <div className="mt-12 bg-primary/5 p-6 rounded-lg text-center">
-              <h3 className="text-xl font-medium mb-3">Vous n&apos;avez pas trouvé la réponse à votre question ?</h3>
-              <p className="text-muted-foreground mb-4">
-                Notre équipe est là pour vous répondre. N&apos;hésitez pas à nous contacter directement.
-              </p>
-              <a
-                href="/contact"
-                className="btn btn-primary px-6 py-2"
-              >
-                Nous contacter
-              </a>
-            </div>
+            <h2 className="text-4xl font-light mb-4">Nous sommes là pour vous aider</h2>
+            <p className="text-lg text-white/90 max-w-md">
+              Trouvez rapidement des réponses à toutes vos questions sur nos bijoux et services
+            </p>
           </motion.div>
         </div>
       </div>

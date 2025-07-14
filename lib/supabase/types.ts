@@ -112,6 +112,7 @@ export interface Database {
           variations: Json
           stock: number
           sku: string | null
+          slug: string | null
           images: string[]
           est_actif: boolean
           est_mis_en_avant: boolean
@@ -131,6 +132,7 @@ export interface Database {
           variations?: Json
           stock?: number
           sku?: string | null
+          slug?: string | null
           images?: string[]
           est_actif?: boolean
           est_mis_en_avant?: boolean
@@ -150,6 +152,7 @@ export interface Database {
           variations?: Json
           stock?: number
           sku?: string | null
+          slug?: string | null
           images?: string[]
           est_actif?: boolean
           est_mis_en_avant?: boolean

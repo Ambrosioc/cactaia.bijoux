@@ -1,5 +1,6 @@
 'use client';
 
+import HeroSection from '@/components/ui/hero-section';
 import { formatDate } from '@/lib/utils';
 import { motion } from 'framer-motion';
 import { ArrowRight } from 'lucide-react';
@@ -80,27 +81,14 @@ const fadeInUp = {
 
 export default function BlogPage() {
   return (
-    <div className="pt-24 pb-16">
+    <div className="pb-16">
       {/* Hero Banner */}
-      <section className="relative h-[40vh] min-h-[300px]">
-        <div className="absolute inset-0">
-          <Image
-            src="https://images.pexels.com/photos/7276787/pexels-photo-7276787.jpeg"
-            alt="Blog Cactaia"
-            fill
-            className="object-cover"
-          />
-          <div className="absolute inset-0 bg-black/30" />
-        </div>
-        <div className="relative h-full container-custom flex items-center">
-          <div className="max-w-2xl">
-            <h1 className="heading-xl text-white mb-4">Le Journal Cactaia</h1>
-            <p className="text-white/90 text-lg">
-              Découvrez nos articles sur l&apos;univers des bijoux, nos inspirations et nos conseils.
-            </p>
-          </div>
-        </div>
-      </section>
+      <HeroSection image="https://images.pexels.com/photos/7276787/pexels-photo-7276787.jpeg" alt="Blog Cactaia" priority>
+        <h1 className="heading-xl text-white mb-4">Le Journal Cactaia</h1>
+        <p className="text-white/90 text-lg">
+          Découvrez nos articles sur l&apos;univers des bijoux, nos inspirations et nos conseils.
+        </p>
+      </HeroSection>
 
       <div className="container-custom py-16">
         {/* Categories */}

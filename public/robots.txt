@@ -1,22 +1,22 @@
+# Robots.txt pour Cactaia.Bijoux
 User-agent: *
 Allow: /
 
 # Sitemap
 Sitemap: https://cactaia.bijoux/sitemap.xml
 
-# Crawl-delay
-Crawl-delay: 1
-
-# Disallow admin pages
+# Pages privées
 Disallow: /admin/
+Disallow: /compte/
+Disallow: /checkout/
+Disallow: /panier/
+
+# API routes
 Disallow: /api/
+
+# Fichiers de développement
 Disallow: /_next/
 Disallow: /static/
 
-# Allow important pages
-Allow: /boutique/
-Allow: /produit/
-Allow: /collections/
-Allow: /blog/
-Allow: /a-propos/
-Allow: /contact/ 
+# Crawl-delay pour être respectueux
+Crawl-delay: 1 

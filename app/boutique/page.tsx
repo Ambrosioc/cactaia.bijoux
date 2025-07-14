@@ -1,6 +1,7 @@
 "use client"
 
 import AddToCartButton from '@/components/cart/add-to-cart-button';
+import HeroSection from '@/components/ui/hero-section';
 import OptimizedImage from '@/components/ui/optimized-image';
 import { createClient } from '@/lib/supabase/client';
 import type { Product } from '@/lib/supabase/types';
@@ -195,29 +196,14 @@ export default function ShopPage() {
   );
 
   return (
-    <div className="pt-24 pb-16">
+    <div className="pb-16">
       {/* Hero Banner */}
-      <section className="relative h-[30vh] min-h-[200px] mb-8">
-        <div className="absolute inset-0">
-          <OptimizedImage
-            src="/images/cactaïa-small-23.jpg"
-            alt="Shop Cactaia"
-            fill
-            className="object-cover"
-            priority
-            sizes="100vw"
-          />
-          <div className="absolute inset-0 bg-black/40" />
-        </div>
-        <div className="relative h-full container-custom flex items-center">
-          <div>
-            <h1 className="heading-xl text-white mb-2">Shop</h1>
-            <p className="text-white/80 max-w-xl">
-              Découvrez notre collection de bijoux écoresponsables et élégants
-            </p>
-          </div>
-        </div>
-      </section>
+      <HeroSection image="/images/cactaïa-small-23.jpg" alt="Shop Cactaia" priority>
+        <h1 className="heading-xl text-white mb-2">Shop</h1>
+        <p className="text-white/80 max-w-xl">
+          Découvrez notre collection de bijoux écoresponsables et élégants
+        </p>
+      </HeroSection>
 
       <div className="container-custom">
         {/* Mobile filters toggle */}
@@ -422,7 +408,7 @@ export default function ShopPage() {
                         transition={{ duration: 0.4, delay: i * 0.05 }}
                         className="group"
                       >
-                        <Link href={`/produit/${product.sku || product.id}`}>
+                        <Link href={`/produit/${product.slug || product.id}`}>
                           <div className="relative aspect-square mb-4 overflow-hidden rounded-md bg-secondary/30">
                             {/* Badges */}
                             <div className="absolute top-2 left-2 z-10 flex flex-col gap-1">

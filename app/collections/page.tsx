@@ -1,9 +1,9 @@
 "use client"
 
+import HeroSection from '@/components/ui/hero-section';
 import OptimizedImage from '@/components/ui/optimized-image';
 import { collections } from '@/lib/data/products';
 import { motion } from 'framer-motion';
-import Image from 'next/image';
 import Link from 'next/link';
 
 const fadeInUp = {
@@ -20,26 +20,14 @@ const fadeInUp = {
 
 export default function CollectionsPage() {
   return (
-    <div className="pt-24 pb-16">
+    <div className="pb-16">
       {/* Hero Banner */}
-      <section className="relative h-[40vh] min-h-[300px]">
-        <div className="absolute inset-0">
-          <Image
-            src="/images/cactaïa-04.jpg"
-            fill
-            alt="Collections Cactaia" className="object-cover"
-          />
-          <div className="absolute inset-0 bg-black/30" />
-        </div>
-        <div className="relative h-full container-custom flex items-center">
-          <div className="max-w-2xl">
-            <h1 className="heading-xl text-white mb-4">Nos Collections</h1>
-            <p className="text-white/90 text-lg">
-              Découvrez nos collections inspirées par la nature et conçues pour durer.
-            </p>
-          </div>
-        </div>
-      </section>
+      <HeroSection image="/images/cactaïa-04.jpg" alt="Collections Cactaia" priority>
+        <h1 className="heading-xl text-white mb-4">Nos Collections</h1>
+        <p className="text-white/90 text-lg">
+          Découvrez nos collections inspirées par la nature et conçues pour durer.
+        </p>
+      </HeroSection>
 
       {/* Collections Grid */}
       <section className="py-16">

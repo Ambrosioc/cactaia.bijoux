@@ -23,7 +23,7 @@ export async function middleware(req: NextRequest) {
       // Vérifier le rôle admin et active_role
       const { data: userProfile, error } = await supabase
         .from('users')
-        .select('role, active_role')
+        .select('role, active_role, profile_completed')
         .eq('id', session.user.id)
         .single();
 
@@ -49,7 +49,7 @@ export async function middleware(req: NextRequest) {
       // Vérifier que l'utilisateur est en mode user
       const { data: userProfile, error } = await supabase
         .from('users')
-        .select('role, active_role')
+        .select('role, active_role, profile_completed')
         .eq('id', session.user.id)
         .single();
 
@@ -62,21 +62,45 @@ export async function middleware(req: NextRequest) {
     }
   }
 
+  // Vérifier si l'utilisateur a un profil complet pour toutes les routes sauf auth et inscription
+  if (session && !req.nextUrl.pathname.startsWith('/admin') && 
+      !req.nextUrl.pathname.startsWith('/compte') && 
+      req.nextUrl.pathname !== '/connexion' && 
+      req.nextUrl.pathname !== '/inscription' &&
+      req.nextUrl.pathname !== '/api') {
+    
+    try {
+      const { data: userProfile, error } = await supabase
+        .from('users')
+        .select('profile_completed, active_role')
+        .eq('id', session.user.id)
+        .single();
+
+      // Si le profil n'est pas complété et que l'utilisateur n'est pas admin, rediriger vers l'inscription
+      if (!error && userProfile && !userProfile.profile_completed && userProfile.active_role !== 'admin') {
+        return NextResponse.redirect(new URL('/inscription', req.url));
+      }
+    } catch (error) {
+      // En cas d'erreur, permettre l'accès
+    }
+  }
+
   // Rediriger les utilisateurs connectés loin des pages d'auth
   if ((req.nextUrl.pathname === '/connexion' || req.nextUrl.pathname === '/inscription') && session) {
     try {
       // Déterminer où rediriger selon le rôle actif
       const { data: userProfile, error } = await supabase
         .from('users')
-        .select('role, active_role')
+        .select('role, active_role, profile_completed')
         .eq('id', session.user.id)
         .single();
 
       if (!error && userProfile?.active_role === 'admin') {
         return NextResponse.redirect(new URL('/admin', req.url));
-      } else {
+      } else if (!error && userProfile?.profile_completed) {
         return NextResponse.redirect(new URL('/compte', req.url));
       }
+      // Si le profil n'est pas complété, rester sur la page d'inscription pour l'étape 2
     } catch (error) {
       // En cas d'erreur, rediriger vers le compte par défaut
       return NextResponse.redirect(new URL('/compte', req.url));
@@ -90,5 +114,11 @@ export async function middleware(req: NextRequest) {
 }
 
 export const config = {
-  matcher: ['/admin/:path*', '/compte/:path*', '/connexion', '/inscription']
+  matcher: [
+    '/admin/:path*', 
+    '/compte/:path*', 
+    '/connexion', 
+    '/inscription',
+    '/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)'
+  ]
 };
