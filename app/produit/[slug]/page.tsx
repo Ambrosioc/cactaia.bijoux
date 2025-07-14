@@ -2,6 +2,7 @@ import AddToCartButton from '@/components/cart/add-to-cart-button';
 import ReviewsSection from '@/components/reviews/ReviewsSection';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { ImageCarousel } from '@/components/ui/image-carousel';
 import { Separator } from '@/components/ui/separator';
 import { createServerClient } from '@/lib/supabase/server';
 import { Metadata } from 'next';
@@ -70,26 +71,7 @@ export default async function ProductPage({ params }: PageProps) {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
         {/* Images du produit */}
         <div className="space-y-4">
-          <div className="aspect-square bg-gray-100 rounded-lg overflow-hidden">
-            <img
-              src={product.images?.[0] || '/placeholder.jpg'}
-              alt={product.nom}
-              className="w-full h-full object-cover"
-            />
-          </div>
-          {product.images && product.images.length > 1 && (
-            <div className="grid grid-cols-4 gap-2">
-              {product.images.slice(1).map((image: string, index: number) => (
-                <div key={index} className="aspect-square bg-gray-100 rounded-lg overflow-hidden">
-                  <img
-                    src={image}
-                    alt={`${product.nom} - Vue ${index + 2}`}
-                    className="w-full h-full object-cover"
-                  />
-                </div>
-              ))}
-            </div>
-          )}
+          <ImageCarousel images={product.images || []} productName={product.nom} />
         </div>
 
         {/* Informations du produit */}

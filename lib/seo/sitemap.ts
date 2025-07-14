@@ -9,7 +9,7 @@ export interface SitemapUrl {
 
 export async function generateSitemap(): Promise<string> {
   const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://cactaia.bijoux';
-  const supabase = createServerClient();
+  const supabase = await createServerClient();
 
   // URLs statiques
   const staticUrls: SitemapUrl[] = [

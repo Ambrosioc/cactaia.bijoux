@@ -54,8 +54,8 @@ export class Analytics {
   async trackEvent(event: Omit<AnalyticsEvent, 'id' | 'created_at'>): Promise<void> {
     try {
       const sessionId = this.getSessionId();
-      
-      await this.supabase
+      const supabase = await this.supabase;
+      await supabase
         .from('analytics_events')
         .insert({
           ...event,
@@ -139,8 +139,9 @@ export class Analytics {
     startDate.setDate(startDate.getDate() - days);
 
     try {
+      const supabase = await this.supabase;
       // Métriques des commandes
-      const { data: orders } = await this.supabase
+      const { data: orders } = await supabase
         .from('commandes')
         .select('id, montant_total, created_at')
         .gte('created_at', startDate.toISOString())
@@ -151,7 +152,7 @@ export class Analytics {
       const averageOrderValue = totalOrders > 0 ? totalRevenue / totalOrders : 0;
 
       // Métriques des vues de produits
-      const { data: productViews } = await this.supabase
+      const { data: productViews } = await supabase
         .from('analytics_events')
         .select('product_id, product_name, product_price')
         .eq('event_type', 'product_view')
@@ -187,7 +188,7 @@ export class Analytics {
       const dailySales = this.calculateDailySales(orders || [], days);
 
       // Métriques utilisateurs
-      const { data: users } = await this.supabase
+      const { data: users } = await supabase
         .from('users')
         .select('created_at')
         .gte('created_at', startDate.toISOString());
@@ -200,7 +201,7 @@ export class Analytics {
       ).length || 0;
 
       // Calculer le taux de conversion (simplifié)
-      const { data: pageViews } = await this.supabase
+      const { data: pageViews } = await supabase
         .from('analytics_events')
         .select('id')
         .eq('event_type', 'page_view')

@@ -100,7 +100,7 @@ const FeaturedProducts = () => {
               transition={{ duration: 0.4, delay: i * 0.1 }}
               className="group"
             >
-              <Link href={`/produit/${product.slug || product.id}`}>
+              <Link href={`/produit/${product.id}`}>
                 <div className="relative aspect-square mb-4 overflow-hidden rounded-md bg-secondary/30">
                   {product.new && (
                     <div className="absolute top-2 left-2 z-10 bg-primary text-white text-xs px-2 py-1 rounded">

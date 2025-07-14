@@ -1,20 +1,20 @@
-import { sendWelcomeEmail } from '@/lib/email';
+import { sendWelcomeEmail } from '@/lib/email/sendWelcomeEmail';
 import { createServerClient } from '@/lib/supabase/server';
 import { NextRequest, NextResponse } from 'next/server';
 
 export async function POST(request: NextRequest) {
   try {
-    const { userId } = await request.json();
+    const supabase = await createServerClient();
+    const body = await request.json();
+    
+    const { user_id } = body;
 
-    if (!userId) {
+    if (!user_id) {
       return NextResponse.json(
-        { error: 'ID utilisateur requis' },
+        { error: 'user_id est requis' },
         { status: 400 }
       );
     }
-
-    const supabase = createServerClient();
-    const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000';
 
     // Vérifier l'authentification
     const { data: { user: authUser }, error: authError } = await supabase.auth.getUser();
@@ -26,7 +26,7 @@ export async function POST(request: NextRequest) {
       .eq('id', authUser.id)
       .single()).data?.role === 'admin' : false;
     
-    const isSelf = authUser?.id === userId;
+    const isSelf = authUser?.id === user_id;
     
     if (authError || (!isAdmin && !isSelf)) {
       return NextResponse.json(
@@ -39,7 +39,7 @@ export async function POST(request: NextRequest) {
     const { data: userData, error: userError } = await supabase
       .from('users')
       .select('*')
-      .eq('id', userId)
+      .eq('id', user_id)
       .single();
 
     if (userError || !userData) {
@@ -52,7 +52,7 @@ export async function POST(request: NextRequest) {
     // Envoyer l'email de bienvenue
     const result = await sendWelcomeEmail({
       user: userData,
-      siteUrl
+      siteUrl: process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'
     });
 
     if (!result.success) {

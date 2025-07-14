@@ -24,7 +24,7 @@ export async function logEmailToSupabase({
   details
 }: LogEmailParams) {
   try {
-    const supabase = createServerClient();
+    const supabase = await createServerClient();
     
     // Vérifier si un log existe déjà pour éviter les doublons
     if (orderId && emailType) {

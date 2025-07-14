@@ -1,6 +1,6 @@
 'use client';
 
-import { stockManager } from '@/lib/inventory/stock-manager';
+import { StockAlert, StockManager, StockMovement } from '@/lib/inventory/stock-manager';
 import { useUser } from '@/stores/userStore';
 import { motion } from 'framer-motion';
 import {
@@ -8,7 +8,7 @@ import {
     ArrowDown,
     ArrowUp,
     Eye,
-    History,
+    FileText,
     Package,
     Plus,
     Settings,
@@ -18,55 +18,22 @@ import {
 } from 'lucide-react';
 import { useEffect, useState } from 'react';
 
-interface ProductStock {
-    product_id: string;
-    product_name: string;
-    current_stock: number;
-    reserved_stock: number;
-    available_stock: number;
-    low_stock_threshold: number;
-    last_movement: string;
-    status: 'in_stock' | 'low_stock' | 'out_of_stock' | 'overstock';
-}
-
-interface StockAlert {
-    id: string;
-    product_id: string;
-    alert_type: 'low_stock' | 'out_of_stock' | 'overstock';
-    threshold: number;
-    current_stock: number;
-    is_active: boolean;
-    created_at: string;
-    resolved_at?: string;
-}
-
-interface StockMovement {
-    id: string;
-    product_id: string;
-    movement_type: 'in' | 'out' | 'adjustment' | 'reserved' | 'released';
-    quantity: number;
-    previous_stock: number;
-    new_stock: number;
-    reason: string;
-    order_id?: string;
-    user_id?: string;
-    notes?: string;
-    created_at: string;
-}
-
 export default function StockManagement() {
     const { isActiveAdmin } = useUser();
-    const [products, setProducts] = useState<ProductStock[]>([]);
+    const [products, setProducts] = useState<any[]>([]); // Assuming ProductStock type is removed, using 'any' for now
     const [alerts, setAlerts] = useState<StockAlert[]>([]);
     const [selectedProduct, setSelectedProduct] = useState<string | null>(null);
     const [stockHistory, setStockHistory] = useState<StockMovement[]>([]);
     const [loading, setLoading] = useState(true);
+    const [actionLoading, setActionLoading] = useState(false);
     const [showAddStock, setShowAddStock] = useState(false);
     const [showAdjustStock, setShowAdjustStock] = useState(false);
     const [selectedProductForAction, setSelectedProductForAction] = useState<string | null>(null);
     const [quantity, setQuantity] = useState('');
     const [reason, setReason] = useState('');
-    const [actionLoading, setActionLoading] = useState(false);
+
+    // Créer une instance de StockManager
+    const stockManager = new StockManager();
 
     useEffect(() => {
         if (isActiveAdmin) {
@@ -78,13 +45,12 @@ export default function StockManagement() {
         try {
             setLoading(true);
 
-            // Charger les produits avec leur stock
-            const { data: productsData } = await stockManager.supabase
-                .from('product_stock_overview')
-                .select('*')
-                .order('available_stock', { ascending: true });
-
-            setProducts(productsData || []);
+            // Charger les produits avec leur stock via l'API
+            const response = await fetch('/api/admin/stock/movements');
+            if (response.ok) {
+                const { data: productsData } = await response.json();
+                setProducts(productsData || []);
+            }
 
             // Charger les alertes actives
             const alertsData = await stockManager.getActiveStockAlerts();
@@ -357,8 +323,8 @@ export default function StockManagement() {
                                                 </td>
                                                 <td className="px-4 py-4 whitespace-nowrap">
                                                     <span className={`text-sm font-medium ${product.available_stock === 0 ? 'text-red-600' :
-                                                            product.available_stock <= product.low_stock_threshold ? 'text-orange-600' :
-                                                                'text-green-600'
+                                                        product.available_stock <= product.low_stock_threshold ? 'text-orange-600' :
+                                                            'text-green-600'
                                                         }`}>
                                                         {product.available_stock}
                                                     </span>
@@ -378,7 +344,7 @@ export default function StockManagement() {
                                                             className="text-primary hover:text-primary/80"
                                                             title="Voir l'historique"
                                                         >
-                                                            <History className="h-4 w-4" />
+                                                            <FileText className="h-4 w-4" />
                                                         </button>
                                                         <button
                                                             onClick={() => {
@@ -437,7 +403,7 @@ export default function StockManagement() {
                                             </div>
                                             <p className="text-xs text-gray-600 mb-1">{movement.reason}</p>
                                             <p className="text-xs text-gray-500">
-                                                {new Date(movement.created_at).toLocaleDateString('fr-FR')}
+                                                {movement.created_at ? new Date(movement.created_at).toLocaleDateString('fr-FR') : 'Date inconnue'}
                                             </p>
                                         </div>
                                     );

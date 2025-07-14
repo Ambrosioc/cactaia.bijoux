@@ -46,8 +46,9 @@ export class ReviewSystem {
   // Créer un nouvel avis
   async createReview(review: Omit<Review, 'id' | 'created_at' | 'updated_at' | 'helpful_votes' | 'total_votes'>): Promise<Review | null> {
     try {
+      const supabase = await this.supabase;
       // Vérifier si l'utilisateur a déjà laissé un avis pour ce produit
-      const { data: existingReview } = await this.supabase
+      const { data: existingReview } = await supabase
         .from('reviews')
         .select('id')
         .eq('product_id', review.product_id)
@@ -61,7 +62,7 @@ export class ReviewSystem {
       // Vérifier si l'utilisateur a acheté le produit (pour verified_purchase)
       const isVerifiedPurchase = await this.checkVerifiedPurchase(review.user_id, review.product_id);
 
-      const { data, error } = await this.supabase
+      const { data, error } = await supabase
         .from('reviews')
         .insert({
           ...review,
@@ -92,7 +93,8 @@ export class ReviewSystem {
     offset: number = 0
   ): Promise<{ reviews: Review[]; total: number }> {
     try {
-      let query = this.supabase
+      const supabase = await this.supabase;
+      let query = supabase
         .from('reviews')
         .select('*, users!inner(nom, prenom)', { count: 'exact' })
         .eq('product_id', productId)
@@ -145,7 +147,8 @@ export class ReviewSystem {
   // Obtenir les statistiques d'avis d'un produit
   async getProductReviewStats(productId: string): Promise<ReviewStats | null> {
     try {
-      const { data: reviews, error } = await this.supabase
+      const supabase = await this.supabase;
+      const { data: reviews, error } = await supabase
         .from('reviews')
         .select('rating, is_verified_purchase')
         .eq('product_id', productId)
@@ -188,8 +191,9 @@ export class ReviewSystem {
   // Voter pour un avis (utile/pas utile)
   async voteReview(reviewId: string, userId: string, isHelpful: boolean): Promise<boolean> {
     try {
+      const supabase = await this.supabase;
       // Vérifier si l'utilisateur a déjà voté
-      const { data: existingVote } = await this.supabase
+      const { data: existingVote } = await supabase
         .from('review_votes')
         .select('id, is_helpful')
         .eq('review_id', reviewId)
@@ -198,7 +202,7 @@ export class ReviewSystem {
 
       if (existingVote) {
         // Mettre à jour le vote existant
-        const { error: updateError } = await this.supabase
+        const { error: updateError } = await supabase
           .from('review_votes')
           .update({ is_helpful: isHelpful, updated_at: new Date().toISOString() })
           .eq('id', existingVote.id);
@@ -208,7 +212,7 @@ export class ReviewSystem {
         }
       } else {
         // Créer un nouveau vote
-        const { error: insertError } = await this.supabase
+        const { error: insertError } = await supabase
           .from('review_votes')
           .insert({
             review_id: reviewId,
@@ -234,7 +238,8 @@ export class ReviewSystem {
   // Signaler un avis
   async reportReview(reviewId: string, userId: string, reason: string): Promise<boolean> {
     try {
-      const { error } = await this.supabase
+      const supabase = await this.supabase;
+      const { error } = await supabase
         .from('review_reports')
         .insert({
           review_id: reviewId,
@@ -256,7 +261,8 @@ export class ReviewSystem {
   // Modérer un avis (admin seulement)
   async moderateReview(reviewId: string, status: 'approved' | 'rejected', moderatorId: string, reason?: string): Promise<boolean> {
     try {
-      const { error } = await this.supabase
+      const supabase = await this.supabase;
+      const { error } = await supabase
         .from('reviews')
         .update({
           status: status,
@@ -280,7 +286,8 @@ export class ReviewSystem {
   // Obtenir les avis en attente de modération
   async getPendingReviews(limit: number = 20, offset: number = 0): Promise<Review[]> {
     try {
-      const { data, error } = await this.supabase
+      const supabase = await this.supabase;
+      const { data, error } = await supabase
         .from('reviews')
         .select('*, users!inner(nom, prenom), produits!inner(nom)')
         .eq('status', 'pending')
@@ -301,7 +308,8 @@ export class ReviewSystem {
   // Vérifier si l'utilisateur a acheté le produit
   private async checkVerifiedPurchase(userId: string, productId: string): Promise<boolean> {
     try {
-      const { data: orders, error } = await this.supabase
+      const supabase = await this.supabase;
+      const { data: orders, error } = await supabase
         .from('commandes')
         .select('produits, statut')
         .eq('user_id', userId)
@@ -327,7 +335,8 @@ export class ReviewSystem {
   // Mettre à jour les statistiques de vote d'un avis
   private async updateReviewVoteStats(reviewId: string): Promise<void> {
     try {
-      const { data: votes, error } = await this.supabase
+      const supabase = await this.supabase;
+      const { data: votes, error } = await supabase
         .from('review_votes')
         .select('is_helpful')
         .eq('review_id', reviewId);
@@ -339,7 +348,7 @@ export class ReviewSystem {
       const helpfulVotes = votes.filter(vote => vote.is_helpful).length;
       const totalVotes = votes.length;
 
-      await this.supabase
+      await supabase
         .from('reviews')
         .update({
           helpful_votes: helpfulVotes,
