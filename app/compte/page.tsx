@@ -12,8 +12,6 @@ import { useEffect, useState } from 'react';
 
 interface EditableFields {
   email: string;
-  telephone: string;
-  adresse: string;
 }
 
 export default function AccountPage() {
@@ -31,9 +29,7 @@ export default function AccountPage() {
   const [loading, setLoading] = useState(true);
   const [isEditing, setIsEditing] = useState(false);
   const [editableData, setEditableData] = useState<EditableFields>({
-    email: '',
-    telephone: '',
-    adresse: ''
+    email: ''
   });
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
@@ -60,9 +56,7 @@ export default function AccountPage() {
 
       // Initialiser les données éditables
       setEditableData({
-        email: user.email || '',
-        telephone: user.telephone || '',
-        adresse: user.adresse || ''
+        email: user.email || ''
       });
 
       setLoading(false);
@@ -84,9 +78,7 @@ export default function AccountPage() {
     if (isEditing) {
       // Annuler les modifications
       setEditableData({
-        email: user?.email || '',
-        telephone: user?.telephone || '',
-        adresse: user?.adresse || ''
+        email: user?.email || ''
       });
       setMessage(null);
     }
@@ -112,9 +104,7 @@ export default function AccountPage() {
 
       // Mettre à jour le profil dans la table users
       await updateProfile({
-        email: editableData.email,
-        telephone: editableData.telephone || undefined,
-        adresse: editableData.adresse || undefined
+        email: editableData.email
       });
 
       // Si l'email a changé, le mettre à jour aussi dans auth.users
@@ -376,39 +366,7 @@ export default function AccountPage() {
                           )}
                         </div>
 
-                        <div>
-                          <label className="block text-sm font-medium mb-2">
-                            Téléphone
-                          </label>
-                          <input
-                            type="tel"
-                            value={editableData.telephone}
-                            onChange={(e) => handleInputChange('telephone', e.target.value)}
-                            disabled={!isEditing}
-                            placeholder="Votre numéro de téléphone"
-                            className={`w-full rounded-md border px-3 py-2 transition-colors ${isEditing
-                              ? 'border-input bg-background focus:ring-2 focus:ring-primary'
-                              : 'border-input bg-gray-50 text-gray-500 cursor-not-allowed'
-                              }`}
-                          />
-                        </div>
 
-                        <div>
-                          <label className="block text-sm font-medium mb-2">
-                            Adresse
-                          </label>
-                          <textarea
-                            value={editableData.adresse}
-                            onChange={(e) => handleInputChange('adresse', e.target.value)}
-                            disabled={!isEditing}
-                            placeholder="Votre adresse complète"
-                            rows={3}
-                            className={`w-full rounded-md border px-3 py-2 transition-colors resize-none ${isEditing
-                              ? 'border-input bg-background focus:ring-2 focus:ring-primary'
-                              : 'border-input bg-gray-50 text-gray-500 cursor-not-allowed'
-                              }`}
-                          />
-                        </div>
                       </div>
                     </div>
 
@@ -433,7 +391,7 @@ export default function AccountPage() {
                           </label>
                           <input
                             type="text"
-                            value={new Date(user.created_at).toLocaleDateString('fr-FR')}
+                            value={user.created_at ? new Date(user.created_at).toLocaleDateString('fr-FR') : 'Date inconnue'}
                             disabled
                             className="w-full rounded-md border border-input bg-gray-50 px-3 py-2 text-gray-500 cursor-not-allowed"
                           />
@@ -513,7 +471,7 @@ export default function AccountPage() {
                           <input
                             type="checkbox"
                             className="mr-3"
-                            defaultChecked={user.newsletter}
+                            defaultChecked={user.newsletter ?? false}
                           />
                           Recevoir les newsletters
                         </label>

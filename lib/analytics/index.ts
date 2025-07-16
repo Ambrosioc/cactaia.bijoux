@@ -197,7 +197,7 @@ export class Analytics {
       today.setHours(0, 0, 0, 0);
       
       const newUsersToday = users?.filter(user => 
-        new Date(user.created_at) >= today
+        user.created_at && new Date(user.created_at) >= today
       ).length || 0;
 
       // Calculer le taux de conversion (simplifié)

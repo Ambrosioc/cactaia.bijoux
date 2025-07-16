@@ -242,7 +242,7 @@ export default function AddressesPage() {
             ville: address.ville,
             pays: address.pays,
             telephone: address.telephone,
-            est_principale: address.est_principale,
+            est_principale: address.est_principale ?? false,
         });
         setShowForm(true);
     };
@@ -324,7 +324,7 @@ export default function AddressesPage() {
         setFormData({
             ...initialFormData,
             nom_complet: user ? `${user.prenom} ${user.nom}`.trim() : '',
-            telephone: user?.telephone || '',
+            telephone: '',
             est_principale: addresses.length === 0, // Première adresse = principale par défaut
         });
         setEditingAddress(null);
@@ -499,7 +499,7 @@ export default function AddressesPage() {
                             <div className="bg-white p-6 rounded-lg shadow-sm sticky top-24">
                                 <div className="flex justify-between items-center mb-6">
                                     <h3 className="text-lg font-medium">
-                                        {editingAddress ? 'Modifier l\'adresse' : 'Nouvelle adresse'}
+                                        {editingAddress ? 'Modifier l&apos;adresse' : 'Nouvelle adresse'}
                                     </h3>
                                     <button
                                         onClick={handleCloseForm}

@@ -78,7 +78,16 @@ export class ReviewSystem {
         throw error;
       }
 
-      return data;
+      return {
+        ...data,
+        order_id: data.order_id || undefined,
+        status: data.status as 'pending' | 'approved' | 'rejected',
+        helpful_votes: data.helpful_votes ?? 0,
+        total_votes: data.total_votes ?? 0,
+        is_verified_purchase: data.is_verified_purchase ?? false,
+        created_at: data.created_at || undefined,
+        updated_at: data.updated_at || undefined
+      };
     } catch (error) {
       console.error('Erreur lors de la création de l\'avis:', error);
       return null;
@@ -135,7 +144,16 @@ export class ReviewSystem {
       }
 
       return {
-        reviews: data || [],
+        reviews: (data || []).map(review => ({
+          ...review,
+          order_id: review.order_id || undefined,
+          status: review.status as 'pending' | 'approved' | 'rejected',
+          helpful_votes: review.helpful_votes ?? 0,
+          total_votes: review.total_votes ?? 0,
+          is_verified_purchase: review.is_verified_purchase ?? false,
+          created_at: review.created_at || undefined,
+          updated_at: review.updated_at || undefined
+        })),
         total: count || 0
       };
     } catch (error) {
@@ -298,7 +316,16 @@ export class ReviewSystem {
         throw error;
       }
 
-      return data || [];
+      return (data || []).map(review => ({
+        ...review,
+        order_id: review.order_id || undefined,
+        status: review.status as 'pending' | 'approved' | 'rejected',
+        helpful_votes: review.helpful_votes ?? 0,
+        total_votes: review.total_votes ?? 0,
+        is_verified_purchase: review.is_verified_purchase ?? false,
+        created_at: review.created_at || undefined,
+        updated_at: review.updated_at || undefined
+      }));
     } catch (error) {
       console.error('Erreur lors de la récupération des avis en attente:', error);
       return [];

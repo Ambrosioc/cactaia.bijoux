@@ -22,6 +22,7 @@ interface FormData {
     prix: string;
     prix_promo: string;
     categorie: string;
+    collections: string[];
     stock: string;
     sku: string;
     poids_grammes: string;
@@ -37,6 +38,16 @@ const categories = [
     'Bracelets',
     'Boucles d\'oreilles',
     'Accessoires'
+];
+
+const availableCollections = [
+    'Été 2025',
+    'Nouveautés',
+    'Bestsellers',
+    'Désert',
+    'Mixte',
+    'Femme',
+    'Homme'
 ];
 
 export default function ProductForm({ product, isEditing = false }: ProductFormProps) {
@@ -55,6 +66,7 @@ export default function ProductForm({ product, isEditing = false }: ProductFormP
         prix: product?.prix?.toString() || '',
         prix_promo: product?.prix_promo?.toString() || '',
         categorie: product?.categorie || categories[0],
+        collections: product?.collections || [],
         stock: product?.stock?.toString() || '0',
         sku: product?.sku || '',
         poids_grammes: product?.poids_grammes?.toString() || '',
@@ -121,13 +133,14 @@ export default function ProductForm({ product, isEditing = false }: ProductFormP
         setMessage(null);
 
         try {
-            const productData: ProductInsert | ProductUpdate = {
+            const productData = {
                 nom: formData.nom.trim(),
                 description: formData.description.trim() || null,
                 description_courte: formData.description_courte.trim() || null,
                 prix: parseFloat(formData.prix),
                 prix_promo: formData.prix_promo ? parseFloat(formData.prix_promo) : null,
-                categorie: formData.categorie,
+                categorie: formData.categorie || 'Bijoux',
+                collections: formData.collections,
                 stock: parseInt(formData.stock) || 0,
                 sku: formData.sku.trim() || null,
                 poids_grammes: formData.poids_grammes ? parseFloat(formData.poids_grammes) : null,
@@ -135,7 +148,7 @@ export default function ProductForm({ product, isEditing = false }: ProductFormP
                 est_mis_en_avant: formData.est_mis_en_avant,
                 tva_applicable: formData.tva_applicable,
                 images: formData.images,
-            };
+            } satisfies ProductInsert | ProductUpdate;
 
             if (isEditing && product) {
                 // Mise à jour
@@ -332,6 +345,33 @@ export default function ProductForm({ product, isEditing = false }: ProductFormP
                                         />
                                     </div>
                                 </div>
+
+                                <div>
+                                    <label className="block text-sm font-medium mb-2">
+                                        Collections
+                                    </label>
+                                    <div className="space-y-2">
+                                        {availableCollections.map(collection => (
+                                            <label key={collection} className="flex items-center space-x-2">
+                                                <input
+                                                    type="checkbox"
+                                                    checked={formData.collections.includes(collection)}
+                                                    onChange={(e) => {
+                                                        const newCollections = e.target.checked
+                                                            ? [...formData.collections, collection]
+                                                            : formData.collections.filter(c => c !== collection);
+                                                        handleInputChange('collections', newCollections);
+                                                    }}
+                                                    className="rounded border-gray-300 text-primary focus:ring-primary"
+                                                />
+                                                <span className="text-sm">{collection}</span>
+                                            </label>
+                                        ))}
+                                    </div>
+                                    <p className="text-xs text-muted-foreground mt-2">
+                                        Sélectionnez les collections auxquelles ce produit appartient
+                                    </p>
+                                </div>
                             </div>
                         </div>
 
@@ -498,7 +538,7 @@ export default function ProductForm({ product, isEditing = false }: ProductFormP
                             {isEditing && (
                                 <div className="mt-4 pt-4 border-t border-border">
                                     <p className="text-xs text-muted-foreground">
-                                        Dernière modification : {product && new Date(product.updated_at).toLocaleDateString('fr-FR')}
+                                        Dernière modification : {product && product.updated_at ? new Date(product.updated_at).toLocaleDateString('fr-FR') : 'Date inconnue'}
                                     </p>
                                 </div>
                             )}

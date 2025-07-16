@@ -1,16 +1,15 @@
 'use client';
 
+import { useTheme } from '@/lib/contexts/ThemeContext';
 import { useUser } from '@/stores/userStore';
 import { motion } from 'framer-motion';
 import {
-    Globe,
-    Image,
     Mail,
     Palette,
+    RotateCcw,
     Save,
     Settings,
-    Store,
-    Upload
+    Store
 } from 'lucide-react';
 import { useState } from 'react';
 
@@ -20,30 +19,17 @@ interface ShopSettings {
     shopEmail: string;
     shopPhone: string;
     shopAddress: string;
-    shopLogo: string;
-    shopFavicon: string;
-    primaryColor: string;
-    secondaryColor: string;
-    currency: string;
-    timezone: string;
-    language: string;
 }
 
 export default function SettingsPage() {
     const { isActiveAdmin } = useUser();
+    const { colors, updateColors, resetColors } = useTheme();
     const [settings, setSettings] = useState<ShopSettings>({
         shopName: 'Cactaia.Bijoux',
         shopDescription: 'Bijoux écoresponsables et élégants',
         shopEmail: 'contact@cactaiabijoux.fr',
         shopPhone: '+33 1 23 45 67 89',
         shopAddress: '42 rue Maurice Violette, 28600 Luisant, France',
-        shopLogo: '',
-        shopFavicon: '',
-        primaryColor: '#4A7C59',
-        secondaryColor: '#F5F5F4',
-        currency: 'EUR',
-        timezone: 'Europe/Paris',
-        language: 'fr',
     });
 
     const [saving, setSaving] = useState(false);
@@ -54,6 +40,10 @@ export default function SettingsPage() {
             ...prev,
             [field]: value
         }));
+    };
+
+    const handleColorChange = (colorType: 'primary' | 'secondary', value: string) => {
+        updateColors({ [colorType]: value });
     };
 
     const handleSave = async () => {
@@ -218,145 +208,89 @@ export default function SettingsPage() {
                     transition={{ delay: 0.1 }}
                     className="bg-white p-6 rounded-lg shadow-sm"
                 >
-                    <div className="flex items-center gap-2 mb-6">
-                        <Palette className="h-5 w-5 text-primary" />
-                        <h2 className="text-xl font-medium">Apparence</h2>
+                    <div className="flex items-center justify-between mb-6">
+                        <div className="flex items-center gap-2">
+                            <Palette className="h-5 w-5 text-primary" />
+                            <h2 className="text-xl font-medium">Apparence</h2>
+                        </div>
+                        <button
+                            onClick={resetColors}
+                            className="btn btn-outline text-xs px-3 py-1 flex items-center gap-1"
+                            title="Réinitialiser les couleurs"
+                        >
+                            <RotateCcw className="h-3 w-3" />
+                            Reset
+                        </button>
                     </div>
 
-                    <div className="space-y-4">
+                    <div className="space-y-6">
                         <div>
                             <label className="block text-sm font-medium mb-2">
-                                Logo de la boutique
+                                Couleur primaire
                             </label>
-                            <div className="border-2 border-dashed border-border rounded-lg p-6 text-center">
-                                <Upload className="h-8 w-8 mx-auto text-muted-foreground mb-2" />
-                                <p className="text-sm text-muted-foreground mb-2">
-                                    Glissez votre logo ici ou cliquez pour parcourir
-                                </p>
-                                <button className="btn btn-outline text-xs px-3 py-1">
-                                    Choisir un fichier
-                                </button>
+                            <div className="flex items-center gap-3">
+                                <input
+                                    type="color"
+                                    value={colors.primary}
+                                    onChange={(e) => handleColorChange('primary', e.target.value)}
+                                    className="w-16 h-12 border border-input rounded cursor-pointer"
+                                />
+                                <input
+                                    type="text"
+                                    value={colors.primary}
+                                    onChange={(e) => handleColorChange('primary', e.target.value)}
+                                    className="flex-1 px-3 py-2 border border-input rounded-md focus:outline-none focus:ring-2 focus:ring-primary text-sm font-mono"
+                                    placeholder="#4A7C59"
+                                />
                             </div>
+                            <p className="text-xs text-muted-foreground mt-1">
+                                Cette couleur sera utilisée pour les boutons, liens et éléments d&apos;accent
+                            </p>
                         </div>
 
                         <div>
                             <label className="block text-sm font-medium mb-2">
-                                Favicon
+                                Couleur secondaire
                             </label>
-                            <div className="border-2 border-dashed border-border rounded-lg p-4 text-center">
-                                <Image className="h-6 w-6 mx-auto text-muted-foreground mb-2" />
-                                <p className="text-xs text-muted-foreground mb-2">
-                                    Format ICO ou PNG (32x32px)
-                                </p>
-                                <button className="btn btn-outline text-xs px-3 py-1">
-                                    Choisir un fichier
-                                </button>
+                            <div className="flex items-center gap-3">
+                                <input
+                                    type="color"
+                                    value={colors.secondary}
+                                    onChange={(e) => handleColorChange('secondary', e.target.value)}
+                                    className="w-16 h-12 border border-input rounded cursor-pointer"
+                                />
+                                <input
+                                    type="text"
+                                    value={colors.secondary}
+                                    onChange={(e) => handleColorChange('secondary', e.target.value)}
+                                    className="flex-1 px-3 py-2 border border-input rounded-md focus:outline-none focus:ring-2 focus:ring-primary text-sm font-mono"
+                                    placeholder="#F5F5F4"
+                                />
                             </div>
+                            <p className="text-xs text-muted-foreground mt-1">
+                                Cette couleur sera utilisée pour les arrière-plans et éléments neutres
+                            </p>
                         </div>
 
-                        <div className="grid grid-cols-2 gap-4">
-                            <div>
-                                <label className="block text-sm font-medium mb-2">
-                                    Couleur primaire
-                                </label>
-                                <div className="flex items-center gap-2">
-                                    <input
-                                        type="color"
-                                        value={settings.primaryColor}
-                                        onChange={(e) => handleInputChange('primaryColor', e.target.value)}
-                                        className="w-12 h-10 border border-input rounded cursor-pointer"
-                                    />
-                                    <input
-                                        type="text"
-                                        value={settings.primaryColor}
-                                        onChange={(e) => handleInputChange('primaryColor', e.target.value)}
-                                        className="flex-1 px-3 py-2 border border-input rounded-md focus:outline-none focus:ring-2 focus:ring-primary text-sm"
-                                    />
+                        {/* Aperçu en temps réel */}
+                        <div className="mt-6 p-4 border border-border rounded-lg">
+                            <h3 className="text-sm font-medium mb-3">Aperçu en temps réel</h3>
+                            <div className="space-y-2">
+                                <button className="w-full bg-primary text-white py-2 px-4 rounded hover:bg-primary-600 transition-colors">
+                                    Bouton primaire
+                                </button>
+                                <button className="w-full bg-secondary text-gray-900 py-2 px-4 rounded border border-border hover:bg-secondary-50 transition-colors">
+                                    Bouton secondaire
+                                </button>
+                                <div className="flex gap-2">
+                                    <span className="inline-flex items-center px-2 py-1 rounded-full text-xs bg-primary-100 text-primary-700">
+                                        Badge
+                                    </span>
+                                    <span className="inline-flex items-center px-2 py-1 rounded-full text-xs bg-secondary text-gray-700">
+                                        Badge secondaire
+                                    </span>
                                 </div>
                             </div>
-
-                            <div>
-                                <label className="block text-sm font-medium mb-2">
-                                    Couleur secondaire
-                                </label>
-                                <div className="flex items-center gap-2">
-                                    <input
-                                        type="color"
-                                        value={settings.secondaryColor}
-                                        onChange={(e) => handleInputChange('secondaryColor', e.target.value)}
-                                        className="w-12 h-10 border border-input rounded cursor-pointer"
-                                    />
-                                    <input
-                                        type="text"
-                                        value={settings.secondaryColor}
-                                        onChange={(e) => handleInputChange('secondaryColor', e.target.value)}
-                                        className="flex-1 px-3 py-2 border border-input rounded-md focus:outline-none focus:ring-2 focus:ring-primary text-sm"
-                                    />
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </motion.div>
-
-                {/* Localisation */}
-                <motion.div
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.2 }}
-                    className="bg-white p-6 rounded-lg shadow-sm"
-                >
-                    <div className="flex items-center gap-2 mb-6">
-                        <Globe className="h-5 w-5 text-primary" />
-                        <h2 className="text-xl font-medium">Localisation</h2>
-                    </div>
-
-                    <div className="space-y-4">
-                        <div>
-                            <label className="block text-sm font-medium mb-2">
-                                Devise
-                            </label>
-                            <select
-                                value={settings.currency}
-                                onChange={(e) => handleInputChange('currency', e.target.value)}
-                                className="w-full px-3 py-2 border border-input rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
-                            >
-                                <option value="EUR">Euro (€)</option>
-                                <option value="USD">Dollar US ($)</option>
-                                <option value="GBP">Livre Sterling (£)</option>
-                                <option value="CHF">Franc Suisse (CHF)</option>
-                            </select>
-                        </div>
-
-                        <div>
-                            <label className="block text-sm font-medium mb-2">
-                                Fuseau horaire
-                            </label>
-                            <select
-                                value={settings.timezone}
-                                onChange={(e) => handleInputChange('timezone', e.target.value)}
-                                className="w-full px-3 py-2 border border-input rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
-                            >
-                                <option value="Europe/Paris">Europe/Paris (UTC+1)</option>
-                                <option value="Europe/London">Europe/London (UTC+0)</option>
-                                <option value="America/New_York">America/New_York (UTC-5)</option>
-                                <option value="Asia/Tokyo">Asia/Tokyo (UTC+9)</option>
-                            </select>
-                        </div>
-
-                        <div>
-                            <label className="block text-sm font-medium mb-2">
-                                Langue
-                            </label>
-                            <select
-                                value={settings.language}
-                                onChange={(e) => handleInputChange('language', e.target.value)}
-                                className="w-full px-3 py-2 border border-input rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
-                            >
-                                <option value="fr">Français</option>
-                                <option value="en">English</option>
-                                <option value="es">Español</option>
-                                <option value="de">Deutsch</option>
-                            </select>
                         </div>
                     </div>
                 </motion.div>
@@ -365,7 +299,7 @@ export default function SettingsPage() {
                 <motion.div
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.3 }}
+                    transition={{ delay: 0.2 }}
                     className="bg-white p-6 rounded-lg shadow-sm"
                 >
                     <div className="flex items-center gap-2 mb-6">
@@ -379,7 +313,7 @@ export default function SettingsPage() {
                                 Mode maintenance
                             </h3>
                             <p className="text-sm text-yellow-700 mb-3">
-                                Activez le mode maintenance pour effectuer des mises à jour sans perturber l'expérience utilisateur.
+                                Activez le mode maintenance pour effectuer des mises à jour sans perturber l&apos;expérience utilisateur.
                             </p>
                             <button className="btn btn-outline text-yellow-700 border-yellow-300 hover:bg-yellow-100 text-xs px-3 py-1">
                                 Activer le mode maintenance
@@ -391,7 +325,7 @@ export default function SettingsPage() {
                                 Sauvegarde des données
                             </h3>
                             <p className="text-sm text-blue-700 mb-3">
-                                Dernière sauvegarde : Aujourd'hui à 03:00
+                                Dernière sauvegarde : Aujourd&apos;hui à 03:00
                             </p>
                             <button className="btn btn-outline text-blue-700 border-blue-300 hover:bg-blue-100 text-xs px-3 py-1">
                                 Créer une sauvegarde
@@ -403,7 +337,7 @@ export default function SettingsPage() {
                                 Zone de danger
                             </h3>
                             <p className="text-sm text-red-700 mb-3">
-                                Actions irréversibles qui affectent l'ensemble de la boutique.
+                                Actions irréversibles qui affectent l&apos;ensemble de la boutique.
                             </p>
                             <button className="btn btn-outline text-red-700 border-red-300 hover:bg-red-100 text-xs px-3 py-1">
                                 Réinitialiser la boutique

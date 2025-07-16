@@ -58,7 +58,7 @@ export default function OrderDetailPage() {
             const { data, error } = await supabase
                 .from('commandes')
                 .select('*')
-                .eq('id', id)
+                .eq('id', typeof id === 'string' ? id : id[0])
                 .eq('user_id', user.id)
                 .single();
 
@@ -111,6 +111,10 @@ export default function OrderDetailPage() {
         return image || '/placeholder.jpg';
     };
 
+    const safeString = (val: string | null | undefined): string => {
+        return typeof val === 'string' ? val : '';
+    };
+
     if (loading || userLoading || !user) {
         return (
             <div className="pt-24 pb-16 min-h-screen flex items-center justify-center">
@@ -158,20 +162,20 @@ export default function OrderDetailPage() {
                         <div>
                             <h1 className="heading-lg">Commande {order.numero_commande}</h1>
                             <p className="text-muted-foreground">
-                                Passée le {new Date(order.created_at).toLocaleDateString('fr-FR', {
+                                Passée le {order.created_at ? new Date(order.created_at).toLocaleDateString('fr-FR', {
                                     year: 'numeric',
                                     month: 'long',
                                     day: 'numeric',
                                     hour: '2-digit',
                                     minute: '2-digit'
-                                })}
+                                }) : 'Date inconnue'}
                             </p>
                         </div>
                     </div>
 
                     <div className="flex items-center gap-3">
-                        <span className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${getStatusColor(order.statut)}`}>
-                            {getStatusLabel(order.statut)}
+                        <span className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${getStatusColor(order.statut || 'en_attente')}`}>
+                            {getStatusLabel(order.statut || 'en_attente')}
                         </span>
                     </div>
                 </div>
@@ -236,12 +240,15 @@ export default function OrderDetailPage() {
                             </div>
 
                             <div className="text-sm">
-                                <p className="font-medium">{address.nom_complet}</p>
-                                <p>{address.ligne_1}</p>
+                                <p className="font-medium">{safeString(address.nom_complet) || 'Nom inconnu'}</p>
+                                {address.ligne_1 && <p>{address.ligne_1}</p>}
                                 {address.ligne_2 && <p>{address.ligne_2}</p>}
-                                <p>{address.code_postal} {address.ville}</p>
-                                <p>{address.pays}</p>
-                                <p className="mt-2">Téléphone: {address.telephone}</p>
+                                {(address.code_postal || address.ville) && (() => {
+                                    const codePostal = (address.code_postal as string) || '';
+                                    const ville = (address.ville as string) || '';
+                                    return <p>{codePostal} {ville}</p>;
+                                })()}
+                                {address.pays && <p>{address.pays}</p>}
                             </div>
                         </motion.div>
 
@@ -331,13 +338,13 @@ export default function OrderDetailPage() {
                                     <span className="text-muted-foreground">Commande passée le</span>
                                 </div>
                                 <p className="text-sm font-medium">
-                                    {new Date(order.created_at).toLocaleDateString('fr-FR', {
+                                    {order.created_at ? new Date(order.created_at).toLocaleDateString('fr-FR', {
                                         year: 'numeric',
                                         month: 'long',
                                         day: 'numeric',
                                         hour: '2-digit',
                                         minute: '2-digit'
-                                    })}
+                                    }) : 'Date inconnue'}
                                 </p>
                             </div>
 

@@ -44,7 +44,7 @@ export async function createCheckoutSession({
       throw new Error(`Produit ${item.product.nom} non trouvé`);
     }
 
-    if (product.stock < item.quantity) {
+    if ((product.stock ?? 0) < item.quantity) {
       throw new Error(`Stock insuffisant pour ${product.nom}`);
     }
 
@@ -76,6 +76,7 @@ export async function createCheckoutSession({
     .from('commandes')
     .insert({
       user_id: userId,
+      numero_commande: `CMD-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
       produits: orderProducts,
       montant_total: totalAmount,
       statut: 'en_attente',

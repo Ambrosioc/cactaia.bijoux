@@ -94,7 +94,7 @@ export default function CartPage() {
                   <div className="md:hidden flex space-x-4">
                     <div className="relative w-20 h-20 flex-shrink-0">
                       <OptimizedImage
-                        src={getImageUrl(item.product.images)}
+                        src={getImageUrl(item.product.images ?? [])}
                         alt={item.product.nom}
                         fill
                         className="object-cover rounded"
@@ -102,7 +102,7 @@ export default function CartPage() {
                       />
                     </div>
                     <div className="flex-grow">
-                      <Link href={`/produit/${item.product.slug || item.product.id}`} className="font-medium hover:text-primary">
+                      <Link href={`/produit/${item.product.id}`} className="font-medium hover:text-primary">
                         {item.product.nom}
                       </Link>
                       <p className="text-sm text-muted-foreground mb-1">
@@ -123,7 +123,7 @@ export default function CartPage() {
                             onClick={() => updateQuantity(item.id, item.quantity + 1)}
                             className="p-1 hover:bg-secondary"
                             aria-label="Augmenter la quantité"
-                            disabled={item.quantity >= item.product.stock}
+                            disabled={item.quantity >= (item.product.stock ?? 0)}
                           >
                             <Plus className="h-4 w-4" />
                           </button>
@@ -143,7 +143,7 @@ export default function CartPage() {
                   <div className="hidden md:flex md:col-span-6 items-center space-x-4">
                     <div className="relative w-16 h-16 flex-shrink-0">
                       <OptimizedImage
-                        src={getImageUrl(item.product.images)}
+                        src={getImageUrl(item.product.images ?? [])}
                         alt={item.product.nom}
                         fill
                         className="object-cover rounded"
@@ -151,13 +151,13 @@ export default function CartPage() {
                       />
                     </div>
                     <div>
-                      <Link href={`/produit/${item.product.slug || item.product.id}`} className="font-medium hover:text-primary">
+                      <Link href={`/produit/${item.product.id}`} className="font-medium hover:text-primary">
                         {item.product.nom}
                       </Link>
                       <p className="text-sm text-muted-foreground">
                         {item.product.categorie}
                       </p>
-                      {item.product.stock <= 5 && (
+                      {item.product.stock && item.product.stock <= 5 && (
                         <p className="text-xs text-orange-600">
                           Plus que {item.product.stock} en stock
                         </p>
@@ -179,7 +179,7 @@ export default function CartPage() {
                         onClick={() => updateQuantity(item.id, item.quantity + 1)}
                         className="p-1 hover:bg-secondary"
                         aria-label="Augmenter la quantité"
-                        disabled={item.quantity >= item.product.stock}
+                        disabled={item.quantity >= (item.product.stock ?? 0)}
                       >
                         <Plus className="h-4 w-4" />
                       </button>

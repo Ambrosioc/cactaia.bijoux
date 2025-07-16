@@ -29,13 +29,27 @@ export async function POST(request: NextRequest) {
     // Récupérer les informations de la commande
     const { data: orderData, error: orderError } = await supabase
       .from('commandes')
-      .select('*, users:user_id(id, email, prenom, nom)')
+      .select('*')
       .eq('id', order_id)
       .single();
 
     if (orderError || !orderData) {
       return NextResponse.json(
         { error: 'Commande non trouvée' },
+        { status: 404 }
+      );
+    }
+
+    // Récupérer l'utilisateur lié à la commande
+    const { data: userData, error: userError } = await supabase
+      .from('users')
+      .select('id, email, prenom, nom')
+      .eq('id', orderData.user_id)
+      .single();
+
+    if (userError || !userData) {
+      return NextResponse.json(
+        { error: "Utilisateur lié à la commande non trouvé" },
         { status: 404 }
       );
     }
@@ -59,7 +73,7 @@ export async function POST(request: NextRequest) {
     // Envoyer l'email de confirmation
     const result = await sendOrderConfirmationEmail({
       order: orderData,
-      user: orderData.users,
+      user: userData,
       siteUrl: process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'
     });
 

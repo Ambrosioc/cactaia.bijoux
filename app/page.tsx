@@ -1,6 +1,7 @@
-import { CollectionShowcase, FeaturedProducts, HeroCarousel, TestimonialsSection, ValuesSection } from '@/components/client/dynamic-imports';
+import { CollectionShowcase, FeaturedProducts, HeroCarousel, InstagramFeed, NewsletterModal, TestimonialsSection, ValuesSection } from '@/components/client/dynamic-imports';
+import { Button } from '@/components/ui/button';
 import OptimizedImage from '@/components/ui/optimized-image';
-import { ArrowRight } from 'lucide-react';
+import { ArrowRight, Mail } from 'lucide-react';
 import Link from 'next/link';
 
 export default function Home() {
@@ -53,58 +54,33 @@ export default function Home() {
       {/* Testimonials */}
       <TestimonialsSection />
 
-      {/* Instagram Banner */}
-      <section className="py-16">
-        <div className="container-custom text-center">
-          <h2 className="heading-md mb-8">Suivez-nous sur Instagram</h2>
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
-            {Array.from({ length: 6 }).map((_, i) => (
-              <div key={i} className="aspect-square relative rounded-md overflow-hidden group">
-                <OptimizedImage
-                  src={`https://images.pexels.com/photos/${5370968 + i}/pexels-photo-${5370968 + i}.jpeg`}
-                  alt={`Instagram post ${i + 1}`}
-                  fill
-                  className="object-cover transition-transform duration-500 group-hover:scale-110"
-                  sizes="(max-width: 768px) 50vw, (max-width: 1200px) 33vw, 16vw"
-                />
-                <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors duration-300"></div>
-              </div>
-            ))}
-          </div>
-          <div className="mt-8">
-            <Link
-              href="https://instagram.com"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="btn btn-outline px-6 py-2"
-            >
-              @cactaia.bijoux
-            </Link>
-          </div>
-        </div>
-      </section>
+      {/* Instagram Feed avec images de tailles différentes */}
+      <InstagramFeed />
 
-      {/* Newsletter */}
-      <section className="py-16 bg-primary/5">
-        <div className="container-custom text-center max-w-2xl">
-          <h2 className="heading-md mb-4">Restez informés</h2>
-          <p className="text-muted-foreground mb-8">
-            Inscrivez-vous à notre newsletter pour découvrir nos nouveautés et recevoir des offres exclusives.
-          </p>
-          <form className="flex flex-col sm:flex-row gap-3">
-            <input
-              type="email"
-              placeholder="Votre email"
-              className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 sm:flex-1"
-              required
-            />
-            <button
-              type="submit"
-              className="btn btn-primary h-10 px-4 py-2 sm:w-auto"
-            >
-              S&apos;inscrire
-            </button>
-          </form>
+      {/* Newsletter avec bouton modal */}
+      <section className="py-20 bg-gradient-to-br from-primary/5 to-secondary">
+        <div className="container-custom text-center">
+          <div className="max-w-2xl mx-auto">
+            <div className="mb-8">
+              <div className="mx-auto w-16 h-16 bg-primary rounded-full flex items-center justify-center mb-6">
+                <Mail className="h-8 w-8 text-primary-foreground" />
+              </div>
+              <h2 className="heading-md mb-4">Restez informés</h2>
+              <p className="text-muted-foreground">
+                Inscrivez-vous à notre newsletter et obtenez une réduction sur votre première commande !
+              </p>
+            </div>
+
+            <NewsletterModal>
+              <Button
+                size="lg"
+                className="bg-primary hover:bg-primary/90 text-primary-foreground font-semibold px-8 py-3"
+              >
+                <Mail className="mr-2 h-5 w-5" />
+                S&apos;inscrire à la newsletter
+              </Button>
+            </NewsletterModal>
+          </div>
         </div>
       </section>
     </div>

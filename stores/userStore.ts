@@ -9,16 +9,15 @@ export interface UserProfile {
   email: string;
   nom: string;
   prenom: string;
-  role: Role;
-  active_role: Role;
-  telephone?: string;
-  adresse?: string;
-  genre?: Genre;
-  date_naissance?: string;
-  newsletter: boolean;
-  cgv_accepted: boolean;
-  cgv_accepted_at?: string;
-  created_at: string;
+  role: string | null;
+  active_role: string | null;
+  genre?: string | null;
+  date_naissance?: string | null;
+  newsletter: boolean | null;
+  cgv_accepted: boolean | null;
+  cgv_accepted_at?: string | null;
+  profile_completed?: boolean | null;
+  created_at: string | null;
 }
 
 interface UserStore {

@@ -307,13 +307,13 @@ export default function AdminOrdersPage() {
                                                     <Calendar className="h-4 w-4 text-muted-foreground mr-2" />
                                                     <div className="text-sm">
                                                         <div className="text-foreground">
-                                                            {new Date(order.created_at).toLocaleDateString('fr-FR')}
+                                                            {order.created_at ? new Date(order.created_at).toLocaleDateString('fr-FR') : 'Date inconnue'}
                                                         </div>
                                                         <div className="text-muted-foreground">
-                                                            {new Date(order.created_at).toLocaleTimeString('fr-FR', {
+                                                            {order.created_at ? new Date(order.created_at).toLocaleTimeString('fr-FR', {
                                                                 hour: '2-digit',
                                                                 minute: '2-digit'
-                                                            })}
+                                                            }) : 'Heure inconnue'}
                                                         </div>
                                                     </div>
                                                 </div>
@@ -327,8 +327,8 @@ export default function AdminOrdersPage() {
                                                 </div>
                                             </td>
                                             <td className="px-6 py-4 whitespace-nowrap">
-                                                <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusColor(order.statut)}`}>
-                                                    {getStatusLabel(order.statut)}
+                                                <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusColor(order.statut || 'en_attente')}`}>
+                                                    {getStatusLabel(order.statut || 'en_attente')}
                                                 </span>
                                             </td>
                                             <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">

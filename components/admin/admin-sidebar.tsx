@@ -1,5 +1,6 @@
 'use client';
 
+import { createClient } from '@/lib/supabase/client';
 import { cn } from '@/lib/utils';
 import { motion } from 'framer-motion';
 import {
@@ -11,6 +12,7 @@ import {
     Folder,
     Image,
     Layers,
+    LogOut,
     MapPin,
     Package,
     Palette,
@@ -22,7 +24,8 @@ import {
     Warehouse
 } from 'lucide-react';
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
+import { useState } from 'react';
 
 interface SidebarLinkProps {
     href: string;
@@ -91,6 +94,9 @@ function SidebarSection({ title, children }: SidebarSectionProps) {
 
 export default function AdminSidebar() {
     const pathname = usePathname();
+    const router = useRouter();
+    const supabase = createClient();
+    const [isLoggingOut, setIsLoggingOut] = useState(false);
 
     const isActive = (path: string) => {
         if (path === '/admin') {
@@ -99,12 +105,25 @@ export default function AdminSidebar() {
         return pathname.startsWith(path);
     };
 
+    const handleSignOut = async () => {
+        setIsLoggingOut(true);
+        try {
+            await supabase.auth.signOut();
+            router.push('/connexion');
+        } catch (error) {
+            console.error('Erreur lors de la déconnexion:', error);
+        } finally {
+            setIsLoggingOut(false);
+        }
+    };
+
     return (
         <motion.div
             initial={{ opacity: 0, x: -20 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.3 }}
-            className="w-64 bg-white border-r border-border h-screen sticky top-0 flex flex-col"
+            className="w-64 bg-white border-r border-border fixed left-0 top-20 flex flex-col admin-sidebar"
+            style={{ height: 'calc(100vh - 5rem)' }}
         >
             {/* Header */}
             <div className="p-6 border-b border-border">
@@ -119,7 +138,7 @@ export default function AdminSidebar() {
             </div>
 
             {/* Navigation */}
-            <div className="flex-1 overflow-y-auto p-4 space-y-6">
+            <div className="flex-1 overflow-y-auto p-4 space-y-6 min-h-0">
                 {/* Dashboard */}
                 <SidebarSection title="Tableau de bord">
                     <SidebarLink
@@ -249,14 +268,32 @@ export default function AdminSidebar() {
                 </SidebarSection>
             </div>
 
-            {/* Paramètres - Fixé en bas */}
-            <div className="p-4 border-t border-border">
+            {/* Paramètres et Déconnexion - Fixés en bas */}
+            <div className="p-4 border-t border-border space-y-2">
                 <SidebarLink
                     href="/admin/parametres"
                     icon={Settings}
                     label="Paramètres"
                     isActive={isActive('/admin/parametres')}
                 />
+
+                {/* Bouton de déconnexion */}
+                <button
+                    onClick={handleSignOut}
+                    disabled={isLoggingOut}
+                    className={cn(
+                        "flex items-center justify-between w-full px-3 py-2 text-sm rounded-md transition-colors",
+                        "text-red-600 hover:bg-red-50 hover:text-red-700",
+                        isLoggingOut && "opacity-50 cursor-not-allowed"
+                    )}
+                >
+                    <div className="flex items-center space-x-3">
+                        <LogOut className="h-4 w-4 flex-shrink-0" />
+                        <span className="truncate">
+                            {isLoggingOut ? 'Déconnexion...' : 'Déconnexion'}
+                        </span>
+                    </div>
+                </button>
             </div>
         </motion.div>
     );

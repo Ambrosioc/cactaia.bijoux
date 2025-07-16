@@ -32,6 +32,12 @@ function ConfirmationContent() {
     }, [sessionId, clearCart]);
 
     const loadOrderFromSession = async () => {
+        if (!sessionId) {
+            setError('Session de paiement non trouvée');
+            setLoading(false);
+            return;
+        }
+
         try {
             const { data, error } = await supabase
                 .from('commandes')
@@ -142,13 +148,13 @@ function ConfirmationContent() {
                                 <div>
                                     <p className="text-sm text-muted-foreground">Date de commande</p>
                                     <p className="font-medium">
-                                        {new Date(order.created_at).toLocaleDateString('fr-FR', {
+                                        {order.created_at ? new Date(order.created_at).toLocaleDateString('fr-FR', {
                                             year: 'numeric',
                                             month: 'long',
                                             day: 'numeric',
                                             hour: '2-digit',
                                             minute: '2-digit'
-                                        })}
+                                        }) : 'Date non disponible'}
                                     </p>
                                 </div>
                                 <div>
@@ -214,7 +220,7 @@ function ConfirmationContent() {
                                 {address.ligne_2 && <p>{address.ligne_2}</p>}
                                 <p>{address.code_postal} {address.ville}</p>
                                 <p>{address.pays}</p>
-                                <p className="mt-2">Téléphone: {address.telephone}</p>
+
                             </div>
                         </motion.div>
 

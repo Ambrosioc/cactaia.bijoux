@@ -1,0 +1,32 @@
+/* Styles pour l'interface admin */
+
+/* Sur mobile, la sidebar devient un overlay */
+@media (max-width: 768px) {
+  .admin-sidebar {
+    transform: translateX(-100%);
+    transition: transform 0.3s ease;
+    top: 5rem !important; /* 80px - hauteur de la nav + padding */
+    height: calc(100vh - 5rem) !important;
+  }
+  
+  .admin-sidebar.open {
+    transform: translateX(0);
+  }
+  
+  .admin-main {
+    padding-left: 0 !important;
+  }
+}
+
+/* Sur desktop, sidebar fixe */
+@media (min-width: 769px) {
+  .admin-sidebar {
+    transform: translateX(0);
+    height: calc(100vh - 5rem) !important;
+  }
+  
+  .admin-main {
+    padding-left: 16rem !important; /* 256px */
+    padding-top: 1rem !important; /* 16px de padding supplémentaire */
+  }
+} 

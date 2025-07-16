@@ -80,15 +80,41 @@ function LoginForm() {
 
   return (
     <div className="min-h-screen flex">
-      {/* Section gauche - Formulaire */}
-      <div className="w-full lg:w-1/2 flex items-center justify-center p-8 lg:p-16">
+      {/* Section gauche - Image */}
+      <div className="hidden lg:block lg:w-1/2 relative overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-transparent to-secondary/10"></div>
+        <Image
+          src="/images/cactaïa-07.jpg"
+          alt="Bijoux Cactaia"
+          fill
+          className="object-cover"
+          priority
+        />
+        <div className="absolute inset-0 bg-black/20"></div>
+        <div className="absolute inset-0 flex items-center justify-center">
+          <motion.div
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8, delay: 0.3 }}
+            className="text-center text-white p-8"
+          >
+            <h2 className="text-4xl font-light mb-4">Des bijoux qui vous ressemblent</h2>
+            <p className="text-lg text-white/90 max-w-md">
+              Découvrez notre collection de bijoux écoresponsables, mixtes et élégants
+            </p>
+          </motion.div>
+        </div>
+      </div>
+
+      {/* Section droite - Formulaire */}
+      <div className="w-full lg:w-1/2 flex items-center justify-center p-8 lg:p-16 min-h-screen">
         <motion.div
-          initial={{ opacity: 0, x: -50 }}
+          initial={{ opacity: 0, x: 50 }}
           animate={{ opacity: 1, x: 0 }}
           transition={{ duration: 0.6 }}
           className="w-full max-w-md"
         >
-          {/* Logo */}
+          {/* Logo Cactaia (petit) */}
           <div className="text-center mb-8">
             <div className="w-32 h-12 relative mx-auto mb-6">
               <Image
@@ -198,34 +224,6 @@ function LoginForm() {
             </div>
           </div>
         </motion.div>
-      </div>
-
-      {/* Section droite - Image */}
-      <div className="hidden lg:block lg:w-1/2 relative overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-transparent to-secondary/10"></div>
-        <Image
-          src="/images/cactaïa-07.jpg"
-          alt="Bijoux Cactaia"
-          fill
-          className="object-cover"
-          priority
-        />
-        <div className="absolute inset-0 bg-black/20"></div>
-
-        {/* Overlay avec texte */}
-        <div className="absolute inset-0 flex items-center justify-center">
-          <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, delay: 0.3 }}
-            className="text-center text-white p-8"
-          >
-            <h2 className="text-4xl font-light mb-4">Des bijoux qui vous ressemblent</h2>
-            <p className="text-lg text-white/90 max-w-md">
-              Découvrez notre collection de bijoux écoresponsables, mixtes et élégants
-            </p>
-          </motion.div>
-        </div>
       </div>
     </div>
   );

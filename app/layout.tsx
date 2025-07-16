@@ -1,12 +1,23 @@
-import Footer from '@/components/layout/footer';
+import ConditionalFooter from '@/components/layout/conditional-footer';
 import Header from '@/components/layout/header';
 import { ThemeProvider } from '@/components/theme-provider';
 import { AuthProvider } from '@/lib/auth/auth-provider';
+import { ThemeProvider as ColorThemeProvider } from '@/lib/contexts/ThemeContext';
 import type { Metadata } from 'next';
-import { Inter } from 'next/font/google';
+import { Inter, Playfair_Display } from 'next/font/google';
 import './globals.css';
 
-const inter = Inter({ subsets: ['latin'] });
+const inter = Inter({
+  subsets: ['latin'],
+  variable: '--font-inter',
+  display: 'swap',
+});
+
+const playfair = Playfair_Display({
+  subsets: ['latin'],
+  variable: '--font-playfair',
+  display: 'swap',
+});
 
 export const metadata: Metadata = {
   title: 'Cactaia.Bijoux - Bijoux écoresponsables et élégants',
@@ -81,20 +92,22 @@ export default function RootLayout({
         <meta name="theme-color" content="#ffffff" />
         <meta name="msapplication-TileColor" content="#ffffff" />
       </head>
-      <body className={inter.className}>
+      <body className={`${inter.variable} ${playfair.variable} font-sans`}>
         <ThemeProvider
           attribute="class"
           defaultTheme="light"
           enableSystem={true}
           disableTransitionOnChange
         >
-          <AuthProvider>
-            <div className="relative flex min-h-screen flex-col">
-              <Header />
-              <main className="flex-1">{children}</main>
-              <Footer />
-            </div>
-          </AuthProvider>
+          <ColorThemeProvider>
+            <AuthProvider>
+              <div className="relative flex min-h-screen flex-col">
+                <Header />
+                <main className="flex-1">{children}</main>
+                <ConditionalFooter />
+              </div>
+            </AuthProvider>
+          </ColorThemeProvider>
         </ThemeProvider>
       </body>
     </html>

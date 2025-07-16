@@ -96,7 +96,7 @@ export default function CartSidebar() {
                                             {/* Image */}
                                             <div className="relative w-16 h-16 flex-shrink-0">
                                                 <OptimizedImage
-                                                    src={getImageUrl(item.product.images)}
+                                                    src={getImageUrl(item.product.images ?? [])}
                                                     alt={item.product.nom}
                                                     fill
                                                     className="object-cover rounded-md"
@@ -132,7 +132,7 @@ export default function CartSidebar() {
                                                 <button
                                                     onClick={() => updateQuantity(item.id, item.quantity + 1)}
                                                     className="p-1 hover:bg-gray-200 rounded"
-                                                    disabled={item.quantity >= item.product.stock}
+                                                    disabled={item.quantity >= (item.product.stock ?? 0)}
                                                 >
                                                     <Plus className="h-3 w-3" />
                                                 </button>

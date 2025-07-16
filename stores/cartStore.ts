@@ -49,7 +49,7 @@ export const useCartStore = create<CartStore>()(
           set({
             items: items.map(item =>
               item.id === itemId
-                ? { ...item, quantity: Math.min(item.quantity + quantity, product.stock) }
+                ? { ...item, quantity: Math.min(item.quantity + quantity, product.stock ?? 0) }
                 : item
             )
           });
@@ -58,7 +58,7 @@ export const useCartStore = create<CartStore>()(
           const newItem: CartItem = {
             id: itemId,
             product,
-            quantity: Math.min(quantity, product.stock),
+            quantity: Math.min(quantity, product.stock ?? 0),
             selectedVariations: variations,
           };
 
@@ -85,7 +85,7 @@ export const useCartStore = create<CartStore>()(
             if (item.id === itemId) {
               return {
                 ...item,
-                quantity: Math.min(quantity, item.product.stock)
+                quantity: Math.min(quantity, item.product.stock ?? 0)
               };
             }
             return item;

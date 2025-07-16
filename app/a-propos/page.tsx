@@ -44,7 +44,7 @@ export default function AboutPage() {
               className="relative h-[500px]"
             >
               <Image
-                src="https://images.pexels.com/photos/6767893/pexels-photo-6767893.jpeg"
+                src="/images/DSC07444.jpg"
                 alt="Notre atelier"
                 fill
                 className="object-cover rounded-lg"
@@ -66,7 +66,7 @@ export default function AboutPage() {
               className="order-2 md:order-1 relative h-[500px]"
             >
               <Image
-                src="https://images.pexels.com/photos/7276787/pexels-photo-7276787.jpeg"
+                src="/images/DSC07559.jpg"
                 alt="Notre vision"
                 fill
                 className="object-cover rounded-lg"
@@ -109,17 +109,17 @@ export default function AboutPage() {
               {
                 title: "Transmission",
                 description: "Nous concevons des bijoux intemporels destinés à traverser les générations, porteurs d'histoires et de souvenirs.",
-                image: "https://images.pexels.com/photos/9428804/pexels-photo-9428804.jpeg"
+                image: "/images/DSC07523.jpg"
               },
               {
                 title: "Intemporalité",
                 description: "Nos créations transcendent les tendances éphémères pour offrir une élégance durable qui ne se démode jamais.",
-                image: "https://images.pexels.com/photos/13237864/pexels-photo-13237864.jpeg"
+                image: "/images/DSC07586.jpg"
               },
               {
                 title: "Force et Sensibilité",
                 description: "Comme le cactus, nos bijoux allient robustesse et délicatesse, reflétant la dualité qui existe en chacun de nous.",
-                image: "https://images.pexels.com/photos/7794536/pexels-photo-7794536.jpeg"
+                image: "/images/DSC07586.jpg"
               }
             ].map((value, i) => (
               <motion.div
@@ -140,58 +140,6 @@ export default function AboutPage() {
                 </div>
                 <h3 className="text-xl font-medium mb-2">{value.title}</h3>
                 <p className="text-muted-foreground">{value.description}</p>
-              </motion.div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Team Section */}
-      <section className="py-20 bg-secondary">
-        <div className="container-custom">
-          <div className="text-center mb-16">
-            <h2 className="heading-lg mb-4">Notre équipe</h2>
-            <p className="text-muted-foreground max-w-2xl mx-auto">
-              Des passionnés qui donnent vie à chaque création Cactaia.Bijoux avec savoir-faire et dévouement.
-            </p>
-          </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
-            {[
-              {
-                name: "Marie Laurent",
-                role: "Fondatrice & Designer",
-                image: "https://images.pexels.com/photos/4467623/pexels-photo-4467623.jpeg"
-              },
-              {
-                name: "Thomas Ricard",
-                role: "Artisan Joaillier",
-                image: "https://images.pexels.com/photos/14541208/pexels-photo-14541208.jpeg"
-              },
-              {
-                name: "Sophie Merlin",
-                role: "Responsable Marketing",
-                image: "https://images.pexels.com/photos/5325599/pexels-photo-5325599.jpeg"
-              }
-            ].map((member, i) => (
-              <motion.div
-                key={member.name}
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.5, delay: i * 0.1 }}
-                className="text-center"
-              >
-                <div className="relative w-48 h-48 mx-auto mb-4 overflow-hidden rounded-full">
-                  <Image
-                    src={member.image}
-                    alt={member.name}
-                    fill
-                    className="object-cover"
-                  />
-                </div>
-                <h3 className="text-xl font-medium">{member.name}</h3>
-                <p className="text-muted-foreground">{member.role}</p>
               </motion.div>
             ))}
           </div>

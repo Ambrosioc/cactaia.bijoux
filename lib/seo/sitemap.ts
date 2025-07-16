@@ -83,26 +83,13 @@ export async function generateSitemap(): Promise<string> {
 
   const productUrls: SitemapUrl[] = (products || []).map((product) => ({
     url: `${baseUrl}/produit/${product.id}`,
-    lastModified: new Date(product.updated_at),
+    lastModified: product.updated_at ? new Date(product.updated_at) : new Date(),
     changeFrequency: 'weekly' as const,
     priority: 0.8,
   }));
 
-  // URLs des collections
-  const { data: collections } = await supabase
-    .from('collections')
-    .select('id, updated_at')
-    .eq('est_actif', true);
-
-  const collectionUrls: SitemapUrl[] = (collections || []).map((collection) => ({
-    url: `${baseUrl}/collections/${collection.id}`,
-    lastModified: new Date(collection.updated_at),
-    changeFrequency: 'weekly' as const,
-    priority: 0.7,
-  }));
-
   // Combiner toutes les URLs
-  const allUrls = [...staticUrls, ...productUrls, ...collectionUrls];
+  const allUrls = [...staticUrls, ...productUrls];
 
   // Générer le XML du sitemap
   const sitemap = `<?xml version="1.0" encoding="UTF-8"?>
