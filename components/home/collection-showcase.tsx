@@ -59,7 +59,7 @@ const CollectionShowcase = () => {
               variants={fadeInUp}
               className="group"
             >
-              <Link href={`/collections/${collection.id}`}>
+              <Link href={`/collection/${collection.id}`}>
                 <div className="relative aspect-[3/4] mb-4 overflow-hidden rounded-lg">
                   <OptimizedImage
                     src={collection.image}

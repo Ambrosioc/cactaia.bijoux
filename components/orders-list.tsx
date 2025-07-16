@@ -136,8 +136,8 @@ export function OrdersList() {
                         <div className="flex-1">
                             <div className="flex items-center gap-3 mb-2">
                                 <h3 className="font-medium text-lg">{order.numero_commande}</h3>
-                                <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusColor(order.statut)}`}>
-                                    {getStatusLabel(order.statut)}
+                                <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusColor(order.statut || 'en_attente')}`}>
+                                    {getStatusLabel(order.statut || 'en_attente')}
                                 </span>
                             </div>
 
@@ -145,11 +145,11 @@ export function OrdersList() {
                                 <div className="flex items-center gap-2">
                                     <Calendar className="h-4 w-4" />
                                     <span>
-                                        {new Date(order.created_at).toLocaleDateString('fr-FR', {
+                                        {order.created_at ? new Date(order.created_at).toLocaleDateString('fr-FR', {
                                             year: 'numeric',
                                             month: 'long',
                                             day: 'numeric'
-                                        })}
+                                        }) : 'Date inconnue'}
                                     </span>
                                 </div>
 

@@ -78,7 +78,8 @@ export async function GET(request: NextRequest) {
     }, {} as Record<string, number>) || {};
 
     const pageCounts = topPages?.reduce((acc, event) => {
-      acc[event.page_url] = (acc[event.page_url] || 0) + 1;
+      const key = event.page_url ?? 'unknown';
+      acc[key] = (acc[key] || 0) + 1;
       return acc;
     }, {} as Record<string, number>) || {};
 
@@ -87,7 +88,7 @@ export async function GET(request: NextRequest) {
 
     // Données pour les graphiques
     const dailyData = eventsByType?.reduce((acc, event) => {
-      const date = new Date(event.created_at).toISOString().split('T')[0];
+      const date = event.created_at ? new Date(event.created_at).toISOString().split('T')[0] : 'unknown';
       acc[date] = (acc[date] || 0) + 1;
       return acc;
     }, {} as Record<string, number>) || {};

@@ -1,6 +1,7 @@
 "use client"
 
 import CartSidebar from '@/components/cart/cart-sidebar';
+import CategorySidebar from '@/components/layout/category-sidebar';
 import { createClient } from '@/lib/supabase/client';
 import { cn } from '@/lib/utils';
 import { useCart } from '@/stores/cartStore';
@@ -15,6 +16,7 @@ import { useEffect, useState } from 'react';
 const Header = () => {
   const [isScrolled, setIsScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [categorySidebarOpen, setCategorySidebarOpen] = useState(false);
   const { user, isAuthenticated, displayName } = useUser();
   const { totalItems, toggleCart } = useCart();
   const supabase = createClient();
@@ -30,11 +32,27 @@ const Header = () => {
     '/faq',
     '/contact',
     '/wishlist',
-    '/connexion',
-    '/inscription',
     '/produit',
+    '/categorie',
+    '/collection',
+    '/collections',
   ];
+
+  // Liste des pages où masquer wishlist et panier
+  const hideEcommercePages = [
+    '/inscription',
+    '/connexion',
+    '/admin',
+  ];
+  const hideEcommerce = hideEcommercePages.some(page => pathname.startsWith(page));
   const forceTerraCotta = terraCottaPages.some(page => pathname.startsWith(page));
+
+  // Pages où le texte de navigation doit être blanc
+  const whiteNavPages = ['/connexion', '/inscription'];
+  const forceWhiteNav = whiteNavPages.some(page => pathname.startsWith(page));
+
+  // Vérifier si on est dans l'admin
+  const isAdminPage = pathname.startsWith('/admin');
 
   useEffect(() => {
     setMounted(true);
@@ -47,12 +65,8 @@ const Header = () => {
   }, []);
 
   const navLinks = [
-    { name: 'Shop', href: '/boutique' },
+    { name: 'Catégories', href: '#', onClick: () => setCategorySidebarOpen(true) },
     { name: 'Collections', href: '/collections' },
-    { name: 'À propos', href: '/a-propos' },
-    { name: 'Blog', href: '/blog' },
-    { name: 'Contact', href: '/contact' },
-    { name: 'FAQ', href: '/faq' },
   ];
 
   const handleSignOut = async () => {
@@ -93,120 +107,172 @@ const Header = () => {
               priority
               className={cn(
                 "transition-all duration-300 h-14 w-auto",
-                isScrolled || forceTerraCotta
+                isScrolled || forceTerraCotta || isAdminPage
                   ? "filter-none"
                   : "filter brightness-0 saturate-100 invert"
               )}
             />
           </Link>
 
-          {/* Desktop Navigation */}
-          <nav className="hidden md:flex items-center space-x-6">
+          {/* Desktop Navigation - Next to logo */}
+          <nav className="hidden md:flex items-center space-x-6 ml-6">
             {navLinks.map((link) => (
-              <Link
-                key={link.name}
-                href={link.href}
-                className={cn(
-                  "text-sm font-medium transition-colors",
-                  (isScrolled || forceTerraCotta)
-                    ? "text-primary hover:text-primary/80"
-                    : "text-white hover:text-primary/80"
-                )}
-              >
-                {link.name}
-              </Link>
+              link.onClick ? (
+                <button
+                  key={link.name}
+                  onClick={link.onClick}
+                  className={cn(
+                    "text-sm font-medium transition-colors",
+                    forceWhiteNav
+                      ? "text-white hover:text-primary/80"
+                      : (isScrolled || forceTerraCotta || isAdminPage)
+                        ? "text-black hover:text-primary/80"
+                        : "text-white hover:text-primary/80"
+                  )}
+                >
+                  {link.name}
+                </button>
+              ) : (
+                <Link
+                  key={link.name}
+                  href={link.href}
+                  className={cn(
+                    "text-sm font-medium transition-colors",
+                    forceWhiteNav
+                      ? "text-white hover:text-primary/80"
+                      : (isScrolled || forceTerraCotta || isAdminPage)
+                        ? "text-black hover:text-primary/80"
+                        : "text-white hover:text-primary/80"
+                  )}
+                >
+                  {link.name}
+                </Link>
+              )
             ))}
           </nav>
 
+          {/* Boutique Name - Center */}
+          <div className="hidden md:flex items-center justify-center flex-1">
+            <Image
+              src="/menu-logo.png"
+              alt="Cactaia Bijoux Logo"
+              width={120}
+              height={120}
+              priority
+              className={cn(
+                "transition-all duration-300 h-16 w-auto",
+                forceWhiteNav
+                  ? "filter-none"
+                  : (isScrolled || forceTerraCotta || isAdminPage)
+                    ? "filter-none"
+                    : "filter brightness-0 saturate-100 invert"
+              )}
+            />
+          </div>
+
           {/* Header Icons */}
           <div className="flex items-center space-x-4">
-            <button className={cn(
-              "hidden md:flex items-center text-sm transition-colors",
-              (isScrolled || forceTerraCotta)
-                ? "text-primary hover:text-primary/80"
-                : "text-white hover:text-primary/80"
-            )}>
-              <Search className={cn("h-4 w-4 mr-1", (isScrolled || forceTerraCotta) ? "text-primary" : "text-white")} />
-              <span className="sr-only md:not-sr-only">Recherche</span>
-            </button>
+            {!hideEcommerce && (
+              <button className={cn(
+                "hidden md:flex items-center text-sm transition-colors",
+                (isScrolled || forceTerraCotta || isAdminPage)
+                  ? "text-black hover:text-primary/80"
+                  : "text-white hover:text-primary/80"
+              )}>
+                <Search className={cn("h-4 w-4 mr-1", (isScrolled || forceTerraCotta || isAdminPage) ? "text-black" : "text-white")} />
+                <span className="sr-only md:not-sr-only">Recherche</span>
+              </button>
+            )}
 
             {isAuthenticated ? (
               <div className="hidden md:flex items-center space-x-4">
                 <Link href={getAccountLink()} className={cn(
                   "flex items-center text-sm transition-colors",
-                  (isScrolled || forceTerraCotta)
-                    ? "text-primary hover:text-primary/80"
+                  (isScrolled || forceTerraCotta || isAdminPage)
+                    ? "text-black hover:text-primary/80"
                     : "text-white hover:text-primary/80"
                 )}>
-                  <User className={cn("h-4 w-4 mr-1", (isScrolled || forceTerraCotta) ? "text-primary" : "text-white")} />
+                  <User className={cn("h-4 w-4 mr-1", (isScrolled || forceTerraCotta || isAdminPage) ? "text-black" : "text-white")} />
                   <span>{displayName}</span>
                 </Link>
               </div>
             ) : (
               <div className="hidden md:flex items-center space-x-4">
-                <Link href="/connexion" className={cn(
-                  "text-sm transition-colors",
-                  (isScrolled || forceTerraCotta)
-                    ? "text-primary hover:text-primary/80"
-                    : "text-white hover:text-primary/80"
-                )}>
-                  Connexion
-                </Link>
-                <Link href="/inscription" className={cn(
-                  "btn text-sm px-4 py-1 transition-colors",
-                  (isScrolled || forceTerraCotta)
-                    ? "bg-primary text-white hover:bg-primary/90 border border-primary"
-                    : "bg-white text-primary hover:bg-white/80 border border-white"
-                )}>
-                  Inscription
-                </Link>
+                {pathname !== '/connexion' && (
+                  <Link href="/connexion" className={cn(
+                    "btn text-sm px-4 py-1 transition-colors",
+                    pathname === '/inscription'
+                      ? "bg-primary text-white hover:bg-primary/90 border border-primary"
+                      : (isScrolled || forceTerraCotta || isAdminPage)
+                        ? "text-black hover:text-primary/80"
+                        : "text-white hover:text-primary/80"
+                  )}>
+                    Connexion
+                  </Link>
+                )}
+                {pathname !== '/inscription' && (
+                  <Link href="/inscription" className={cn(
+                    "btn text-sm px-4 py-1 transition-colors",
+                    pathname === '/connexion'
+                      ? "bg-primary text-white hover:bg-primary/90 border border-primary"
+                      : (isScrolled || forceTerraCotta || isAdminPage)
+                        ? "bg-primary text-white hover:bg-primary/90 border border-primary"
+                        : "bg-white text-primary hover:bg-white/80 border border-white"
+                  )}>
+                    Inscription
+                  </Link>
+                )}
               </div>
             )}
 
-            <Link href="/wishlist" className={cn(
-              "flex items-center text-sm transition-colors",
-              (isScrolled || forceTerraCotta)
-                ? "text-primary hover:text-primary/80"
-                : "text-white hover:text-primary/80"
-            )}>
-              <Heart className={cn("h-4 w-4", (isScrolled || forceTerraCotta) ? "text-primary" : "text-white")} />
-              <span className="sr-only">Wishlist</span>
-            </Link>
+            {!hideEcommerce && (
+              <>
+                <Link href="/wishlist" className={cn(
+                  "flex items-center text-sm transition-colors",
+                  (isScrolled || forceTerraCotta || isAdminPage)
+                    ? "text-black hover:text-primary/80"
+                    : "text-white hover:text-primary/80"
+                )}>
+                  <Heart className={cn("h-4 w-4", (isScrolled || forceTerraCotta || isAdminPage) ? "text-black" : "text-white")} />
+                  <span className="sr-only">Wishlist</span>
+                </Link>
 
-            {/* Cart Button */}
-            <button
-              onClick={toggleCart}
-              className={cn(
-                "relative flex items-center text-sm transition-colors",
-                (isScrolled || forceTerraCotta)
-                  ? "text-primary hover:text-primary/80"
-                  : "text-white hover:text-primary/80"
-              )}
-            >
-              <ShoppingBag className={cn("h-4 w-4", (isScrolled || forceTerraCotta) ? "text-primary" : "text-white")} />
-              {mounted && totalItems > 0 && (
-                <span className="absolute -top-2 -right-2 bg-primary text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
-                  {totalItems}
-                </span>
-              )}
-              <span className="sr-only">Panier</span>
-            </button>
+                {/* Cart Button */}
+                <button
+                  onClick={toggleCart}
+                  className={cn(
+                    "relative flex items-center text-sm transition-colors",
+                    (isScrolled || forceTerraCotta || isAdminPage)
+                      ? "text-black hover:text-primary/80"
+                      : "text-white hover:text-primary/80"
+                  )}
+                >
+                  <ShoppingBag className={cn("h-4 w-4", (isScrolled || forceTerraCotta || isAdminPage) ? "text-black" : "text-white")} />
+                  {mounted && totalItems > 0 && (
+                    <span className="absolute -top-2 -right-2 bg-primary text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
+                      {totalItems}
+                    </span>
+                  )}
+                  <span className="sr-only">Panier</span>
+                </button>
+              </>
+            )}
 
             {/* Mobile menu button */}
             <button
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
               className={cn(
                 "md:hidden flex items-center transition-colors",
-                (isScrolled || forceTerraCotta)
-                  ? "text-primary hover:text-primary/80"
+                (isScrolled || forceTerraCotta || isAdminPage)
+                  ? "text-black hover:text-primary/80"
                   : "text-white hover:text-primary/80"
               )}
               aria-label="Toggle menu"
             >
               {mobileMenuOpen ? (
-                <X className={cn("h-5 w-5", (isScrolled || forceTerraCotta) ? "text-primary" : "text-white")} />
+                <X className={cn("h-5 w-5", (isScrolled || forceTerraCotta || isAdminPage) ? "text-black" : "text-white")} />
               ) : (
-                <Menu className={cn("h-5 w-5", (isScrolled || forceTerraCotta) ? "text-primary" : "text-white")} />
+                <Menu className={cn("h-5 w-5", (isScrolled || forceTerraCotta || isAdminPage) ? "text-black" : "text-white")} />
               )}
             </button>
           </div>
@@ -221,23 +287,43 @@ const Header = () => {
             exit={{ opacity: 0, y: -10 }}
             transition={{ duration: 0.2 }}
           >
+            {/* Mobile Boutique Name */}
+            <div className="text-center mb-6">
+              <h1 className="text-2xl font-bold text-black">
+                Cactaia Bijoux
+              </h1>
+            </div>
+
             <nav className="flex flex-col space-y-6 py-8">
               {navLinks.map((link) => (
-                <Link
-                  key={link.name}
-                  href={link.href}
-                  className="text-lg font-medium hover:text-primary transition-colors"
-                  onClick={() => setMobileMenuOpen(false)}
-                >
-                  {link.name}
-                </Link>
+                link.onClick ? (
+                  <button
+                    key={link.name}
+                    onClick={() => {
+                      link.onClick();
+                      setMobileMenuOpen(false);
+                    }}
+                    className="text-lg font-medium text-black hover:text-primary transition-colors text-left"
+                  >
+                    {link.name}
+                  </button>
+                ) : (
+                  <Link
+                    key={link.name}
+                    href={link.href}
+                    className="text-lg font-medium text-black hover:text-primary transition-colors"
+                    onClick={() => setMobileMenuOpen(false)}
+                  >
+                    {link.name}
+                  </Link>
+                )
               ))}
 
               {isAuthenticated ? (
                 <>
                   <Link
                     href={getAccountLink()}
-                    className="text-lg font-medium hover:text-primary transition-colors"
+                    className="text-lg font-medium text-black hover:text-primary transition-colors"
                     onClick={() => setMobileMenuOpen(false)}
                   >
                     {getAccountLabel()}
@@ -254,7 +340,7 @@ const Header = () => {
                 <>
                   <Link
                     href="/connexion"
-                    className="text-lg font-medium hover:text-primary transition-colors"
+                    className="text-lg font-medium text-black hover:text-primary transition-colors"
                     onClick={() => setMobileMenuOpen(false)}
                   >
                     Connexion
@@ -280,6 +366,12 @@ const Header = () => {
 
       {/* Cart Sidebar */}
       <CartSidebar />
+
+      {/* Category Sidebar */}
+      <CategorySidebar
+        isOpen={categorySidebarOpen}
+        onClose={() => setCategorySidebarOpen(false)}
+      />
     </>
   );
 };

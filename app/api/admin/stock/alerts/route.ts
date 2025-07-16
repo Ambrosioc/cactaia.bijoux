@@ -91,8 +91,8 @@ export async function POST(request: NextRequest) {
     const updateData: any = {
       status: action === 'resolve' ? 'resolved' : 'active',
       resolved_at: action === 'resolve' ? new Date().toISOString() : null,
-      resolved_by: action === 'resolve' ? user.id : null,
-      notes: notes || alert.notes
+      resolved_by: action === 'resolve' ? user.id : null
+      // notes supprimé car non existant dans stock_alerts
     };
 
     const { data: updatedAlert, error: updateError } = await supabase

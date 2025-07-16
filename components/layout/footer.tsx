@@ -99,9 +99,6 @@ const Footer = () => {
           <div>
             <h4 className="font-medium mb-4">Contact</h4>
             <address className="not-italic">
-              <p className="text-muted-foreground text-sm mb-2">42 rue Maurice Violette</p>
-              <p className="text-muted-foreground text-sm mb-2">Luisant 28600</p>
-              <p className="text-muted-foreground text-sm mb-4">France</p>
               <p className="text-muted-foreground text-sm mb-2">
                 <a href="mailto:contact@cactaiabijoux.fr" className="hover:text-primary transition-colors">
                   contact@cactaiabijoux.fr

@@ -289,7 +289,6 @@ export default function CheckoutPage() {
                                                             <p>{address.ligne_1}</p>
                                                             {address.ligne_2 && <p>{address.ligne_2}</p>}
                                                             <p>{address.code_postal} {address.ville}, {address.pays}</p>
-                                                            <p>📞 {address.telephone}</p>
                                                         </div>
                                                     </div>
                                                     <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center transition-colors ${selectedAddressId === address.id
@@ -363,7 +362,6 @@ export default function CheckoutPage() {
                                                         <p>{address.ligne_1}</p>
                                                         {address.ligne_2 && <p>{address.ligne_2}</p>}
                                                         <p>{address.code_postal} {address.ville}, {address.pays}</p>
-                                                        <p>📞 {address.telephone}</p>
                                                     </div>
                                                 ) : null;
                                             })()}
@@ -445,7 +443,7 @@ export default function CheckoutPage() {
                                     <div key={item.id} className="flex items-center space-x-3">
                                         <div className="relative w-12 h-12 flex-shrink-0">
                                             <Image
-                                                src={getImageUrl(item.product.images)}
+                                                src={getImageUrl(item.product.images ?? [])}
                                                 alt={item.product.nom}
                                                 fill
                                                 className="object-cover rounded"

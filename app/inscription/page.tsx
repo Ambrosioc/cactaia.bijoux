@@ -611,7 +611,7 @@ export default function SignupPage() {
       <div className="hidden lg:block lg:w-1/2 relative overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-transparent to-secondary/10"></div>
         <Image
-          src="/images/cactaïa-07.jpg"
+          src="/images/cactaïa-25.jpg"
           alt="Bijoux Cactaia"
           fill
           className="object-cover"

@@ -68,7 +68,7 @@ export default function AdminDashboard() {
 
   return (
     <ProtectedRoute requiredRole="admin">
-      <div className="pt-24 pb-16 min-h-screen bg-gray-50">
+      <div className="min-h-screen bg-gray-50">
         <div className="container-custom">
           {/* Header */}
           <div className="flex justify-between items-center mb-8">

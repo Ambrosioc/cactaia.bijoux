@@ -24,6 +24,11 @@ export default function EditProductPage() {
 
         const loadProduct = async () => {
             try {
+                // Vérifier que id est une string
+                if (typeof id !== 'string') {
+                    throw new Error('ID de produit invalide');
+                }
+
                 const { data, error } = await supabase
                     .from('produits')
                     .select('*')
@@ -65,7 +70,7 @@ export default function EditProductPage() {
                 <div className="text-center">
                     <h1 className="text-2xl font-medium mb-4">Produit non trouvé</h1>
                     <p className="text-muted-foreground mb-6">
-                        Le produit que vous recherchez n'existe pas ou a été supprimé.
+                        Le produit que vous recherchez n&apos;existe pas ou a été supprimé.
                     </p>
                     <button
                         onClick={() => router.push('/admin/produits')}

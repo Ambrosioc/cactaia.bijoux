@@ -76,14 +76,14 @@ export class StockManager {
         }
       });
 
-      const availableStock = Math.max(0, product.stock - reservedStockCount);
+      const availableStock = Math.max(0, (product.stock ?? 0) - reservedStockCount);
       const lowStockThreshold = 5; // Seuil par défaut
       const status = this.getStockStatus(availableStock, lowStockThreshold);
 
       return {
         product_id: product.id,
         product_name: product.nom,
-        current_stock: product.stock,
+        current_stock: product.stock ?? 0,
         reserved_stock: reservedStockCount,
         available_stock: availableStock,
         low_stock_threshold: lowStockThreshold,
@@ -110,7 +110,7 @@ export class StockManager {
         throw productError;
       }
 
-      const previousStock = product.stock;
+      const previousStock = product.stock ?? 0;
       const newStock = previousStock + quantity;
 
       // Mettre à jour le stock du produit
@@ -210,7 +210,7 @@ export class StockManager {
         throw productError;
       }
 
-      const previousStock = product.stock;
+      const previousStock = product.stock ?? 0;
       const newStock = Math.max(0, previousStock - quantity);
 
       // Mettre à jour le stock du produit
@@ -259,7 +259,7 @@ export class StockManager {
         throw productError;
       }
 
-      const previousStock = product.stock;
+      const previousStock = product.stock ?? 0;
       const adjustment = newQuantity - previousStock;
 
       // Mettre à jour le stock du produit
@@ -297,7 +297,7 @@ export class StockManager {
   async getStockHistory(productId: string, limit: number = 50): Promise<StockMovement[]> {
     try {
       const supabase = await this.supabase;
-      const { data, error } = await supabase
+      const { data: movements, error } = await supabase
         .from('stock_movements')
         .select('*')
         .eq('product_id', productId)
@@ -308,7 +308,14 @@ export class StockManager {
         throw error;
       }
 
-      return data || [];
+      return movements?.map(movement => ({
+        ...movement,
+        movement_type: movement.movement_type as 'in' | 'out' | 'adjustment' | 'reserved' | 'released',
+        created_at: movement.created_at || new Date().toISOString(),
+        notes: movement.notes || '',
+        order_id: movement.order_id || undefined,
+        user_id: movement.user_id || undefined
+      })) || [];
     } catch (error) {
       console.error('Erreur lors de la récupération de l\'historique:', error);
       return [];
@@ -319,7 +326,7 @@ export class StockManager {
   async getActiveStockAlerts(): Promise<StockAlert[]> {
     try {
       const supabase = await this.supabase;
-      const { data, error } = await supabase
+      const { data: alerts, error } = await supabase
         .from('stock_alerts')
         .select('*')
         .eq('is_active', true)
@@ -329,7 +336,13 @@ export class StockManager {
         throw error;
       }
 
-      return data || [];
+      return alerts?.map(alert => ({
+        ...alert,
+        alert_type: alert.alert_type as 'low_stock' | 'out_of_stock' | 'overstock',
+        created_at: alert.created_at || new Date().toISOString(),
+        resolved_at: alert.resolved_at || undefined,
+        is_active: alert.is_active ?? true
+      })) || [];
     } catch (error) {
       console.error('Erreur lors de la récupération des alertes:', error);
       return [];

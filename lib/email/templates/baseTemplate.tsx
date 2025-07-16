@@ -115,7 +115,7 @@ export const BaseTemplate: React.FC<BaseTemplateProps> = ({ previewText = 'Email
         <div className="container">
           <div className="header">
             <div className="logo">
-              Cactaia<span className="logo-dot">.</span>Bijoux
+              <img src="https://cactaia-bijoux.vercel.app/CACTAIA%20LOGO_CACTAIA%20LOGO%20TERRA-07.png" alt="Cactaia Bijoux" style={{ height: '40px', width: 'auto' }} />
             </div>
           </div>
           <div className="content">
@@ -125,12 +125,8 @@ export const BaseTemplate: React.FC<BaseTemplateProps> = ({ previewText = 'Email
             <p>
               © {new Date().getFullYear()} Cactaia.Bijoux. Tous droits réservés.
             </p>
-            <p>
-              42 rue Maurice Violette, 28600 Luisant, France
-            </p>
             <div className="social-links">
               <a href="https://instagram.com" className="social-link">Instagram</a>
-              <a href="https://facebook.com" className="social-link">Facebook</a>
             </div>
             <div className="mt-4">
               <a href="https://cactaiabijoux.fr/mentions-legales">Mentions légales</a> |
@@ -259,7 +255,7 @@ export function createEmailHTML(content: string, previewText: string = 'Email de
     <div class="container">
         <div class="header">
             <div class="logo">
-                Cactaia<span class="logo-dot">.</span>Bijoux
+                <img src="https://cactaia-bijoux.vercel.app/CACTAIA%20LOGO_CACTAIA%20LOGO%20TERRA-07.png" alt="Cactaia Bijoux" style="height: 40px; width: auto;" />
             </div>
         </div>
         <div class="content">
@@ -269,12 +265,9 @@ export function createEmailHTML(content: string, previewText: string = 'Email de
             <p>
                 © ${currentYear} Cactaia.Bijoux. Tous droits réservés.
             </p>
-            <p>
-                42 rue Maurice Violette, 28600 Luisant, France
-            </p>
+
             <div class="social-links">
                 <a href="https://instagram.com" class="social-link">Instagram</a>
-                <a href="https://facebook.com" class="social-link">Facebook</a>
             </div>
             <div class="mt-4">
                 <a href="https://cactaiabijoux.fr/mentions-legales">Mentions légales</a> |

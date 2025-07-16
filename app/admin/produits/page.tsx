@@ -269,11 +269,11 @@ export default function ProductsManagementPage() {
                         </div>
                         <div>
                             <span className="text-muted-foreground">Actifs:</span>
-                            <span className="ml-2 font-medium">{products.filter(p => p.est_actif).length}</span>
+                            <span className="ml-2 font-medium">{products.filter(p => p.est_actif === true).length}</span>
                         </div>
                         <div>
                             <span className="text-muted-foreground">Mis en avant:</span>
-                            <span className="ml-2 font-medium">{products.filter(p => p.est_mis_en_avant).length}</span>
+                            <span className="ml-2 font-medium">{products.filter(p => p.est_mis_en_avant === true).length}</span>
                         </div>
                         <div>
                             <span className="text-muted-foreground">Prix moyen:</span>
@@ -344,7 +344,7 @@ export default function ProductsManagementPage() {
                                             <div className="flex items-center">
                                                 <div className="flex-shrink-0 h-12 w-12">
                                                     <div className="relative h-12 w-12 rounded-md overflow-hidden bg-gray-100">
-                                                        {product?.images?.length > 0 ? (
+                                                        {Array.isArray(product?.images) && product.images.length > 0 ? (
                                                             <Image
                                                                 src={product.images[0]}
                                                                 alt={product.nom}
@@ -393,20 +393,20 @@ export default function ProductsManagementPage() {
                                             <div className="flex flex-col gap-1">
                                                 <div className="flex items-center">
                                                     <button
-                                                        onClick={() => toggleProductStatus(product.id, product.est_actif)}
+                                                        onClick={() => toggleProductStatus(product.id, product.est_actif === true)}
                                                         disabled={actionLoading === product.id}
                                                         className="flex items-center"
                                                     >
                                                         {actionLoading === product.id ? (
                                                             <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-primary"></div>
-                                                        ) : product.est_actif ? (
+                                                        ) : product.est_actif === true ? (
                                                             <ToggleRight className="h-4 w-4 text-green-600" />
                                                         ) : (
                                                             <ToggleLeft className="h-4 w-4 text-gray-400" />
                                                         )}
-                                                        <span className={`ml-1 text-xs ${product.est_actif ? 'text-green-600' : 'text-gray-500'
+                                                        <span className={`ml-1 text-xs ${product.est_actif === true ? 'text-green-600' : 'text-gray-500'
                                                             }`}>
-                                                            {product.est_actif ? 'Actif' : 'Inactif'}
+                                                            {product.est_actif === true ? 'Actif' : 'Inactif'}
                                                         </span>
                                                     </button>
                                                 </div>
@@ -421,7 +421,7 @@ export default function ProductsManagementPage() {
                                         <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                                             <div className="flex items-center space-x-2">
                                                 <Link
-                                                    href={`/produit/${product.slug || product.id}`}
+                                                    href={`/produit/${product.id}`}
                                                     target="_blank"
                                                     className="text-blue-600 hover:text-blue-900"
                                                     title="Voir le produit"

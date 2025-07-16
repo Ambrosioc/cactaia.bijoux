@@ -31,6 +31,11 @@ export default function AdminOrderDetailPage() {
 
         const loadOrder = async () => {
             try {
+                // Vérifier que id est une string
+                if (typeof id !== 'string') {
+                    throw new Error('ID de commande invalide');
+                }
+
                 const { data: orderData, error: orderError } = await supabase
                     .from('commandes')
                     .select('*')
@@ -51,7 +56,7 @@ export default function AdminOrderDetailPage() {
                 setOrder({
                     ...orderData,
                     users: userError ? null : userData
-                });
+                } as Order & { users: any });
             } catch (error) {
                 console.error('Erreur lors du chargement de la commande:', error);
                 setError('Commande non trouvée');
@@ -180,20 +185,20 @@ export default function AdminOrderDetailPage() {
                     <div>
                         <h1 className="text-3xl font-medium">Commande {order.numero_commande}</h1>
                         <p className="text-muted-foreground">
-                            Passée le {new Date(order.created_at).toLocaleDateString('fr-FR', {
+                            Passée le {order.created_at ? new Date(order.created_at).toLocaleDateString('fr-FR', {
                                 year: 'numeric',
                                 month: 'long',
                                 day: 'numeric',
                                 hour: '2-digit',
                                 minute: '2-digit'
-                            })}
+                            }) : 'Date inconnue'}
                         </p>
                     </div>
                 </div>
 
                 <div className="flex items-center gap-3">
-                    <span className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${getStatusColor(order.statut)}`}>
-                        {getStatusLabel(order.statut)}
+                    <span className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${getStatusColor(order.statut || 'en_attente')}`}>
+                        {getStatusLabel(order.statut || 'en_attente')}
                     </span>
                 </div>
             </div>
@@ -388,7 +393,7 @@ export default function AdminOrderDetailPage() {
                                 Changer le statut
                             </label>
                             <select
-                                value={order.statut}
+                                value={order.statut || 'en_attente'}
                                 onChange={(e) => updateOrderStatus(e.target.value)}
                                 disabled={updating}
                                 className="w-full px-3 py-2 border border-input rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
@@ -429,13 +434,13 @@ export default function AdminOrderDetailPage() {
                                 <span className="text-muted-foreground">Commande passée le</span>
                             </div>
                             <p className="text-sm font-medium">
-                                {new Date(order.created_at).toLocaleDateString('fr-FR', {
+                                {order.created_at ? new Date(order.created_at).toLocaleDateString('fr-FR', {
                                     year: 'numeric',
                                     month: 'long',
                                     day: 'numeric',
                                     hour: '2-digit',
                                     minute: '2-digit'
-                                })}
+                                }) : 'Date inconnue'}
                             </p>
                         </div>
 

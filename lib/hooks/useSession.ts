@@ -42,7 +42,12 @@ export function useSession() {
 
           const sessionData: CachedSession = {
             user: currentSession.user,
-            userProfile: userProfile || null,
+            userProfile: userProfile
+              ? {
+                  role: userProfile.role ?? '',
+                  active_role: userProfile.active_role ?? ''
+                }
+              : null,
             timestamp: Date.now()
           };
 
@@ -77,7 +82,12 @@ export function useSession() {
 
           const sessionData: CachedSession = {
             user: currentSession.user,
-            userProfile: userProfile || null,
+            userProfile: userProfile
+              ? {
+                  role: userProfile.role ?? '',
+                  active_role: userProfile.active_role ?? ''
+                }
+              : null,
             timestamp: Date.now()
           };
 

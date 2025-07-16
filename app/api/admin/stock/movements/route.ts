@@ -92,7 +92,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Calculer la nouvelle quantité de stock
-    let newStockQuantity = product.stock;
+    let newStockQuantity = product.stock ?? 0;
     if (movement_type === 'in') {
       newStockQuantity += quantity;
     } else if (movement_type === 'out') {
@@ -114,8 +114,8 @@ export async function POST(request: NextRequest) {
         product_id,
         movement_type,
         quantity,
-        previous_quantity: product.stock,
-        new_quantity: newStockQuantity,
+        previous_stock: product.stock ?? 0,
+        new_stock: newStockQuantity,
         reason,
         reference,
         notes,
