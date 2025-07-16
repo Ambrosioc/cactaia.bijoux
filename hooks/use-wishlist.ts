@@ -19,6 +19,36 @@ export interface WishlistItem {
   product_active: boolean;
 }
 
+const WISHLIST_CACHE_KEY = 'wishlist_cache';
+const WISHLIST_CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
+
+function getCachedWishlist(userId: string | null) {
+  if (!userId) return null;
+  try {
+    const raw = localStorage.getItem(`${WISHLIST_CACHE_KEY}_${userId}`);
+    if (!raw) return null;
+    const parsed = JSON.parse(raw);
+    if (!parsed.timestamp || !parsed.items) return null;
+    if (Date.now() - parsed.timestamp > WISHLIST_CACHE_DURATION) return null;
+    return parsed.items as WishlistItem[];
+  } catch {
+    return null;
+  }
+}
+
+function setCachedWishlist(userId: string | null, items: WishlistItem[]) {
+  if (!userId) return;
+  localStorage.setItem(
+    `${WISHLIST_CACHE_KEY}_${userId}`,
+    JSON.stringify({ items, timestamp: Date.now() })
+  );
+}
+
+function clearCachedWishlist(userId: string | null) {
+  if (!userId) return;
+  localStorage.removeItem(`${WISHLIST_CACHE_KEY}_${userId}`);
+}
+
 export function useWishlist() {
   const { user, isAuthenticated } = useUser();
   const { toast } = useToast();
@@ -28,23 +58,32 @@ export function useWishlist() {
   const [wishlistLoading, setWishlistLoading] = useState(true);
 
   // Récupérer la wishlist
-  const fetchWishlist = useCallback(async () => {
-    if (!isAuthenticated) {
+  const fetchWishlist = useCallback(async (force = false) => {
+    if (!isAuthenticated || !user?.id) {
       setWishlistItems([]);
       setWishlistLoading(false);
       return;
     }
 
+    // Lire le cache si pas force
+    if (!force) {
+      const cached = getCachedWishlist(user.id);
+      if (cached) {
+        setWishlistItems(cached);
+        setWishlistLoading(false);
+        return;
+      }
+    }
+
     try {
       setWishlistLoading(true);
       const response = await fetch('/api/wishlist');
-      
       if (!response.ok) {
         throw new Error('Erreur lors de la récupération de la wishlist');
       }
-
       const data = await response.json();
       setWishlistItems(data.wishlistItems || []);
+      setCachedWishlist(user.id, data.wishlistItems || []);
     } catch (error) {
       console.error('Erreur fetchWishlist:', error);
       toast({
@@ -55,7 +94,7 @@ export function useWishlist() {
     } finally {
       setWishlistLoading(false);
     }
-  }, [isAuthenticated, toast]);
+  }, [isAuthenticated, user?.id, toast]);
 
   // Ajouter un produit à la wishlist
   const addToWishlist = useCallback(async (productId: string) => {
@@ -90,8 +129,8 @@ export function useWishlist() {
         return { success: true, alreadyExists: true };
       }
 
-      // Rafraîchir la wishlist
-      await fetchWishlist();
+      // Rafraîchir la wishlist (force API)
+      await fetchWishlist(true);
 
       toast({
         title: "Ajouté à la wishlist",
@@ -130,8 +169,12 @@ export function useWishlist() {
         throw new Error(data.error || 'Erreur lors de la suppression de la wishlist');
       }
 
-      // Mettre à jour la wishlist localement
-      setWishlistItems(prev => prev.filter(item => item.product_id !== productId));
+      // Mettre à jour la wishlist localement (sans attendre l'API)
+      setWishlistItems(prev => {
+        const updated = prev.filter(item => item.product_id !== productId);
+        setCachedWishlist(user?.id || null, updated);
+        return updated;
+      });
 
       toast({
         title: "Supprimé de la wishlist",
@@ -150,7 +193,7 @@ export function useWishlist() {
     } finally {
       setLoading(false);
     }
-  }, [isAuthenticated, toast]);
+  }, [isAuthenticated, toast, user?.id]);
 
   // Vérifier si un produit est dans la wishlist
   const isInWishlist = useCallback((productId: string) => {
@@ -170,6 +213,14 @@ export function useWishlist() {
   useEffect(() => {
     fetchWishlist();
   }, [fetchWishlist]);
+
+  // Nettoyer le cache à la déconnexion
+  useEffect(() => {
+    if (!isAuthenticated && user?.id) {
+      clearCachedWishlist(user.id);
+      setWishlistItems([]);
+    }
+  }, [isAuthenticated, user?.id]);
 
   return {
     wishlistItems,

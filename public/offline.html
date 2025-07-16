@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hors ligne - Cactaïa</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            text-align: center;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            max-width: 500px;
+            width: 100%;
+        }
+
+        .icon {
+            width: 80px;
+            height: 80px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 30px;
+            color: white;
+            font-size: 40px;
+        }
+
+        h1 {
+            color: #2d3748;
+            margin-bottom: 15px;
+            font-size: 28px;
+            font-weight: 600;
+        }
+
+        p {
+            color: #718096;
+            margin-bottom: 30px;
+            line-height: 1.6;
+            font-size: 16px;
+        }
+
+        .btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 12px 30px;
+            border: none;
+            border-radius: 25px;
+            font-size: 16px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
+        }
+
+        .features {
+            margin-top: 30px;
+            text-align: left;
+        }
+
+        .feature {
+            display: flex;
+            align-items: center;
+            margin-bottom: 15px;
+            color: #4a5568;
+        }
+
+        .feature-icon {
+            width: 20px;
+            height: 20px;
+            background: #48bb78;
+            border-radius: 50%;
+            margin-right: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 12px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <div class="icon">📱</div>
+        <h1>Vous êtes hors ligne</h1>
+        <p>
+            Il semble que vous n'ayez pas de connexion internet.
+            Ne vous inquiétez pas, certaines fonctionnalités restent disponibles !
+        </p>
+
+        <div class="features">
+            <div class="feature">
+                <div class="feature-icon">✓</div>
+                <span>Navigation dans les pages déjà visitées</span>
+            </div>
+            <div class="feature">
+                <div class="feature-icon">✓</div>
+                <span>Consultation des produits en cache</span>
+            </div>
+            <div class="feature">
+                <div class="feature-icon">✓</div>
+                <span>Accès à votre panier local</span>
+            </div>
+        </div>
+
+        <button class="btn" onclick="window.location.reload()">
+            Réessayer
+        </button>
+    </div>
+
+    <script>
+        // Vérifier la connexion périodiquement
+        function checkConnection() {
+            if (navigator.onLine) {
+                window.location.reload();
+            }
+        }
+
+        // Écouter les changements de connexion
+        window.addEventListener('online', () => {
+            window.location.reload();
+        });
+
+        // Vérifier toutes les 5 secondes
+        setInterval(checkConnection, 5000);
+
+        // Ajouter un effet de pulsation au bouton
+        const btn = document.querySelector('.btn');
+        btn.addEventListener('click', function () {
+            this.style.transform = 'scale(0.95)';
+            setTimeout(() => {
+                this.style.transform = '';
+            }, 150);
+        });
+    </script>
+</body>
+
+</html>

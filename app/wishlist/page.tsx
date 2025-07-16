@@ -95,7 +95,7 @@ export default function WishlistPage() {
             >
               <div className="relative aspect-square mb-4 overflow-hidden rounded-md bg-secondary/30">
                 {item.product_images && item.product_images.length > 0 && (
-                  <Link href={`/produit/${item.product_id}`}>
+                  <Link href={`/produit/${item.product_slug}`}>
                     <Image
                       src={item.product_images[0]}
                       alt={item.product_name}
@@ -124,7 +124,7 @@ export default function WishlistPage() {
               </div>
               <div className="space-y-2">
                 <p className="text-sm text-muted-foreground">{item.product_category}</p>
-                <Link href={`/produit/${item.product_id}`}>
+                <Link href={`/produit/${item.product_slug}`}>
                   <h3 className="font-medium group-hover:text-primary transition-colors">
                     {item.product_name}
                   </h3>

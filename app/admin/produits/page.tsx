@@ -421,7 +421,7 @@ export default function ProductsManagementPage() {
                                         <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                                             <div className="flex items-center space-x-2">
                                                 <Link
-                                                    href={`/produit/${product.id}`}
+                                                    href={`/produit/${product.slug}`}
                                                     target="_blank"
                                                     className="text-blue-600 hover:text-blue-900"
                                                     title="Voir le produit"

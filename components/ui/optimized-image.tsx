@@ -36,6 +36,21 @@ export default function OptimizedImage({
     onError,
     ...props
 }: OptimizedImageProps) {
+    // Fonction pour obtenir les formats optimisés
+    const getOptimizedSrc = (originalSrc: string) => {
+        if (!originalSrc || originalSrc.startsWith('http')) {
+            return originalSrc;
+        }
+
+        const pathWithoutExt = originalSrc.replace(/\.[^/.]+$/, '');
+        return {
+            avif: `${pathWithoutExt}.avif`,
+            webp: `${pathWithoutExt}.webp`,
+            original: originalSrc
+        };
+    };
+
+    const optimizedSrcs = getOptimizedSrc(src);
     const [isLoading, setIsLoading] = useState(true);
     const [hasError, setHasError] = useState(false);
 
@@ -51,7 +66,7 @@ export default function OptimizedImage({
     };
 
     // Fallback vers placeholder si erreur
-    const imageSrc = hasError ? '/placeholder.jpg' : src;
+    const imageSrc = hasError ? '/placeholder.jpg' : (typeof optimizedSrcs === 'string' ? optimizedSrcs : optimizedSrcs.original);
 
     return (
         <div className={cn('relative overflow-hidden', fill ? 'w-full h-full' : '', className)}>
@@ -72,6 +87,9 @@ export default function OptimizedImage({
                 blurDataURL={blurDataURL}
                 onLoad={handleLoad}
                 onError={handleError}
+                {...(typeof optimizedSrcs === 'object' && {
+                    srcSet: `${optimizedSrcs.avif} 1x, ${optimizedSrcs.webp} 1x, ${optimizedSrcs.original} 1x`
+                })}
                 {...props}
             />
 

@@ -1,0 +1,47 @@
+{
+  "timestamp": "2025-07-16T16:30:21.529Z",
+  "stats": {
+    "processed": 35,
+    "skipped": 0,
+    "errors": 0,
+    "totalSizeBefore": 682075655,
+    "totalSizeAfter": 3912575,
+    "timeSaved": 0
+  },
+  "config": {
+    "supportedFormats": [
+      ".jpg",
+      ".jpeg",
+      ".png",
+      ".webp"
+    ],
+    "sizes": {
+      "hero": {
+        "width": 1920,
+        "height": 1080,
+        "quality": 85
+      },
+      "product": {
+        "width": 800,
+        "height": 800,
+        "quality": 85
+      },
+      "thumbnail": {
+        "width": 400,
+        "height": 400,
+        "quality": 80
+      },
+      "small": {
+        "width": 200,
+        "height": 200,
+        "quality": 75
+      }
+    },
+    "outputFormats": [
+      "webp",
+      "avif"
+    ],
+    "backupDir": "public/images/backup",
+    "optimizedDir": "public/images/optimized"
+  }
+}

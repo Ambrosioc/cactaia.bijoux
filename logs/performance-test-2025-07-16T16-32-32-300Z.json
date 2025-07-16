@@ -1,0 +1,73 @@
+{
+  "cache": {
+    "localStorage": {
+      "writeTime": 0.2671659999999747,
+      "dataSize": 2828,
+      "success": true
+    }
+  },
+  "api": {
+    "/api/products": {
+      "responseTime": null,
+      "status": "error",
+      "success": false,
+      "error": ""
+    },
+    "/api/wishlist": {
+      "responseTime": null,
+      "status": "error",
+      "success": false,
+      "error": ""
+    },
+    "/api/analytics/dashboard": {
+      "responseTime": null,
+      "status": "error",
+      "success": false,
+      "error": ""
+    }
+  },
+  "images": {
+    "/images/cactaïa-01.jpg": {
+      "loadTime": null,
+      "size": 0,
+      "success": false,
+      "error": ""
+    },
+    "/images/cactaïa-02.jpg": {
+      "loadTime": null,
+      "size": 0,
+      "success": false,
+      "error": ""
+    },
+    "/images/placeholder.jpg": {
+      "loadTime": null,
+      "size": 0,
+      "success": false,
+      "error": ""
+    }
+  },
+  "overall": {
+    "Chargement initial": {
+      "loadTime": null,
+      "status": "error",
+      "success": false,
+      "error": ""
+    },
+    "Page produits": {
+      "loadTime": null,
+      "status": "error",
+      "success": false,
+      "error": ""
+    },
+    "Page catégorie": {
+      "loadTime": null,
+      "status": "error",
+      "success": false,
+      "error": ""
+    }
+  },
+  "serviceWorker": {
+    "available": false,
+    "error": ""
+  }
+}

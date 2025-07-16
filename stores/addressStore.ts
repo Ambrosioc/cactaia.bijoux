@@ -2,6 +2,33 @@ import { createClient } from '@/lib/supabase/client';
 import type { Address, AddressInsert, AddressUpdate } from '@/lib/supabase/types';
 import { create } from 'zustand';
 
+const ADDRESS_CACHE_KEY = 'address_cache';
+const ADDRESS_CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
+
+function getCachedAddresses(userId: string) {
+  try {
+    const raw = localStorage.getItem(`${ADDRESS_CACHE_KEY}_${userId}`);
+    if (!raw) return null;
+    const parsed = JSON.parse(raw);
+    if (!parsed.timestamp || !parsed.addresses) return null;
+    if (Date.now() - parsed.timestamp > ADDRESS_CACHE_DURATION) return null;
+    return parsed.addresses as Address[];
+  } catch {
+    return null;
+  }
+}
+
+function setCachedAddresses(userId: string, addresses: Address[]) {
+  localStorage.setItem(
+    `${ADDRESS_CACHE_KEY}_${userId}`,
+    JSON.stringify({ addresses, timestamp: Date.now() })
+  );
+}
+
+function clearCachedAddresses(userId: string) {
+  localStorage.removeItem(`${ADDRESS_CACHE_KEY}_${userId}`);
+}
+
 interface AddressStore {
   // État
   addresses: Address[];
@@ -9,12 +36,12 @@ interface AddressStore {
   error: string | null;
 
   // Actions
-  loadAddresses: (userId: string) => Promise<void>;
+  loadAddresses: (userId: string, force?: boolean) => Promise<void>;
   addAddress: (address: AddressInsert) => Promise<void>;
   updateAddress: (id: string, updates: AddressUpdate) => Promise<void>;
   deleteAddress: (id: string) => Promise<void>;
   setPrimaryAddress: (id: string) => Promise<void>;
-  clearAddresses: () => void;
+  clearAddresses: (userId?: string) => void;
   setLoading: (loading: boolean) => void;
   setError: (error: string | null) => void;
 
@@ -34,8 +61,17 @@ export const useAddressStore = create<AddressStore>((set, get) => {
     error: null,
 
     // Actions
-    loadAddresses: async (userId: string) => {
+    loadAddresses: async (userId: string, force = false) => {
       set({ loading: true, error: null });
+
+      // Lire le cache si pas force
+      if (!force) {
+        const cached = getCachedAddresses(userId);
+        if (cached) {
+          set({ addresses: cached, loading: false });
+          return;
+        }
+      }
 
       try {
         const { data, error } = await supabase
@@ -53,6 +89,7 @@ export const useAddressStore = create<AddressStore>((set, get) => {
           addresses: data || [],
           loading: false,
         });
+        setCachedAddresses(userId, data || []);
       } catch (error) {
         console.error('Erreur lors du chargement des adresses:', error);
         set({
@@ -78,13 +115,14 @@ export const useAddressStore = create<AddressStore>((set, get) => {
         }
 
         // Ajouter la nouvelle adresse à l'état local
-        set(state => ({
-          addresses: [data, ...state.addresses],
-          loading: false,
-        }));
+        set(state => {
+          const updated = [data, ...state.addresses];
+          setCachedAddresses(address.user_id, updated);
+          return { addresses: updated, loading: false };
+        });
 
         // Recharger pour s'assurer que l'ordre est correct
-        await get().loadAddresses(address.user_id);
+        await get().loadAddresses(address.user_id, true);
       } catch (error) {
         console.error('Erreur lors de l\'ajout de l\'adresse:', error);
         set({
@@ -111,18 +149,19 @@ export const useAddressStore = create<AddressStore>((set, get) => {
         }
 
         // Mettre à jour l'adresse dans l'état local
-        set(state => ({
-          addresses: state.addresses.map(addr => 
+        set(state => {
+          const updated = state.addresses.map(addr => 
             addr.id === id ? data : addr
-          ),
-          loading: false,
-        }));
+          );
+          setCachedAddresses(data.user_id, updated);
+          return { addresses: updated, loading: false };
+        });
 
         // Si on a changé l'adresse principale, recharger pour mettre à jour l'ordre
         if (updates.est_principale !== undefined) {
           const address = get().addresses.find(addr => addr.id === id);
           if (address) {
-            await get().loadAddresses(address.user_id);
+            await get().loadAddresses(address.user_id, true);
           }
         }
       } catch (error) {
@@ -139,6 +178,7 @@ export const useAddressStore = create<AddressStore>((set, get) => {
       set({ loading: true, error: null });
 
       try {
+        const address = get().addresses.find(addr => addr.id === id);
         const { error } = await supabase
           .from('addresses')
           .delete()
@@ -149,10 +189,11 @@ export const useAddressStore = create<AddressStore>((set, get) => {
         }
 
         // Supprimer l'adresse de l'état local
-        set(state => ({
-          addresses: state.addresses.filter(addr => addr.id !== id),
-          loading: false,
-        }));
+        set(state => {
+          const updated = state.addresses.filter(addr => addr.id !== id);
+          if (address) setCachedAddresses(address.user_id, updated);
+          return { addresses: updated, loading: false };
+        });
       } catch (error) {
         console.error('Erreur lors de la suppression de l\'adresse:', error);
         set({
@@ -177,18 +218,20 @@ export const useAddressStore = create<AddressStore>((set, get) => {
         }
 
         // Mettre à jour l'état local
-        set(state => ({
-          addresses: state.addresses.map(addr => ({
+        set(state => {
+          const updated = state.addresses.map(addr => ({
             ...addr,
             est_principale: addr.id === id
-          })),
-          loading: false,
-        }));
+          }));
+          const address = updated.find(addr => addr.id === id);
+          if (address) setCachedAddresses(address.user_id, updated);
+          return { addresses: updated, loading: false };
+        });
 
         // Recharger pour s'assurer que l'ordre est correct
         const address = get().addresses.find(addr => addr.id === id);
         if (address) {
-          await get().loadAddresses(address.user_id);
+          await get().loadAddresses(address.user_id, true);
         }
       } catch (error) {
         console.error('Erreur lors de la définition de l\'adresse principale:', error);
@@ -200,12 +243,9 @@ export const useAddressStore = create<AddressStore>((set, get) => {
       }
     },
 
-    clearAddresses: () => {
-      set({
-        addresses: [],
-        loading: false,
-        error: null,
-      });
+    clearAddresses: (userId?: string) => {
+      set({ addresses: [] });
+      if (userId) clearCachedAddresses(userId);
     },
 
     setLoading: (loading: boolean) => {
@@ -223,8 +263,7 @@ export const useAddressStore = create<AddressStore>((set, get) => {
     },
 
     getAddressById: (id: string) => {
-      const addresses = get().addresses;
-      return addresses.find(addr => addr.id === id) || null;
+      return get().addresses.find(addr => addr.id === id) || null;
     },
 
     hasAddresses: () => {
@@ -233,23 +272,20 @@ export const useAddressStore = create<AddressStore>((set, get) => {
   };
 });
 
-// Hook personnalisé pour une utilisation plus simple
 export const useAddresses = () => {
   const store = useAddressStore();
   return {
     addresses: store.addresses,
     loading: store.loading,
     error: store.error,
-    primaryAddress: store.getPrimaryAddress(),
-    hasAddresses: store.hasAddresses(),
     loadAddresses: store.loadAddresses,
     addAddress: store.addAddress,
     updateAddress: store.updateAddress,
     deleteAddress: store.deleteAddress,
     setPrimaryAddress: store.setPrimaryAddress,
     clearAddresses: store.clearAddresses,
-    setLoading: store.setLoading,
-    setError: store.setError,
+    getPrimaryAddress: store.getPrimaryAddress,
     getAddressById: store.getAddressById,
+    hasAddresses: store.hasAddresses,
   };
 };

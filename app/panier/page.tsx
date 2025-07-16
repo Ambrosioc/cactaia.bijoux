@@ -102,7 +102,7 @@ export default function CartPage() {
                       />
                     </div>
                     <div className="flex-grow">
-                      <Link href={`/produit/${item.product.id}`} className="font-medium hover:text-primary">
+                      <Link href={`/produit/${item.product.slug}`} className="font-medium hover:text-primary">
                         {item.product.nom}
                       </Link>
                       <p className="text-sm text-muted-foreground mb-1">
@@ -151,7 +151,7 @@ export default function CartPage() {
                       />
                     </div>
                     <div>
-                      <Link href={`/produit/${item.product.id}`} className="font-medium hover:text-primary">
+                      <Link href={`/produit/${item.product.slug}`} className="font-medium hover:text-primary">
                         {item.product.nom}
                       </Link>
                       <p className="text-sm text-muted-foreground">

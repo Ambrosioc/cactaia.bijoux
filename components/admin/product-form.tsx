@@ -2,6 +2,7 @@
 
 import { createClient } from '@/lib/supabase/client';
 import type { Product, ProductInsert, ProductUpdate } from '@/lib/supabase/types';
+import { generateSlug } from '@/lib/utils';
 import { useUser } from '@/stores/userStore';
 import { motion } from 'framer-motion';
 import { ArrowLeft, Euro, Loader2, Package, Save, Tag } from 'lucide-react';
@@ -165,9 +166,11 @@ export default function ProductForm({ product, isEditing = false }: ProductFormP
                 });
             } else {
                 // Création
+                const slug = generateSlug(formData.nom);
+                const productDataWithSlug = { ...productData, slug };
                 const { data, error } = await supabase
                     .from('produits')
-                    .insert(productData)
+                    .insert(productDataWithSlug)
                     .select()
                     .single();
 

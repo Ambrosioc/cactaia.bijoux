@@ -17,7 +17,8 @@ const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY!
 export default function CheckoutPage() {
     const { items, totalPrice, clearCart } = useCart();
     const { user, isAuthenticated } = useUser();
-    const { addresses, loadAddresses, primaryAddress } = useAddresses();
+    const { addresses, loadAddresses } = useAddresses();
+    const primaryAddress = addresses.find(a => a.est_principale);
     const [selectedAddressId, setSelectedAddressId] = useState<string>('');
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
