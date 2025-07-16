@@ -2,10 +2,11 @@
 
 import AddToCartButton from '@/components/cart/add-to-cart-button';
 import OptimizedImage from '@/components/ui/optimized-image';
+import { WishlistButton } from '@/components/wishlist/wishlist-button';
 import { createClient } from '@/lib/supabase/client';
 import type { Product } from '@/lib/supabase/types';
 import { motion } from 'framer-motion';
-import { ChevronLeft, ChevronRight, Filter, Heart, Package, Search, Star, X } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Filter, Package, Search, Star, X } from 'lucide-react';
 import Link from 'next/link';
 import { useParams, useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
@@ -268,9 +269,12 @@ export default function CategoryPage() {
                                                     Populaire
                                                 </div>
                                             )}
-                                            <button className="absolute top-3 right-3 p-2 bg-white/90 rounded-full hover:bg-white transition-colors opacity-0 group-hover:opacity-100">
-                                                <Heart className="h-4 w-4 text-gray-600" />
-                                            </button>
+                                            <WishlistButton
+                                                productId={product.id}
+                                                size="sm"
+                                                variant="ghost"
+                                                className="absolute top-3 right-3 bg-white/90 hover:bg-white opacity-0 group-hover:opacity-100"
+                                            />
                                         </div>
                                     </Link>
 

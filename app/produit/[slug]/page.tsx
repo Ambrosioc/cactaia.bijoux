@@ -4,6 +4,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { ImageCarousel } from '@/components/ui/image-carousel';
 import { Separator } from '@/components/ui/separator';
+import { WishlistButton } from '@/components/wishlist/wishlist-button';
 import { createServerClient } from '@/lib/supabase/server';
 import { Metadata } from 'next';
 import { notFound } from 'next/navigation';
@@ -133,9 +134,12 @@ export default async function ProductPage({ params }: PageProps) {
               <AddToCartButton product={product} />
             </div>
             <div className="flex gap-2">
-              <Button variant="outline" className="flex-1">
-                Ajouter aux favoris
-              </Button>
+              <WishlistButton
+                productId={product.id}
+                variant="outline"
+                showText={true}
+                className="flex-1"
+              />
               <Button variant="outline" className="flex-1">
                 Partager
               </Button>

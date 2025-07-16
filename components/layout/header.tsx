@@ -2,6 +2,7 @@
 
 import CartSidebar from '@/components/cart/cart-sidebar';
 import CategorySidebar from '@/components/layout/category-sidebar';
+import { useWishlist } from '@/hooks/use-wishlist';
 import { createClient } from '@/lib/supabase/client';
 import { cn } from '@/lib/utils';
 import { useCart } from '@/stores/cartStore';
@@ -19,6 +20,7 @@ const Header = () => {
   const [categorySidebarOpen, setCategorySidebarOpen] = useState(false);
   const { user, isAuthenticated, displayName } = useUser();
   const { totalItems, toggleCart } = useCart();
+  const { wishlistCount } = useWishlist();
   const supabase = createClient();
   const [mounted, setMounted] = useState(false);
   const pathname = usePathname();
@@ -224,12 +226,17 @@ const Header = () => {
             {!hideEcommerce && (
               <>
                 <Link href="/wishlist" className={cn(
-                  "flex items-center text-sm transition-colors",
+                  "relative flex items-center text-sm transition-colors",
                   shouldShowWhiteHeader
                     ? "text-white hover:text-primary/80"
                     : "text-black hover:text-primary/80"
                 )}>
                   <Heart className={cn("h-4 w-4", shouldShowWhiteHeader ? "text-white" : "text-black")} />
+                  {mounted && wishlistCount > 0 && (
+                    <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
+                      {wishlistCount}
+                    </span>
+                  )}
                   <span className="sr-only">Wishlist</span>
                 </Link>
 
