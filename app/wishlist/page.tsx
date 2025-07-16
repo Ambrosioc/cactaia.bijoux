@@ -35,7 +35,7 @@ export default function WishlistPage() {
             <p className="text-muted-foreground mb-8">
               Vous n&apos;avez pas encore ajouté d&apos;articles à votre liste de souhaits. Découvrez nos collections et trouvez des bijoux qui vous ressemblent.
             </p>
-            <Link href="/boutique" className="btn btn-primary px-8 py-3">
+            <Link href="/collections" className="btn btn-primary px-8 py-3">
               Découvrir nos bijoux
             </Link>
           </div>
@@ -112,7 +112,7 @@ export default function WishlistPage() {
         </div>
 
         <div className="mt-12 text-center">
-          <Link href="/boutique" className="btn btn-outline px-8 py-2">
+          <Link href="/collections" className="btn btn-outline px-8 py-2">
             Continuer mes achats
           </Link>
         </div>

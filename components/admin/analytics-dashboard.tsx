@@ -186,7 +186,7 @@ export default function AnalyticsDashboard() {
                 <div>
                     <h1 className="text-3xl font-medium mb-2">Analytics & Reporting</h1>
                     <p className="text-muted-foreground">
-                        Tableau de bord des performances de votre boutique
+                        Tableau de bord des performances de votre site
                     </p>
                 </div>
 

@@ -96,8 +96,8 @@ function ConfirmationContent() {
                     <p className="text-muted-foreground mb-6">
                         {error || 'Commande non trouvée'}
                     </p>
-                    <Link href="/boutique" className="btn btn-primary">
-                        Retour au shop
+                    <Link href="/collections" className="btn btn-primary">
+                        Retour aux collections
                     </Link>
                 </div>
             </div>
@@ -306,7 +306,7 @@ function ConfirmationContent() {
                                 </Link>
 
                                 <Link
-                                    href="/boutique"
+                                    href="/collections"
                                     className="w-full btn btn-outline py-2 text-center block"
                                 >
                                     Continuer mes achats

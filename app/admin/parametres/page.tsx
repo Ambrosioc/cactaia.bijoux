@@ -4,7 +4,6 @@ import { useTheme } from '@/lib/contexts/ThemeContext';
 import { useUser } from '@/stores/userStore';
 import { motion } from 'framer-motion';
 import {
-    Mail,
     Palette,
     RotateCcw,
     Save,
@@ -13,29 +12,29 @@ import {
 } from 'lucide-react';
 import { useState } from 'react';
 
-interface ShopSettings {
-    shopName: string;
-    shopDescription: string;
-    shopEmail: string;
-    shopPhone: string;
-    shopAddress: string;
+interface SiteSettings {
+    siteName: string;
+    siteDescription: string;
+    siteEmail: string;
+    sitePhone: string;
+    siteAddress: string;
 }
 
 export default function SettingsPage() {
     const { isActiveAdmin } = useUser();
     const { colors, updateColors, resetColors } = useTheme();
-    const [settings, setSettings] = useState<ShopSettings>({
-        shopName: 'Cactaia.Bijoux',
-        shopDescription: 'Bijoux écoresponsables et élégants',
-        shopEmail: 'contact@cactaiabijoux.fr',
-        shopPhone: '+33 1 23 45 67 89',
-        shopAddress: '42 rue Maurice Violette, 28600 Luisant, France',
+    const [settings, setSettings] = useState<SiteSettings>({
+        siteName: 'Cactaia.Bijoux',
+        siteDescription: 'Bijoux écoresponsables et élégants',
+        siteEmail: 'contact@cactaiabijoux.fr',
+        sitePhone: '+33 1 23 45 67 89',
+        siteAddress: '42 rue Maurice Violette, 28600 Luisant, France',
     });
 
     const [saving, setSaving] = useState(false);
     const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
 
-    const handleInputChange = (field: keyof ShopSettings, value: string) => {
+    const handleInputChange = (field: keyof SiteSettings, value: string) => {
         setSettings(prev => ({
             ...prev,
             [field]: value
@@ -90,9 +89,9 @@ export default function SettingsPage() {
             {/* Header */}
             <div className="flex justify-between items-center mb-8">
                 <div>
-                    <h1 className="text-3xl font-medium mb-2">Paramètres de la boutique</h1>
-                    <p className="text-muted-foreground">
-                        Configurez les paramètres globaux de votre boutique
+                    <h1 className="text-3xl font-medium mb-2">Paramètres du site</h1>
+                    <p className="text-muted-foreground mb-8">
+                        Configurez les paramètres globaux de votre site
                     </p>
                 </div>
                 <button
@@ -135,67 +134,69 @@ export default function SettingsPage() {
                         <h2 className="text-xl font-medium">Informations générales</h2>
                     </div>
 
-                    <div className="space-y-4">
+                    <div className="space-y-6">
                         <div>
-                            <label className="block text-sm font-medium mb-2">
-                                Nom de la boutique
+                            <label htmlFor="siteName" className="block text-sm font-medium mb-2">
+                                Nom du site
                             </label>
                             <input
                                 type="text"
-                                value={settings.shopName}
-                                onChange={(e) => handleInputChange('shopName', e.target.value)}
-                                className="w-full px-3 py-2 border border-input rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
+                                id="siteName"
+                                className="w-full px-3 py-2 border border-border rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
+                                value={settings.siteName}
+                                onChange={(e) => handleInputChange('siteName', e.target.value)}
                             />
                         </div>
 
                         <div>
-                            <label className="block text-sm font-medium mb-2">
-                                Description
+                            <label htmlFor="siteDescription" className="block text-sm font-medium mb-2">
+                                Description du site
                             </label>
                             <textarea
-                                value={settings.shopDescription}
-                                onChange={(e) => handleInputChange('shopDescription', e.target.value)}
+                                id="siteDescription"
                                 rows={3}
-                                className="w-full px-3 py-2 border border-input rounded-md focus:outline-none focus:ring-2 focus:ring-primary resize-none"
+                                className="w-full px-3 py-2 border border-border rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
+                                value={settings.siteDescription}
+                                onChange={(e) => handleInputChange('siteDescription', e.target.value)}
                             />
                         </div>
 
                         <div>
-                            <label className="block text-sm font-medium mb-2">
+                            <label htmlFor="siteEmail" className="block text-sm font-medium mb-2">
                                 Email de contact
                             </label>
-                            <div className="relative">
-                                <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                                <input
-                                    type="email"
-                                    value={settings.shopEmail}
-                                    onChange={(e) => handleInputChange('shopEmail', e.target.value)}
-                                    className="w-full pl-10 pr-3 py-2 border border-input rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
-                                />
-                            </div>
+                            <input
+                                type="email"
+                                id="siteEmail"
+                                className="w-full px-3 py-2 border border-border rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
+                                value={settings.siteEmail}
+                                onChange={(e) => handleInputChange('siteEmail', e.target.value)}
+                            />
                         </div>
 
                         <div>
-                            <label className="block text-sm font-medium mb-2">
+                            <label htmlFor="sitePhone" className="block text-sm font-medium mb-2">
                                 Téléphone
                             </label>
                             <input
                                 type="tel"
-                                value={settings.shopPhone}
-                                onChange={(e) => handleInputChange('shopPhone', e.target.value)}
-                                className="w-full px-3 py-2 border border-input rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
+                                id="sitePhone"
+                                className="w-full px-3 py-2 border border-border rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
+                                value={settings.sitePhone}
+                                onChange={(e) => handleInputChange('sitePhone', e.target.value)}
                             />
                         </div>
 
                         <div>
-                            <label className="block text-sm font-medium mb-2">
+                            <label htmlFor="siteAddress" className="block text-sm font-medium mb-2">
                                 Adresse
                             </label>
                             <textarea
-                                value={settings.shopAddress}
-                                onChange={(e) => handleInputChange('shopAddress', e.target.value)}
-                                rows={3}
-                                className="w-full px-3 py-2 border border-input rounded-md focus:outline-none focus:ring-2 focus:ring-primary resize-none"
+                                id="siteAddress"
+                                rows={2}
+                                className="w-full px-3 py-2 border border-border rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
+                                value={settings.siteAddress}
+                                onChange={(e) => handleInputChange('siteAddress', e.target.value)}
                             />
                         </div>
                     </div>
@@ -332,15 +333,13 @@ export default function SettingsPage() {
                             </button>
                         </div>
 
-                        <div className="p-4 bg-red-50 border border-red-200 rounded-lg">
-                            <h3 className="text-sm font-medium text-red-800 mb-2">
-                                Zone de danger
-                            </h3>
-                            <p className="text-sm text-red-700 mb-3">
-                                Actions irréversibles qui affectent l&apos;ensemble de la boutique.
+                        <div className="border-t border-border pt-6">
+                            <h3 className="text-lg font-medium mb-4 text-red-600">Zone de danger</h3>
+                            <p className="text-sm text-muted-foreground mb-4">
+                                Actions irréversibles qui affectent l&apos;ensemble du site.
                             </p>
-                            <button className="btn btn-outline text-red-700 border-red-300 hover:bg-red-100 text-xs px-3 py-1">
-                                Réinitialiser la boutique
+                            <button className="btn btn-destructive">
+                                Réinitialiser le site
                             </button>
                         </div>
                     </div>

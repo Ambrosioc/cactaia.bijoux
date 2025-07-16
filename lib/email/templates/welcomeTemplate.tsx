@@ -2,11 +2,11 @@ import { createEmailHTML } from './baseTemplate';
 
 interface WelcomeTemplateProps {
     customerName: string;
-    shopUrl: string;
+    collectionsUrl: string;
 }
 
 export function renderWelcomeEmail(props: WelcomeTemplateProps): string {
-    const { customerName, shopUrl } = props;
+    const { customerName, collectionsUrl } = props;
     const currentYear = new Date().getFullYear();
 
     const content = `
@@ -29,7 +29,7 @@ export function renderWelcomeEmail(props: WelcomeTemplateProps): string {
         <p>Découvrez dès maintenant notre collection de bijoux inspirés par la nature :</p>
 
         <div style="text-align: center; margin: 30px 0;">
-            <a href="${shopUrl}" class="button">
+            <a href="${collectionsUrl}" class="button">
                 Découvrir nos collections
             </a>
         </div>
@@ -55,7 +55,7 @@ export function renderWelcomeEmail(props: WelcomeTemplateProps): string {
 
         <p>Si vous avez des questions, n'hésitez pas à nous contacter à <a href="mailto:contact@cactaiabijoux.fr">contact@cactaiabijoux.fr</a>.</p>
 
-        <p>À très bientôt sur notre boutique,<br />L'équipe Cactaia.Bijoux</p>
+        <p>À très bientôt sur notre site,<br />L'équipe Cactaia.Bijoux</p>
     `;
 
     return createEmailHTML(content, 'Bienvenue chez Cactaia.Bijoux');

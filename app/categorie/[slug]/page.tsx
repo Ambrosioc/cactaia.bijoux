@@ -121,8 +121,8 @@ export default function CategoryPage() {
                         </div>
                         <h1 className="text-2xl font-bold text-gray-900 mb-4">Erreur</h1>
                         <p className="text-gray-600 mb-8">{error}</p>
-                        <Link href="/boutique" className="btn bg-primary text-white hover:bg-primary/90 px-6 py-3 rounded-lg transition-colors">
-                            Retour à la boutique
+                        <Link href="/collections" className="btn bg-primary text-white hover:bg-primary/90 px-6 py-3 rounded-lg transition-colors">
+                            Retour aux collections
                         </Link>
                     </div>
                 </div>
@@ -138,11 +138,11 @@ export default function CategoryPage() {
                     {/* Breadcrumb et titre */}
                     <div className="flex items-center space-x-4 mb-8">
                         <Link
-                            href="/boutique"
+                            href="/collections"
                             className="flex items-center text-primary hover:text-primary/80 transition-colors group"
                         >
                             <ChevronLeft className="h-5 w-5 mr-1 group-hover:-translate-x-1 transition-transform" />
-                            <span className="text-sm font-medium">Retour à la boutique</span>
+                            <span className="text-sm font-medium">Retour aux collections</span>
                         </Link>
                     </div>
 
@@ -230,7 +230,7 @@ export default function CategoryPage() {
                             }
                         </p>
                         <Link
-                            href="/boutique"
+                            href="/collections"
                             className="inline-flex items-center px-6 py-3 bg-primary text-white rounded-xl hover:bg-primary/90 transition-colors"
                         >
                             Voir tous les produits

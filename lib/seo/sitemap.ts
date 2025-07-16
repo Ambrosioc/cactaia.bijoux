@@ -20,12 +20,6 @@ export async function generateSitemap(): Promise<string> {
       priority: 1.0,
     },
     {
-      url: `${baseUrl}/boutique`,
-      lastModified: new Date(),
-      changeFrequency: 'daily',
-      priority: 0.9,
-    },
-    {
       url: `${baseUrl}/collections`,
       lastModified: new Date(),
       changeFrequency: 'weekly',
@@ -127,7 +121,6 @@ Disallow: /connexion/
 Disallow: /inscription/
 
 # Allow important pages
-Allow: /boutique/
 Allow: /produit/
 Allow: /collections/
 Allow: /a-propos/

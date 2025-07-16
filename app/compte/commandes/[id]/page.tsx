@@ -369,7 +369,7 @@ export default function OrderDetailPage() {
                                 </Link>
 
                                 <Link
-                                    href="/boutique"
+                                    href="/collections"
                                     className="w-full btn btn-outline py-2 text-center block"
                                 >
                                     Continuer mes achats

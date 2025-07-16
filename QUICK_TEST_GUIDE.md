@@ -22,7 +22,7 @@ npm run test
 ### Test 1: Pages Principales
 1. Ouvrir `http://localhost:3000`
 2. Vérifier que la page d'accueil se charge
-3. Naviguer vers `/boutique`
+3. Naviguer vers `/collections`
 4. Naviguer vers `/contact`
 5. Naviguer vers `/faq`
 

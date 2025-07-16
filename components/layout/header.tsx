@@ -149,7 +149,7 @@ const Header = () => {
             ))}
           </nav>
 
-          {/* Boutique Name - Center */}
+          {/* Site Name - Center */}
           <div className="hidden md:flex items-center justify-center flex-1">
             <Image
               src="/menu-logo.png"
@@ -283,7 +283,7 @@ const Header = () => {
             exit={{ opacity: 0, y: -10 }}
             transition={{ duration: 0.2 }}
           >
-            {/* Mobile Boutique Name */}
+            {/* Mobile Site Name */}
             <div className="text-center mb-6">
               <h1 className="text-2xl font-bold text-black">
                 Cactaia Bijoux

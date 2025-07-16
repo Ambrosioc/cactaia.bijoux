@@ -150,7 +150,7 @@ export default function CheckoutPage() {
                     <p className="text-muted-foreground mb-6">
                         Votre panier est vide. Ajoutez des produits avant de passer commande.
                     </p>
-                    <Link href="/boutique" className="btn btn-primary">
+                    <Link href="/collections" className="btn btn-primary">
                         Découvrir nos produits
                     </Link>
                 </div>

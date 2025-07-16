@@ -21,7 +21,7 @@ export async function sendNewsletterWelcomeEmail({
   try {
     // Préparer les données pour le template
     const customerName = `${subscriber.prenom} ${subscriber.nom}`.trim();
-    const shopUrl = `${siteUrl}/boutique`;
+    const collectionsUrl = `${siteUrl}/collections`;
     const subscriptionDate = new Date(subscriber.date_inscription).toLocaleDateString('fr-FR', {
       day: 'numeric',
       month: 'long',
@@ -32,7 +32,7 @@ export async function sendNewsletterWelcomeEmail({
     const htmlContent = renderNewsletterWelcomeEmail({
       customerName,
       discountCode: subscriber.code_reduction,
-      shopUrl,
+      collectionsUrl,
       subscriptionDate
     });
     

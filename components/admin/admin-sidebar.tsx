@@ -132,7 +132,7 @@ export default function AdminSidebar() {
                         Admin<span className="text-primary">.</span>Panel
                     </h2>
                     <p className="text-xs text-muted-foreground mt-1">
-                        Gestion de la boutique
+                        Gestion du site
                     </p>
                 </Link>
             </div>

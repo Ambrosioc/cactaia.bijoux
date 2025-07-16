@@ -17,12 +17,12 @@ export async function sendWelcomeEmail({
       ? `${user.prenom || ''} ${user.nom || ''}`.trim()
       : 'Client';
     
-    const shopUrl = `${siteUrl}/boutique`;
+    const collectionsUrl = `${siteUrl}/collections`;
     
     // Générer le contenu HTML de l'email
     const htmlContent = renderWelcomeEmail({
       customerName,
-      shopUrl
+      collectionsUrl
     });
     
     // Envoyer l'email

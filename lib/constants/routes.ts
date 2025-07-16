@@ -3,37 +3,23 @@
  */
 
 export const ROUTES = {
-  // Pages publiques
   HOME: '/',
-  BOUTIQUE: '/boutique',
   COLLECTIONS: '/collections',
-  ABOUT: '/a-propos',
-  BLOG: '/blog',
   CONTACT: '/contact',
+  ABOUT: '/a-propos',
   FAQ: '/faq',
-
-  // Authentification
+  LEGAL: '/mentions-legales',
+  TERMS: '/cgv',
+  RETURNS: '/retours',
+  SHIPPING: '/livraison',
+  ACCOUNT: '/compte',
   LOGIN: '/connexion',
-  SIGNUP: '/inscription',
-
-  // Pages protégées utilisateur (active_role = 'user')
-  USER_ACCOUNT: '/compte',
-  USER_ORDERS: '/compte/commandes',
-  USER_WISHLIST: '/compte/favoris',
-  USER_SETTINGS: '/compte/parametres',
-
-  // Pages protégées admin (role = 'admin' ET active_role = 'admin')
-  ADMIN_DASHBOARD: '/admin',
-  ADMIN_PRODUCTS: '/admin/produits',
-  ADMIN_ORDERS: '/admin/commandes',
-  ADMIN_USERS: '/admin/utilisateurs',
-  ADMIN_SETTINGS: '/admin/parametres',
-
-  // Autres
+  REGISTER: '/inscription',
   CART: '/panier',
   WISHLIST: '/wishlist',
-  PRODUCT: (slug: string) => `/produit/${slug}`,
-  COLLECTION: (id: string) => `/collections/${id}`,
+  CHECKOUT: '/checkout',
+  CONFIRMATION: '/confirmation',
+  ADMIN: '/admin',
 } as const;
 
 /**
@@ -41,9 +27,9 @@ export const ROUTES = {
  */
 export function getRedirectRoute(userRole: 'user' | 'admin', activeRole: 'user' | 'admin'): string {
   if (userRole === 'admin' && activeRole === 'admin') {
-    return ROUTES.ADMIN_DASHBOARD;
+    return ROUTES.ADMIN;
   }
-  return ROUTES.USER_ACCOUNT;
+  return ROUTES.ACCOUNT;
 }
 
 /**

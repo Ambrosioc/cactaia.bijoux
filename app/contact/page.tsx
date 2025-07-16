@@ -223,7 +223,7 @@ const ContactPage = () => {
               <Link href="/faq" className="text-gray-500 hover:text-primary transition-colors">
                 FAQ
               </Link>
-              <Link href="/boutique" className="text-gray-500 hover:text-primary transition-colors">
+              <Link href="/collections" className="text-gray-500 hover:text-primary transition-colors">
                 Découvrir nos bijoux
               </Link>
             </div>

@@ -3,7 +3,7 @@
 ## 🎉 État Actuel
 
 ✅ **Fonctionnel :**
-- Pages principales (accueil, boutique, contact, FAQ, mentions légales)
+- Pages principales (accueil, collections, contact, FAQ, mentions légales)
 - Sitemap.xml dynamique
 - Robots.txt statique
 - API Analytics Dashboard
@@ -43,7 +43,7 @@ node scripts/check-db.js
 
 #### Test des Pages Principales
 1. Ouvrir `http://localhost:3000`
-2. Naviguer vers `/boutique`
+2. Naviguer vers `/collections`
 3. Naviguer vers `/contact`
 4. Naviguer vers `/faq`
 5. Naviguer vers `/mentions-legales`
