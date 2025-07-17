@@ -76,7 +76,7 @@ export default function HeroCarousel() {
                         {heroImages[currentIndex].subtitle}
                     </p>
                     <a
-                        href="/boutique"
+                        href="/collections"
                         className="btn btn-primary px-8 py-3"
                     >
                         Découvrir nos collections

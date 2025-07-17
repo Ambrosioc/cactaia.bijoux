@@ -75,7 +75,7 @@ export default function CartSidebar() {
                                         Découvrez nos bijoux et ajoutez-les à votre panier
                                     </p>
                                     <Link
-                                        href="/boutique"
+                                        href="/collections"
                                         onClick={closeCart}
                                         className="btn btn-primary px-6 py-2"
                                     >

@@ -1,9 +1,9 @@
 'use client';
 
-import { useEffect, useState } from 'react';
-import { useRouter, usePathname } from 'next/navigation';
+import { ROUTES, isAdminRoute, isProtectedRoute, isUserRoute } from '@/lib/constants/routes';
 import { useUser } from '@/stores/userStore';
-import { ROUTES, isAdminRoute, isUserRoute, isProtectedRoute } from '@/lib/constants/routes';
+import { usePathname, useRouter } from 'next/navigation';
+import { useEffect, useState } from 'react';
 
 interface RouteProtectionOptions {
   redirectTo?: string;
@@ -50,7 +50,7 @@ export function useRouteProtection(options: RouteProtectionOptions = {}) {
       // Vérification des permissions admin
       if (options.requireAdmin || isAdminRoute(pathname)) {
         if (!isActiveAdmin) {
-          router.push(ROUTES.USER_ACCOUNT);
+          router.push(ROUTES.ACCOUNT);
           return;
         }
       }
@@ -58,7 +58,7 @@ export function useRouteProtection(options: RouteProtectionOptions = {}) {
       // Vérification des permissions utilisateur
       if (options.requireUser || isUserRoute(pathname)) {
         if (!isActiveUser) {
-          router.push(ROUTES.ADMIN_DASHBOARD);
+          router.push(ROUTES.ADMIN);
           return;
         }
       }

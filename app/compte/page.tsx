@@ -445,7 +445,7 @@ export default function AccountPage() {
                       Votre liste de souhaits est vide.
                     </p>
                     <Link
-                      href="/boutique"
+                      href="/collections"
                       className="btn btn-primary mt-4 px-6 py-2"
                     >
                       Découvrir nos produits

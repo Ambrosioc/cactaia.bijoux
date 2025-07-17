@@ -2,10 +2,11 @@
 
 import AddToCartButton from '@/components/cart/add-to-cart-button';
 import OptimizedImage from '@/components/ui/optimized-image';
+import { WishlistButton } from '@/components/wishlist/wishlist-button';
 import { createClient } from '@/lib/supabase/client';
 import type { Product } from '@/lib/supabase/types';
 import { motion } from 'framer-motion';
-import { ArrowLeft, ArrowRight, Heart, Star } from 'lucide-react';
+import { ArrowLeft, ArrowRight, Star } from 'lucide-react';
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
 
@@ -165,12 +166,12 @@ const FeaturedProducts = () => {
                         Nouveau
                       </div>
                     )}
-                    <button
-                      className="absolute top-2 right-2 z-10 p-1.5 rounded-full bg-white/80 hover:bg-white transition-colors"
-                      aria-label="Ajouter aux favoris"
-                    >
-                      <Heart className="h-4 w-4" />
-                    </button>
+                    <WishlistButton
+                      productId={product.id}
+                      size="sm"
+                      variant="ghost"
+                      className="absolute top-2 right-2 z-10 bg-white/80 hover:bg-white"
+                    />
                     <OptimizedImage
                       src={(product.images && product.images[0]) || '/placeholder.jpg'}
                       alt={product.nom}

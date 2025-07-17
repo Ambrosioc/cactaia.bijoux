@@ -113,7 +113,7 @@ export function OrdersList() {
                     Vous n&apos;avez pas encore passé de commande.
                 </p>
                 <Link
-                    href="/boutique"
+                    href="/collections"
                     className="btn btn-primary px-6 py-2"
                 >
                     Découvrir nos produits

@@ -3,12 +3,12 @@ import { createEmailHTML } from './baseTemplate';
 interface NewsletterWelcomeTemplateProps {
     customerName: string;
     discountCode: string;
-    shopUrl: string;
+    collectionsUrl: string;
     subscriptionDate: string;
 }
 
 export function renderNewsletterWelcomeEmail(props: NewsletterWelcomeTemplateProps): string {
-    const { customerName, discountCode, shopUrl, subscriptionDate } = props;
+    const { customerName, discountCode, collectionsUrl, subscriptionDate } = props;
     const currentYear = new Date().getFullYear();
     const expiryDate = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toLocaleDateString('fr-FR');
 
@@ -51,7 +51,7 @@ export function renderNewsletterWelcomeEmail(props: NewsletterWelcomeTemplatePro
         </div>
 
         <div style="text-align: center; margin: 30px 0;">
-            <a href="${shopUrl}" class="button">
+            <a href="${collectionsUrl}" class="button">
                 Découvrir notre collection
             </a>
         </div>
@@ -72,7 +72,7 @@ export function renderNewsletterWelcomeEmail(props: NewsletterWelcomeTemplatePro
 
         <p>Si vous avez des questions, n'hésitez pas à nous contacter à <a href="mailto:contact@cactaiabijoux.fr">contact@cactaiabijoux.fr</a>.</p>
 
-        <p>À très bientôt sur notre boutique,<br />L'équipe Cactaia.Bijoux</p>
+        <p>À très bientôt sur notre site,<br />L'équipe Cactaia.Bijoux</p>
     `;
 
     return createEmailHTML(content, 'Bienvenue dans la famille Cactaia !');

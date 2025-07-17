@@ -42,7 +42,7 @@ export default function CartPage() {
             <p className="text-muted-foreground mb-8">
               Vous n&apos;avez pas encore ajouté d&apos;articles à votre panier. Découvrez nos collections et trouvez des bijoux qui vous ressemblent.
             </p>
-            <Link href="/boutique" className="btn btn-primary px-8 py-3">
+            <Link href="/collections" className="btn btn-primary px-8 py-3">
               Découvrir nos bijoux
             </Link>
           </div>
@@ -57,7 +57,7 @@ export default function CartPage() {
         {/* Header avec navigation */}
         <div className="flex items-center space-x-4 mb-8">
           <Link
-            href="/boutique"
+            href="/collections"
             className="btn btn-outline flex items-center gap-2 px-4 py-2"
           >
             <ArrowLeft className="h-4 w-4" />
@@ -102,7 +102,7 @@ export default function CartPage() {
                       />
                     </div>
                     <div className="flex-grow">
-                      <Link href={`/produit/${item.product.id}`} className="font-medium hover:text-primary">
+                      <Link href={`/produit/${item.product.slug}`} className="font-medium hover:text-primary">
                         {item.product.nom}
                       </Link>
                       <p className="text-sm text-muted-foreground mb-1">
@@ -151,7 +151,7 @@ export default function CartPage() {
                       />
                     </div>
                     <div>
-                      <Link href={`/produit/${item.product.id}`} className="font-medium hover:text-primary">
+                      <Link href={`/produit/${item.product.slug}`} className="font-medium hover:text-primary">
                         {item.product.nom}
                       </Link>
                       <p className="text-sm text-muted-foreground">

@@ -63,7 +63,7 @@ node scripts/seed-test-data.js
 ## 🧪 Tests à Effectuer
 
 ### Test 1 : Pages Produits
-1. Aller sur `http://localhost:3000/boutique`
+1. Aller sur `http://localhost:3000/collections`
 2. Vérifier que les 5 produits s'affichent
 3. Cliquer sur un produit pour voir sa page détaillée
 
@@ -97,7 +97,7 @@ node scripts/seed-test-data.js
 - **Set Cactus Complet** - 249.99€ (promo: 199.99€)
 
 ### Événements Analytics
-- Pages vues (accueil, boutique)
+- Pages vues (accueil, collections)
 - Vues de produits
 - Ajouts au panier
 - Achats

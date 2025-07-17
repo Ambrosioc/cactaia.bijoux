@@ -34,7 +34,7 @@
       "type": "image/png"
     }
   ],
-  "categories": ["shopping", "fashion", "lifestyle"],
+      "categories": ["fashion", "lifestyle"],
   "lang": "fr",
   "dir": "ltr"
 } 

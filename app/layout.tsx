@@ -1,6 +1,7 @@
+import ServiceWorkerInitializer from '@/components/client/service-worker-initializer';
 import ConditionalFooter from '@/components/layout/conditional-footer';
 import Header from '@/components/layout/header';
-import { ThemeProvider } from '@/components/theme-provider';
+import { ThemeProvider } from '@/components/providers/theme-provider';
 import { AuthProvider } from '@/lib/auth/auth-provider';
 import { ThemeProvider as ColorThemeProvider } from '@/lib/contexts/ThemeContext';
 import type { Metadata } from 'next';
@@ -10,55 +11,53 @@ import './globals.css';
 const inter = Inter({
   subsets: ['latin'],
   variable: '--font-inter',
-  display: 'swap',
 });
 
 const playfair = Playfair_Display({
   subsets: ['latin'],
   variable: '--font-playfair',
-  display: 'swap',
 });
 
 export const metadata: Metadata = {
-  title: 'Cactaia.Bijoux - Bijoux écoresponsables et élégants',
-  description: 'Découvrez nos bijoux écoresponsables, mixtes et élégants. Des pièces durables, simples et symboliques.',
-  icons: {
-    icon: [
-      {
-        url: '/favicon.ico',
-        sizes: 'any',
-      },
-      {
-        url: '/favicon-16x16.png',
-        sizes: '16x16',
-        type: 'image/png',
-      },
-      {
-        url: '/favicon-32x32.png',
-        sizes: '32x32',
-        type: 'image/png',
-      },
-    ],
-    apple: [
-      {
-        url: '/apple-touch-icon.png',
-        sizes: '180x180',
-        type: 'image/png',
-      },
-    ],
+  title: {
+    default: 'Cactaïa - Bijoux durables et porteurs de sens',
+    template: '%s | Cactaïa'
   },
-  manifest: '/site.webmanifest',
+  description: 'Découvrez notre collection de bijoux durables inspirés par la beauté du désert. Chaque pièce est conçue pour vous accompagner dans le temps, alliant élégance et simplicité.',
+  keywords: ['bijoux', 'durables', 'désert', 'élégance', 'cactus', 'accessoires', 'mode'],
+  authors: [{ name: 'Cactaïa' }],
+  creator: 'Cactaïa',
+  publisher: 'Cactaïa',
+  formatDetection: {
+    email: false,
+    address: false,
+    telephone: false,
+  },
+  metadataBase: new URL('https://cactaia.fr'),
+  alternates: {
+    canonical: '/',
+  },
   openGraph: {
-    title: 'Cactaia.Bijoux - Bijoux écoresponsables et élégants',
-    description: 'Découvrez nos bijoux écoresponsables, mixtes et élégants. Des pièces durables, simples et symboliques.',
     type: 'website',
     locale: 'fr_FR',
-    siteName: 'Cactaia.Bijoux',
+    url: 'https://cactaia.fr',
+    title: 'Cactaïa - Bijoux durables et porteurs de sens',
+    description: 'Découvrez notre collection de bijoux durables inspirés par la beauté du désert.',
+    siteName: 'Cactaïa',
+    images: [
+      {
+        url: '/images/cactaïa-01.jpg',
+        width: 1200,
+        height: 630,
+        alt: 'Cactaïa - Collection de bijoux',
+      },
+    ],
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'Cactaia.Bijoux - Bijoux écoresponsables et élégants',
-    description: 'Découvrez nos bijoux écoresponsables, mixtes et élégants. Des pièces durables, simples et symboliques.',
+    title: 'Cactaïa - Bijoux durables et porteurs de sens',
+    description: 'Découvrez notre collection de bijoux durables inspirés par la beauté du désert.',
+    images: ['/images/cactaïa-01.jpg'],
   },
   robots: {
     index: true,
@@ -72,7 +71,7 @@ export const metadata: Metadata = {
     },
   },
   verification: {
-    google: 'your-google-verification-code', // À remplacer par votre code de vérification Google
+    google: 'your-google-verification-code',
   },
 };
 
@@ -109,6 +108,7 @@ export default function RootLayout({
             </AuthProvider>
           </ColorThemeProvider>
         </ThemeProvider>
+        <ServiceWorkerInitializer />
       </body>
     </html>
   );

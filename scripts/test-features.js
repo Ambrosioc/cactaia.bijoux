@@ -166,7 +166,7 @@ async function testPages() {
   
   const pages = [
     '/',
-    '/boutique',
+    '/collections',
     '/contact',
     '/faq',
     '/mentions-legales'

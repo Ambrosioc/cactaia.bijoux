@@ -144,6 +144,13 @@ export type Database = {
             referencedRelation: "produits"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "analytics_events_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "wishlist_with_products"
+            referencedColumns: ["product_slug"]
+          },
         ]
       }
       commandes: {
@@ -307,6 +314,7 @@ export type Database = {
           prix: number
           prix_promo: number | null
           sku: string | null
+          slug: string
           stock: number | null
           stock_warning_enabled: boolean | null
           tva_applicable: boolean | null
@@ -330,6 +338,7 @@ export type Database = {
           prix: number
           prix_promo?: number | null
           sku?: string | null
+          slug: string
           stock?: number | null
           stock_warning_enabled?: boolean | null
           tva_applicable?: boolean | null
@@ -353,6 +362,7 @@ export type Database = {
           prix?: number
           prix_promo?: number | null
           sku?: string | null
+          slug?: string
           stock?: number | null
           stock_warning_enabled?: boolean | null
           tva_applicable?: boolean | null
@@ -528,6 +538,13 @@ export type Database = {
             referencedRelation: "produits"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "reviews_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "wishlist_with_products"
+            referencedColumns: ["product_slug"]
+          },
         ]
       }
       stock_alerts: {
@@ -575,6 +592,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "produits"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "stock_alerts_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "wishlist_with_products"
+            referencedColumns: ["product_slug"]
           },
         ]
       }
@@ -640,6 +664,13 @@ export type Database = {
             referencedRelation: "produits"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "stock_movements_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "wishlist_with_products"
+            referencedColumns: ["product_slug"]
+          },
         ]
       }
       users: {
@@ -689,6 +720,49 @@ export type Database = {
           role?: string | null
         }
         Relationships: []
+      }
+      wishlist_items: {
+        Row: {
+          created_at: string | null
+          id: string
+          product_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          product_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          product_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "wishlist_items_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "product_stock_overview"
+            referencedColumns: ["product_id"]
+          },
+          {
+            foreignKeyName: "wishlist_items_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "produits"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "wishlist_items_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "wishlist_with_products"
+            referencedColumns: ["product_slug"]
+          },
+        ]
       }
     }
     Views: {
@@ -775,10 +849,61 @@ export type Database = {
             referencedRelation: "produits"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "reviews_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "wishlist_with_products"
+            referencedColumns: ["product_slug"]
+          },
+        ]
+      }
+      wishlist_with_products: {
+        Row: {
+          added_at: string | null
+          product_active: boolean | null
+          product_category: string | null
+          product_description: string | null
+          product_id: string | null
+          product_images: string[] | null
+          product_name: string | null
+          product_price: number | null
+          product_promo_price: number | null
+          product_slug: string | null
+          product_stock: number | null
+          user_id: string | null
+          wishlist_item_id: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "wishlist_items_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "product_stock_overview"
+            referencedColumns: ["product_id"]
+          },
+          {
+            foreignKeyName: "wishlist_items_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "produits"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "wishlist_items_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "wishlist_with_products"
+            referencedColumns: ["product_slug"]
+          },
         ]
       }
     }
     Functions: {
+      add_to_wishlist: {
+        Args: { product_uuid: string }
+        Returns: string
+      }
       can_modify_user: {
         Args: { target_user_id: string }
         Returns: boolean
@@ -850,6 +975,7 @@ export type Database = {
           prix: number
           prix_promo: number | null
           sku: string | null
+          slug: string
           stock: number | null
           stock_warning_enabled: boolean | null
           tva_applicable: boolean | null
@@ -867,6 +993,14 @@ export type Database = {
       }
       is_admin: {
         Args: { user_id?: string }
+        Returns: boolean
+      }
+      is_product_in_wishlist: {
+        Args: { product_uuid: string }
+        Returns: boolean
+      }
+      remove_from_wishlist: {
+        Args: { product_uuid: string }
         Returns: boolean
       }
       switch_active_role: {
@@ -1001,27 +1135,27 @@ export const Constants = {
   },
 } as const
 
-// Types pour les commandes
+// Types personnalisés pour les commandes
 export type Order = Database['public']['Tables']['commandes']['Row'];
 export type OrderInsert = Database['public']['Tables']['commandes']['Insert'];
 export type OrderUpdate = Database['public']['Tables']['commandes']['Update'];
 
-// Types pour les adresses
+// Types personnalisés pour les adresses
 export type Address = Database['public']['Tables']['addresses']['Row'];
 export type AddressInsert = Database['public']['Tables']['addresses']['Insert'];
 export type AddressUpdate = Database['public']['Tables']['addresses']['Update'];
 
-// Types pour les produits
+// Types personnalisés pour les produits
 export type Product = Database['public']['Tables']['produits']['Row'];
 export type ProductInsert = Database['public']['Tables']['produits']['Insert'];
 export type ProductUpdate = Database['public']['Tables']['produits']['Update'];
 
-// Types pour les utilisateurs
+// Types personnalisés pour les utilisateurs
 export type User = Database['public']['Tables']['users']['Row'];
 export type UserInsert = Database['public']['Tables']['users']['Insert'];
 export type UserUpdate = Database['public']['Tables']['users']['Update'];
 
-// Types pour les produits dans les commandes
+// Types personnalisés pour les commandes
 export interface OrderProduct {
   product_id: string;
   nom: string;
@@ -1032,7 +1166,6 @@ export interface OrderProduct {
   variations?: Record<string, string>;
 }
 
-// Type pour l'adresse de livraison dans les commandes
 export interface OrderAddress {
   nom_complet: string;
   ligne_1: string;

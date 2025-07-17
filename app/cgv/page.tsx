@@ -76,7 +76,7 @@ export default function CGVPage() {
                             <Link href="/contact" className="text-gray-500 hover:text-primary transition-colors">
                                 Contact
                             </Link>
-                            <Link href="/boutique" className="text-gray-500 hover:text-primary transition-colors">
+                            <Link href="/collections" className="text-gray-500 hover:text-primary transition-colors">
                                 Découvrir nos bijoux
                             </Link>
                         </div>

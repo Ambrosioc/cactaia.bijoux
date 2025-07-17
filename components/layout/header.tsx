@@ -2,6 +2,7 @@
 
 import CartSidebar from '@/components/cart/cart-sidebar';
 import CategorySidebar from '@/components/layout/category-sidebar';
+import { useWishlist } from '@/hooks/use-wishlist';
 import { createClient } from '@/lib/supabase/client';
 import { cn } from '@/lib/utils';
 import { useCart } from '@/stores/cartStore';
@@ -19,6 +20,7 @@ const Header = () => {
   const [categorySidebarOpen, setCategorySidebarOpen] = useState(false);
   const { user, isAuthenticated, displayName } = useUser();
   const { totalItems, toggleCart } = useCart();
+  const { wishlistCount } = useWishlist();
   const supabase = createClient();
   const [mounted, setMounted] = useState(false);
   const pathname = usePathname();
@@ -35,7 +37,6 @@ const Header = () => {
     '/produit',
     '/categorie',
     '/collection',
-    '/collections',
   ];
 
   // Liste des pages où masquer wishlist et panier
@@ -47,12 +48,15 @@ const Header = () => {
   const hideEcommerce = hideEcommercePages.some(page => pathname.startsWith(page));
   const forceTerraCotta = terraCottaPages.some(page => pathname.startsWith(page));
 
-  // Pages où le texte de navigation doit être blanc
-  const whiteNavPages = ['/connexion', '/inscription'];
-  const forceWhiteNav = whiteNavPages.some(page => pathname.startsWith(page));
-
   // Vérifier si on est dans l'admin
   const isAdminPage = pathname.startsWith('/admin');
+
+  // Pages où le texte de navigation doit être blanc
+  const whiteNavPages = ['/connexion', '/inscription', '/collections'];
+  const forceWhiteNav = whiteNavPages.some(page => pathname.startsWith(page));
+
+  // Logique pour le header blanc avant scroll, noir après
+  const shouldShowWhiteHeader = !isScrolled && !forceTerraCotta && !isAdminPage || pathname === '/collections' && !isScrolled;
 
   useEffect(() => {
     setMounted(true);
@@ -107,9 +111,9 @@ const Header = () => {
               priority
               className={cn(
                 "transition-all duration-300 h-14 w-auto",
-                isScrolled || forceTerraCotta || isAdminPage
-                  ? "filter-none"
-                  : "filter brightness-0 saturate-100 invert"
+                shouldShowWhiteHeader
+                  ? "filter brightness-0 saturate-100 invert"
+                  : "filter-none"
               )}
             />
           </Link>
@@ -123,11 +127,9 @@ const Header = () => {
                   onClick={link.onClick}
                   className={cn(
                     "text-sm font-medium transition-colors",
-                    forceWhiteNav
+                    shouldShowWhiteHeader
                       ? "text-white hover:text-primary/80"
-                      : (isScrolled || forceTerraCotta || isAdminPage)
-                        ? "text-black hover:text-primary/80"
-                        : "text-white hover:text-primary/80"
+                      : "text-black hover:text-primary/80"
                   )}
                 >
                   {link.name}
@@ -138,11 +140,9 @@ const Header = () => {
                   href={link.href}
                   className={cn(
                     "text-sm font-medium transition-colors",
-                    forceWhiteNav
+                    shouldShowWhiteHeader
                       ? "text-white hover:text-primary/80"
-                      : (isScrolled || forceTerraCotta || isAdminPage)
-                        ? "text-black hover:text-primary/80"
-                        : "text-white hover:text-primary/80"
+                      : "text-black hover:text-primary/80"
                   )}
                 >
                   {link.name}
@@ -151,21 +151,19 @@ const Header = () => {
             ))}
           </nav>
 
-          {/* Boutique Name - Center */}
+          {/* Site Name - Center */}
           <div className="hidden md:flex items-center justify-center flex-1">
             <Image
               src="/menu-logo.png"
               alt="Cactaia Bijoux Logo"
-              width={120}
-              height={120}
+              width={200}
+              height={200}
               priority
               className={cn(
-                "transition-all duration-300 h-16 w-auto",
-                forceWhiteNav
-                  ? "filter-none"
-                  : (isScrolled || forceTerraCotta || isAdminPage)
-                    ? "filter-none"
-                    : "filter brightness-0 saturate-100 invert"
+                "transition-all duration-300 h-20 w-auto",
+                shouldShowWhiteHeader
+                  ? "filter brightness-0 saturate-100 invert"
+                  : "filter-none"
               )}
             />
           </div>
@@ -175,11 +173,11 @@ const Header = () => {
             {!hideEcommerce && (
               <button className={cn(
                 "hidden md:flex items-center text-sm transition-colors",
-                (isScrolled || forceTerraCotta || isAdminPage)
-                  ? "text-black hover:text-primary/80"
-                  : "text-white hover:text-primary/80"
+                shouldShowWhiteHeader
+                  ? "text-white hover:text-primary/80"
+                  : "text-black hover:text-primary/80"
               )}>
-                <Search className={cn("h-4 w-4 mr-1", (isScrolled || forceTerraCotta || isAdminPage) ? "text-black" : "text-white")} />
+                <Search className={cn("h-4 w-4 mr-1", shouldShowWhiteHeader ? "text-white" : "text-black")} />
                 <span className="sr-only md:not-sr-only">Recherche</span>
               </button>
             )}
@@ -188,11 +186,11 @@ const Header = () => {
               <div className="hidden md:flex items-center space-x-4">
                 <Link href={getAccountLink()} className={cn(
                   "flex items-center text-sm transition-colors",
-                  (isScrolled || forceTerraCotta || isAdminPage)
-                    ? "text-black hover:text-primary/80"
-                    : "text-white hover:text-primary/80"
+                  shouldShowWhiteHeader
+                    ? "text-white hover:text-primary/80"
+                    : "text-black hover:text-primary/80"
                 )}>
-                  <User className={cn("h-4 w-4 mr-1", (isScrolled || forceTerraCotta || isAdminPage) ? "text-black" : "text-white")} />
+                  <User className={cn("h-4 w-4 mr-1", shouldShowWhiteHeader ? "text-white" : "text-black")} />
                   <span>{displayName}</span>
                 </Link>
               </div>
@@ -203,9 +201,9 @@ const Header = () => {
                     "btn text-sm px-4 py-1 transition-colors",
                     pathname === '/inscription'
                       ? "bg-primary text-white hover:bg-primary/90 border border-primary"
-                      : (isScrolled || forceTerraCotta || isAdminPage)
-                        ? "text-black hover:text-primary/80"
-                        : "text-white hover:text-primary/80"
+                      : shouldShowWhiteHeader
+                        ? "text-white hover:text-primary/80"
+                        : "text-black hover:text-primary/80"
                   )}>
                     Connexion
                   </Link>
@@ -215,9 +213,9 @@ const Header = () => {
                     "btn text-sm px-4 py-1 transition-colors",
                     pathname === '/connexion'
                       ? "bg-primary text-white hover:bg-primary/90 border border-primary"
-                      : (isScrolled || forceTerraCotta || isAdminPage)
-                        ? "bg-primary text-white hover:bg-primary/90 border border-primary"
-                        : "bg-white text-primary hover:bg-white/80 border border-white"
+                      : shouldShowWhiteHeader
+                        ? "bg-white text-primary hover:bg-white/80 border border-white"
+                        : "bg-primary text-white hover:bg-primary/90 border border-primary"
                   )}>
                     Inscription
                   </Link>
@@ -228,12 +226,17 @@ const Header = () => {
             {!hideEcommerce && (
               <>
                 <Link href="/wishlist" className={cn(
-                  "flex items-center text-sm transition-colors",
-                  (isScrolled || forceTerraCotta || isAdminPage)
-                    ? "text-black hover:text-primary/80"
-                    : "text-white hover:text-primary/80"
+                  "relative flex items-center text-sm transition-colors",
+                  shouldShowWhiteHeader
+                    ? "text-white hover:text-primary/80"
+                    : "text-black hover:text-primary/80"
                 )}>
-                  <Heart className={cn("h-4 w-4", (isScrolled || forceTerraCotta || isAdminPage) ? "text-black" : "text-white")} />
+                  <Heart className={cn("h-4 w-4", shouldShowWhiteHeader ? "text-white" : "text-black")} />
+                  {mounted && wishlistCount > 0 && (
+                    <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
+                      {wishlistCount}
+                    </span>
+                  )}
                   <span className="sr-only">Wishlist</span>
                 </Link>
 
@@ -242,12 +245,12 @@ const Header = () => {
                   onClick={toggleCart}
                   className={cn(
                     "relative flex items-center text-sm transition-colors",
-                    (isScrolled || forceTerraCotta || isAdminPage)
-                      ? "text-black hover:text-primary/80"
-                      : "text-white hover:text-primary/80"
+                    shouldShowWhiteHeader
+                      ? "text-white hover:text-primary/80"
+                      : "text-black hover:text-primary/80"
                   )}
                 >
-                  <ShoppingBag className={cn("h-4 w-4", (isScrolled || forceTerraCotta || isAdminPage) ? "text-black" : "text-white")} />
+                  <ShoppingBag className={cn("h-4 w-4", shouldShowWhiteHeader ? "text-white" : "text-black")} />
                   {mounted && totalItems > 0 && (
                     <span className="absolute -top-2 -right-2 bg-primary text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
                       {totalItems}
@@ -263,16 +266,16 @@ const Header = () => {
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
               className={cn(
                 "md:hidden flex items-center transition-colors",
-                (isScrolled || forceTerraCotta || isAdminPage)
-                  ? "text-black hover:text-primary/80"
-                  : "text-white hover:text-primary/80"
+                shouldShowWhiteHeader
+                  ? "text-white hover:text-primary/80"
+                  : "text-black hover:text-primary/80"
               )}
               aria-label="Toggle menu"
             >
               {mobileMenuOpen ? (
-                <X className={cn("h-5 w-5", (isScrolled || forceTerraCotta || isAdminPage) ? "text-black" : "text-white")} />
+                <X className={cn("h-5 w-5", shouldShowWhiteHeader ? "text-white" : "text-black")} />
               ) : (
-                <Menu className={cn("h-5 w-5", (isScrolled || forceTerraCotta || isAdminPage) ? "text-black" : "text-white")} />
+                <Menu className={cn("h-5 w-5", shouldShowWhiteHeader ? "text-white" : "text-black")} />
               )}
             </button>
           </div>
@@ -287,7 +290,7 @@ const Header = () => {
             exit={{ opacity: 0, y: -10 }}
             transition={{ duration: 0.2 }}
           >
-            {/* Mobile Boutique Name */}
+            {/* Mobile Site Name */}
             <div className="text-center mb-6">
               <h1 className="text-2xl font-bold text-black">
                 Cactaia Bijoux
