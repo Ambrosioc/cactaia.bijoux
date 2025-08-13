@@ -31,15 +31,20 @@ export default function StockManagement() {
     const [selectedProductForAction, setSelectedProductForAction] = useState<string | null>(null);
     const [quantity, setQuantity] = useState('');
     const [reason, setReason] = useState('');
+    const [mounted, setMounted] = useState(false);
 
     // Créer une instance de StockManager
     const stockManager = new StockManager();
 
     useEffect(() => {
-        if (isActiveAdmin) {
+        setMounted(true);
+    }, []);
+
+    useEffect(() => {
+        if (mounted && isActiveAdmin) {
             loadStockData();
         }
-    }, [isActiveAdmin]);
+    }, [mounted, isActiveAdmin]);
 
     const loadStockData = async () => {
         try {
@@ -180,6 +185,17 @@ export default function StockManagement() {
                 return Package;
         }
     };
+
+    // Éviter le mismatch SSR/CSR en rendant un état neutre avant le montage client
+    if (!mounted) {
+        return (
+            <div className="p-8">
+                <div className="flex items-center justify-center h-64">
+                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+                </div>
+            </div>
+        );
+    }
 
     if (!isActiveAdmin) {
         return (

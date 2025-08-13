@@ -24,6 +24,8 @@ export default function CheckoutPage() {
     const [error, setError] = useState<string | null>(null);
     const [currentStep, setCurrentStep] = useState(1);
     const [showAddressForm, setShowAddressForm] = useState(false);
+    const [applyPromoMode, setApplyPromoMode] = useState<'NONE' | 'FIELD' | 'AUTO'>('NONE');
+    const [promotionCodeId, setPromotionCodeId] = useState<string>('');
     const router = useRouter();
 
     useEffect(() => {
@@ -88,6 +90,12 @@ export default function CheckoutPage() {
             return;
         }
 
+        const isAutoPromoInvalid = applyPromoMode === 'AUTO' && (!promotionCodeId || !promotionCodeId.startsWith('promo_'));
+        if (isAutoPromoInvalid) {
+            setError("Veuillez saisir un identifiant Stripe valide pour le code promotionnel (ex: 'promo_...').");
+            return;
+        }
+
         setLoading(true);
         setError(null);
 
@@ -100,6 +108,9 @@ export default function CheckoutPage() {
                 body: JSON.stringify({
                     items,
                     addressId: selectedAddressId,
+                    mode: 'payment',
+                    applyPromoMode,
+                    promotionCodeId: applyPromoMode === 'AUTO' && promotionCodeId ? promotionCodeId : null,
                 }),
             });
 
@@ -394,6 +405,57 @@ export default function CheckoutPage() {
                                                 </div>
                                             </div>
                                         </div>
+                                    </div>
+
+                                    {/* Options de code promo (léger, sans modifier la charte) */}
+                                    <div className="mt-6">
+                                        <h4 className="text-sm font-medium mb-2">Code promotionnel</h4>
+                                        <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                                            <label className={`flex items-center gap-2 p-3 rounded border ${applyPromoMode === 'NONE' ? 'border-primary' : 'border-border'}`}>
+                                                <input
+                                                    type="radio"
+                                                    name="promoMode"
+                                                    value="NONE"
+                                                    checked={applyPromoMode === 'NONE'}
+                                                    onChange={() => setApplyPromoMode('NONE')}
+                                                />
+                                                <span className="text-sm">Aucun</span>
+                                            </label>
+                                            <label className={`flex items-center gap-2 p-3 rounded border ${applyPromoMode === 'FIELD' ? 'border-primary' : 'border-border'}`}>
+                                                <input
+                                                    type="radio"
+                                                    name="promoMode"
+                                                    value="FIELD"
+                                                    checked={applyPromoMode === 'FIELD'}
+                                                    onChange={() => setApplyPromoMode('FIELD')}
+                                                />
+                                                <span className="text-sm">Saisie sur Checkout</span>
+                                            </label>
+                                            <label className={`flex items-center gap-2 p-3 rounded border ${applyPromoMode === 'AUTO' ? 'border-primary' : 'border-border'}`}>
+                                                <input
+                                                    type="radio"
+                                                    name="promoMode"
+                                                    value="AUTO"
+                                                    checked={applyPromoMode === 'AUTO'}
+                                                    onChange={() => setApplyPromoMode('AUTO')}
+                                                />
+                                                <span className="text-sm">Appliquer automatiquement</span>
+                                            </label>
+                                        </div>
+                                        {applyPromoMode === 'AUTO' && (
+                                            <div className="mt-3">
+                                                <input
+                                                    type="text"
+                                                    className="w-full border rounded px-3 py-2 text-sm"
+                                                    placeholder="ID du code promotionnel (promo_...)"
+                                                    value={promotionCodeId}
+                                                    onChange={(e) => setPromotionCodeId(e.target.value)}
+                                                />
+                                                <p className="text-xs text-muted-foreground mt-1">
+                                                    Utilisez l’identifiant Stripe du promotion code (ex: promo_...). Le champ de saisie restera disponible sur Checkout.
+                                                </p>
+                                            </div>
+                                        )}
                                     </div>
 
                                     <div className="mt-4 text-xs text-muted-foreground">

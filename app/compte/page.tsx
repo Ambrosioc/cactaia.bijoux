@@ -2,10 +2,14 @@
 
 import { OrdersList } from '@/components/orders-list';
 import { RoleSwitcher } from '@/components/ui/role-switcher';
+import { useWishlist } from '@/hooks/use-wishlist';
 import { createClient } from '@/lib/supabase/client';
+import { formatPrice } from '@/lib/utils';
+import { useAddresses } from '@/stores/addressStore';
 import { useUser } from '@/stores/userStore';
 import { motion } from 'framer-motion';
-import { Edit3, Heart, LogOut, MapPin, Package, Save, Settings, User, X } from 'lucide-react';
+import { Edit3, Heart, Home, LogOut, MapPin, Package, Phone, Save, Settings, Star, User, X } from 'lucide-react';
+import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
@@ -35,6 +39,8 @@ export default function AccountPage() {
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
   const router = useRouter();
   const supabase = createClient();
+  const { addresses, loading: addressesLoading, loadAddresses } = useAddresses();
+  const { wishlistItems, wishlistLoading } = useWishlist();
 
   useEffect(() => {
     const checkAccess = async () => {
@@ -64,6 +70,13 @@ export default function AccountPage() {
 
     checkAccess();
   }, [isAuthenticated, user, isActiveUser, userLoading, router]);
+
+  // Charger les adresses utilisateur pour l'aperçu dans l'onglet "Mes adresses"
+  useEffect(() => {
+    if (user?.id) {
+      loadAddresses(user.id);
+    }
+  }, [user?.id, loadAddresses]);
 
   const handleSignOut = async () => {
     try {
@@ -414,18 +427,63 @@ export default function AccountPage() {
                       Gérer mes adresses
                     </Link>
                   </div>
-                  <div className="text-center py-8">
-                    <MapPin className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
-                    <p className="text-muted-foreground mb-4">
-                      Gérez vos adresses de livraison pour faciliter vos commandes.
-                    </p>
-                    <Link
-                      href="/compte/mes-adresses"
-                      className="btn btn-primary px-6 py-2"
-                    >
-                      Ajouter une adresse
-                    </Link>
-                  </div>
+
+                  {addressesLoading ? (
+                    <div className="py-8 flex items-center justify-center">
+                      <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary"></div>
+                    </div>
+                  ) : addresses.length === 0 ? (
+                    <div className="text-center py-8">
+                      <MapPin className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
+                      <p className="text-muted-foreground mb-4">
+                        Aucune adresse enregistrée. Ajoutez votre première adresse pour accélérer vos commandes.
+                      </p>
+                      <Link href="/compte/mes-adresses" className="btn btn-primary px-6 py-2">
+                        Ajouter une adresse
+                      </Link>
+                    </div>
+                  ) : (
+                    <div className="space-y-4">
+                      {addresses.slice(0, 2).map((address) => (
+                        <div
+                          key={address.id}
+                          className="bg-white p-6 rounded-lg shadow-sm border border-border"
+                        >
+                          <div className="flex items-start justify-between">
+                            <div className="flex-1">
+                              <div className="flex items-center gap-2 mb-2">
+                                <h3 className="text-lg font-medium">{address.nom_complet}</h3>
+                                {address.est_principale && (
+                                  <span className="inline-flex items-center gap-1 px-2 py-1 bg-primary/10 text-primary text-xs rounded-full">
+                                    <Star className="h-3 w-3 fill-current" /> Adresse principale
+                                  </span>
+                                )}
+                              </div>
+                              <div className="space-y-1 text-muted-foreground">
+                                <p className="flex items-center gap-2">
+                                  <Home className="h-4 w-4" /> {address.ligne_1}
+                                </p>
+                                {address.ligne_2 && <p className="ml-6">{address.ligne_2}</p>}
+                                <p className="ml-6">{address.code_postal} {address.ville}</p>
+                                <p className="ml-6">{address.pays}</p>
+                                <p className="flex items-center gap-2">
+                                  <Phone className="h-4 w-4" /> {address.telephone}
+                                </p>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+
+                      {addresses.length > 2 && (
+                        <div className="text-center">
+                          <Link href="/compte/mes-adresses" className="text-primary hover:underline">
+                            Voir toutes mes adresses ({addresses.length})
+                          </Link>
+                        </div>
+                      )}
+                    </div>
+                  )}
                 </div>
               )}
 
@@ -438,19 +496,77 @@ export default function AccountPage() {
 
               {activeTab === 'wishlist' && (
                 <div>
-                  <h2 className="text-2xl font-medium mb-6">Ma liste de souhaits</h2>
-                  <div className="text-center py-8">
-                    <Heart className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
-                    <p className="text-muted-foreground">
-                      Votre liste de souhaits est vide.
-                    </p>
+                  <div className="flex justify-between items-center mb-6">
+                    <h2 className="text-2xl font-medium">Ma liste de souhaits</h2>
                     <Link
-                      href="/collections"
-                      className="btn btn-primary mt-4 px-6 py-2"
+                      href="/wishlist"
+                      className="btn btn-primary flex items-center gap-2 px-4 py-2"
                     >
-                      Découvrir nos produits
+                      <Heart className="h-4 w-4" />
+                      Voir toute la liste
                     </Link>
                   </div>
+
+                  {wishlistLoading ? (
+                    <div className="py-8 flex items-center justify-center">
+                      <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary"></div>
+                    </div>
+                  ) : wishlistItems.length === 0 ? (
+                    <div className="text-center py-8">
+                      <Heart className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
+                      <p className="text-muted-foreground mb-4">
+                        Votre liste de souhaits est vide.
+                      </p>
+                      <Link href="/collections" className="btn btn-primary px-6 py-2">
+                        Découvrir nos produits
+                      </Link>
+                    </div>
+                  ) : (
+                    <div>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                        {wishlistItems.slice(0, 3).map((item) => (
+                          <div key={item.wishlist_item_id} className="border border-border rounded-lg overflow-hidden bg-white">
+                            <Link href={`/produit/${item.product_slug}`} className="block relative aspect-square bg-secondary/30">
+                              {item.product_images && item.product_images.length > 0 && (
+                                <Image
+                                  src={item.product_images[0]}
+                                  alt={item.product_name}
+                                  fill
+                                  className="object-cover"
+                                />
+                              )}
+                            </Link>
+                            <div className="p-4 space-y-2">
+                              <p className="text-sm text-muted-foreground">{item.product_category}</p>
+                              <Link href={`/produit/${item.product_slug}`} className="block">
+                                <h3 className="font-medium hover:text-primary transition-colors line-clamp-2">
+                                  {item.product_name}
+                                </h3>
+                              </Link>
+                              <div className="flex items-center gap-2">
+                                {item.product_promo_price ? (
+                                  <>
+                                    <span className="font-medium text-red-600">{formatPrice(item.product_promo_price)}</span>
+                                    <span className="text-sm text-muted-foreground line-through">{formatPrice(item.product_price)}</span>
+                                  </>
+                                ) : (
+                                  <span className="font-medium">{formatPrice(item.product_price)}</span>
+                                )}
+                              </div>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+
+                      {wishlistItems.length > 3 && (
+                        <div className="text-center mt-6">
+                          <Link href="/wishlist" className="text-primary hover:underline">
+                            Voir toute ma liste ({wishlistItems.length})
+                          </Link>
+                        </div>
+                      )}
+                    </div>
+                  )}
                 </div>
               )}
 

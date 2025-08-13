@@ -5,7 +5,6 @@ interface NewsletterSubscriber {
   prenom: string;
   nom: string;
   email: string;
-  code_reduction: string;
   date_inscription: string;
 }
 
@@ -31,14 +30,13 @@ export async function sendNewsletterWelcomeEmail({
     // Générer le contenu HTML de l'email
     const htmlContent = renderNewsletterWelcomeEmail({
       customerName,
-      discountCode: subscriber.code_reduction,
       collectionsUrl,
       subscriptionDate
     });
     
     // Envoyer l'email
     return await sendEmail({
-      subject: '🎁 Bienvenue dans la famille Cactaia ! Votre code de réduction vous attend',
+      subject: 'Bienvenue dans la famille Cactaia 💌',
       htmlContent,
       recipients: [{ Email: subscriber.email, Name: customerName }],
       customId: `newsletter-welcome-${subscriber.email}`,

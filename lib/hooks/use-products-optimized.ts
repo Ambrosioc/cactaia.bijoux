@@ -1,13 +1,13 @@
 import {
-    getCachedFeaturedProducts,
-    getCachedProducts,
-    preloadProducts,
-    setCachedFeaturedProducts,
-    setCachedProducts
+  getCachedFeaturedProducts,
+  getCachedProducts,
+  preloadProducts,
+  setCachedFeaturedProducts,
+  setCachedProducts
 } from '@/lib/cache/product-cache';
 import { createClient } from '@/lib/supabase/client';
 import type { Product } from '@/lib/supabase/types';
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 interface UseProductsOptimizedProps {
   category?: string;
@@ -70,13 +70,17 @@ export function useProductsOptimized({
   const debouncedSearchTerm = useDebounce(searchTerm, 300);
   
   // Créer les filtres pour le cache
-  const filters = {
-    category: category === 'all' ? undefined : category,
+  const normalizedCategory = category === 'all' ? undefined : category?.replace(/['’]/g, "'");
+  const normalizedCategorySearch = normalizedCategory
+    ? normalizedCategory.replace(/[%_]/g, '\\$&')
+    : undefined;
+  const filters = useMemo(() => ({
+    category: normalizedCategory,
     collection,
     searchTerm: debouncedSearchTerm,
     sortBy,
     page: currentPage
-  };
+  }), [normalizedCategory, collection, debouncedSearchTerm, sortBy, currentPage]);
 
   const fetchProducts = useCallback(async (force = false) => {
     // Annuler la requête précédente si elle existe
@@ -96,13 +100,35 @@ export function useProductsOptimized({
           const cached = getCachedFeaturedProducts();
           if (cached) {
             setProducts(cached);
+            // Pour les "featured", le total n'a pas de sens (liste limitée)
+            setTotalCount(cached.length);
             setLoading(false);
             return;
           }
         } else {
           const cached = getCachedProducts(filters);
           if (cached) {
+            // Calculer le total via une requête dédiée pour éviter les incohérences
+            let countQuery = supabase
+              .from('produits')
+              .select('*', { count: 'exact', head: true })
+              .or('est_actif.is.true,est_actif.is.null');
+
+            if (normalizedCategorySearch) {
+              countQuery = countQuery.ilike('categorie', `%${normalizedCategorySearch}%`);
+            }
+
+            if (collection) {
+              countQuery = countQuery.contains('collections', [collection]);
+            }
+
+            if (debouncedSearchTerm) {
+              countQuery = countQuery.or(`nom.ilike.%${debouncedSearchTerm}%,description.ilike.%${debouncedSearchTerm}%`);
+            }
+
+            const { count: totalC } = await countQuery;
             setProducts(cached);
+            setTotalCount(typeof totalC === 'number' ? totalC : cached.length);
             setLoading(false);
             return;
           }
@@ -112,12 +138,13 @@ export function useProductsOptimized({
       // Construire la requête de base
       let query = supabase
         .from('produits')
-        .select('*', { count: 'exact' })
-        .eq('est_actif', true);
+        .select('*')
+        .or('est_actif.is.true,est_actif.is.null');
 
       // Appliquer les filtres
-      if (category !== 'all') {
-        query = query.eq('categorie', category);
+      if (normalizedCategorySearch) {
+        // Filtre robuste aux apostrophes, accents, espaces et variations de casse
+        query = query.ilike('categorie', `%${normalizedCategorySearch}%`);
       }
 
       if (collection) {
@@ -151,6 +178,32 @@ export function useProductsOptimized({
           break;
       }
 
+      // Calculer le total séparément (plus fiable selon les versions et filtres)
+      let computedTotalCount: number | null = null;
+      if (!featured) {
+        let countQuery = supabase
+          .from('produits')
+          .select('*', { count: 'exact', head: true })
+          .or('est_actif.is.true,est_actif.is.null');
+
+        if (normalizedCategorySearch) {
+          countQuery = countQuery.ilike('categorie', `%${normalizedCategorySearch}%`);
+        }
+
+        if (collection) {
+          countQuery = countQuery.contains('collections', [collection]);
+        }
+
+        if (debouncedSearchTerm) {
+          countQuery = countQuery.or(`nom.ilike.%${debouncedSearchTerm}%,description.ilike.%${debouncedSearchTerm}%`);
+        }
+
+        const { count: totalC, error: countError } = await countQuery;
+        if (!countError && typeof totalC === 'number') {
+          computedTotalCount = totalC;
+        }
+      }
+
       // Appliquer la pagination (sauf pour les produits mis en avant)
       if (!featured) {
         const from = (currentPage - 1) * itemsPerPage;
@@ -160,7 +213,7 @@ export function useProductsOptimized({
         query = query.limit(6);
       }
 
-      const { data, error, count } = await query;
+      const { data, error } = await query;
 
       if (error) {
         throw error;
@@ -168,7 +221,7 @@ export function useProductsOptimized({
 
       const productsData = data || [];
       setProducts(productsData);
-      setTotalCount(count || 0);
+      setTotalCount(computedTotalCount ?? productsData.length ?? 0);
 
       // Mettre en cache
       if (featured) {
@@ -193,7 +246,7 @@ export function useProductsOptimized({
     } finally {
       setLoading(false);
     }
-  }, [category, collection, debouncedSearchTerm, sortBy, currentPage, itemsPerPage, featured, supabase]);
+  }, [collection, debouncedSearchTerm, sortBy, currentPage, itemsPerPage, featured, supabase, normalizedCategorySearch, filters]);
 
   // Charger les produits quand les paramètres changent
   useEffect(() => {

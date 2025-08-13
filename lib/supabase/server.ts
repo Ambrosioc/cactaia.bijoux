@@ -5,9 +5,11 @@ import { Database } from './types';
 // Fonction pour créer un client serveur compatible avec tous les contextes
 export const createServerClient = async () => {
   try {
-    // Essayer d'importer cookies seulement si on est dans un Server Component
-    const { cookies } = await import('next/headers');
-    return createServerComponentClient<Database>({ cookies });
+    // Next.js 15+ rend cookies() asynchrone — on l'attend puis on passe un wrapper synchrone
+    const nh = await import('next/headers');
+    const cookieStore = await nh.cookies();
+    const wrappedCookies = () => cookieStore;
+    return createServerComponentClient<Database>({ cookies: wrappedCookies as any });
   } catch (error) {
     // Fallback pour les contextes où next/headers n'est pas disponible
     return createClient<Database>(

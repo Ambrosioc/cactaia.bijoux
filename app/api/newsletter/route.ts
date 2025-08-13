@@ -77,26 +77,24 @@ export async function POST(request: NextRequest) {
           return NextResponse.json({ error: 'Erreur serveur' }, { status: 500 });
         }
 
-            // Envoyer l'email de bienvenue pour la réactivation
-    try {
-      await sendNewsletterWelcomeEmail({
-        subscriber: {
-          prenom: data.prenom,
-          nom: data.nom,
-          email: data.email,
-          code_reduction: data.code_reduction,
-          date_inscription: data.date_inscription
+        // Envoyer l'email de bienvenue pour la réactivation (sans code de réduction)
+        try {
+          await sendNewsletterWelcomeEmail({
+            subscriber: {
+              prenom: data.prenom,
+              nom: data.nom,
+              email: data.email,
+              date_inscription: data.date_inscription as string
+            }
+          });
+        } catch (emailError) {
+          console.error('Erreur envoi email réactivation:', emailError);
+          // On continue même si l'email échoue
         }
-      });
-    } catch (emailError) {
-      console.error('Erreur envoi email réactivation:', emailError);
-      // On continue même si l'email échoue
-    }
 
         return NextResponse.json({ 
           success: true, 
           message: 'Abonnement réactivé avec succès !',
-          code_reduction: data.code_reduction,
           subscriber: data
         });
       }
@@ -120,15 +118,14 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Erreur serveur' }, { status: 500 });
     }
 
-    // Envoyer l'email de bienvenue
+    // Envoyer l'email de bienvenue (sans code de réduction)
     try {
       await sendNewsletterWelcomeEmail({
         subscriber: {
           prenom: data.prenom,
           nom: data.nom,
           email: data.email,
-          code_reduction: data.code_reduction,
-          date_inscription: data.date_inscription
+          date_inscription: data.date_inscription as string
         }
       });
     } catch (emailError) {
@@ -138,8 +135,7 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({ 
       success: true, 
-      message: 'Inscription réussie ! Votre code de réduction vous a été envoyé par email.',
-      code_reduction: data.code_reduction,
+      message: 'Inscription réussie ! Merci de rejoindre notre newsletter. Vous recevrez nos nouveautés et offres directement par email.',
       subscriber: data
     });
 
