@@ -247,11 +247,11 @@ export default function AboutPage() {
               transition={{ duration: 0.5 }}
             >
               <div className="text-center space-y-2 text-muted-foreground">
-                <p>Amour pour la beauté intemporelle.</p>
-                <p>Magnifiant chaque instant avec élégance</p>
-                <p>Offrant des souvenirs précieux à chaque regard</p>
-                <p>Un bijou qui symbolise la force et la finesse d&apos;un homme amoureux de l&apos;excellence.</p>
-                <p>Revêtir un tel trésor, c&apos;est porter l&apos;amour dans son cœur et dans son style.</p>
+                <p><strong>A</strong>mour pour la beauté intemporelle.</p>
+                <p><strong>M</strong>agnifiant chaque instant avec élégance</p>
+                <p><strong>O</strong>ffrant des souvenirs précieux à chaque regard</p>
+                <p><strong>U</strong>n bijou qui symbolise la force et la finesse d&apos;un homme amoureux de l&apos;excellence.</p>
+                <p><strong>R</strong>evêtir un tel trésor, c&apos;est porter l&apos;amour dans son cœur et dans son style.</p>
               </div>
             </motion.div>
 
@@ -263,13 +263,12 @@ export default function AboutPage() {
               viewport={{ once: true }}
               transition={{ duration: 0.5, delay: 0.05 }}
             >
-              <p className="text-center font-medium mb-3">Mais aussi</p>
               <div className="text-center space-y-2 text-muted-foreground">
-                <p>Transcendant les époques, Cactaia devient le témoin d’une histoire personnelle.</p>
-                <p>Éternel dans sa beauté, capture l’instant et le conserve pour l’avenir.</p>
-                <p>Marquée par le temps, chaque pièce raconte l&apos;évolution d’un homme.</p>
-                <p>Porté avec fierté, il résiste aux années, symbole d’un amour et d’une fidélité sans fin.</p>
-                <p>Sous son éclat, le temps s’efface, laissant une empreinte éternelle dans l’âme.</p>
+                <p><strong>T</strong>ranscendant les époques, Cactaia devient le témoin d’une histoire personnelle.</p>
+                <p><strong>É</strong>ternel dans sa beauté, capture l’instant et le conserve pour l’avenir.</p>
+                <p><strong>M</strong>arquée par le temps, chaque pièce raconte l&apos;évolution d’un homme.</p>
+                <p><strong>P</strong>orté avec fierté, il résiste aux années, symbole d’un amour et d’une fidélité sans fin.</p>
+                <p><strong>S</strong>ous son éclat, le temps s’efface, laissant une empreinte éternelle dans l’âme.</p>
               </div>
             </motion.div>
 
@@ -281,12 +280,11 @@ export default function AboutPage() {
               viewport={{ once: true }}
               transition={{ duration: 0.5, delay: 0.1 }}
             >
-              <p className="text-center font-medium mb-3">Et enfin</p>
               <div className="text-center space-y-2 text-muted-foreground">
-                <p>Même le temps ne peut éclipser</p>
-                <p>On défie la fin, car un bijou inscrit son éclat immortel</p>
-                <p>Résistant à l’épreuve de la mort, il traverse les âges, intact.</p>
-                <p>Temporel dans son essence, il survit à tout, symbolisant une vie au-delà des générations.</p>
+                <p><strong>M</strong>ême le temps ne peut éclipser</p>
+                <p><strong>O</strong>n défie la fin, car un bijou inscrit son éclat immortel</p>
+                <p><strong>R</strong>ésistant à l’épreuve de la mort, il traverse les âges, intact.</p>
+                <p><strong>T</strong>emporel dans son essence, il survit à tout, symbolisant une vie au-delà des générations.</p>
               </div>
             </motion.div>
           </div>
