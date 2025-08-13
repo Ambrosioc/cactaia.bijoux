@@ -20,6 +20,9 @@ export const STRIPE_CONFIG = {
     free_shipping_threshold: 50,
     standard_shipping_cost: 4.95,
   },
+  promotions: {
+    enabled: process.env.STRIPE_PROMOS_ENABLED !== 'false',
+  }
 } as const;
 
 // Configuration pour les webhooks

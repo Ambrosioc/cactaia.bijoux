@@ -43,6 +43,13 @@ export async function handleWebhook(request: NextRequest) {
         
         if (session.payment_status === 'paid') {
           const orderId = session.metadata?.order_id;
+          const promoSummary = {
+            total_details: (session.total_details as any) || null,
+            discounts: (session.total_details as any)?.amount_discount || 0,
+            promotion_codes: (session as any)?.discounts || undefined,
+            applyPromoMode: session.metadata?.applyPromoMode,
+            promotionCodeId: session.metadata?.promotionCodeId,
+          };
           
           if (orderId) {
             // Récupérer la facture si disponible
@@ -75,7 +82,7 @@ export async function handleWebhook(request: NextRequest) {
               .single();
 
             if (error) {
-              console.error('Erreur mise à jour commande:', error);
+              console.error('Erreur mise à jour commande:', { error, sessionId: session.id, promoSummary });
             } else {
               // Récupérer les données utilisateur séparément
               const { data: user, error: userError } = await supabase
@@ -121,6 +128,18 @@ export async function handleWebhook(request: NextRequest) {
                     })
                     .eq('id', product.product_id);
                 }
+              }
+              // Log en base (optionnel) via analytics_events
+              try {
+                await supabase.from('analytics_events').insert({
+                  event_type: 'checkout.session.completed',
+                  user_id: order?.user_id,
+                  order_id: orderId,
+                  order_total: order?.montant_total,
+                  metadata: promoSummary as any,
+                });
+              } catch (e) {
+                console.error('Erreur log analytics checkout:', e);
               }
             }
           }

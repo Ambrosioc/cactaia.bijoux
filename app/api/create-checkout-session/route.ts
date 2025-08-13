@@ -5,7 +5,7 @@ import { NextRequest, NextResponse } from 'next/server';
 export async function POST(request: NextRequest) {
   try {
     const supabase = await createServerClient();
-    const { items, addressId } = await request.json();
+    const { items, addressId, mode = 'payment', applyPromoMode = 'NONE', promotionCodeId = null } = await request.json();
 
     if (!items || !Array.isArray(items) || items.length === 0) {
       return NextResponse.json(
@@ -55,6 +55,9 @@ export async function POST(request: NextRequest) {
       address,
       successUrl: `${siteUrl}/confirmation?session_id={CHECKOUT_SESSION_ID}`,
       cancelUrl: `${siteUrl}/panier`,
+      mode,
+      applyPromoMode,
+      promotionCodeId,
     });
 
     return NextResponse.json({ 
@@ -62,8 +65,12 @@ export async function POST(request: NextRequest) {
       orderId 
     });
 
-  } catch (error) {
-    console.error('Erreur création session Stripe:', error);
+  } catch (error: any) {
+    console.error('Erreur création session Stripe:', {
+      message: error?.message,
+      applyPromoMode: (await request.json?.())?.applyPromoMode,
+      promotionCodeId: (await request.json?.())?.promotionCodeId,
+    });
     
     const errorMessage = error instanceof Error ? error.message : 'Erreur interne du serveur';
     

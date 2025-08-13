@@ -52,14 +52,16 @@ const Header = () => {
   const isAdminPage = pathname.startsWith('/admin');
   // Vérifier si on est dans le compte
   const isAccountPage = pathname.startsWith('/compte');
+  // Vérifier si on est dans le panier
+  const isCartPage = pathname.startsWith('/panier');
 
   // Pages où le texte de navigation doit être blanc
   const whiteNavPages = ['/connexion', '/inscription', '/collections'];
   const forceWhiteNav = whiteNavPages.some(page => pathname.startsWith(page));
 
   // Logique pour le header blanc avant scroll, noir après
-  // Forcer le texte noir sur les pages compte
-  const shouldShowWhiteHeader = (!isScrolled && !forceTerraCotta && !isAdminPage && !isAccountPage) || (pathname === '/collections' && !isScrolled);
+  // Forcer le texte noir sur les pages compte et panier
+  const shouldShowWhiteHeader = (!isScrolled && !forceTerraCotta && !isAdminPage && !isAccountPage && !isCartPage) || (pathname === '/collections' && !isScrolled);
 
   useEffect(() => {
     setMounted(true);

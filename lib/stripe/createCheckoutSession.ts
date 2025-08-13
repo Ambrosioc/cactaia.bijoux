@@ -1,7 +1,10 @@
 import { createServerClient } from '@/lib/supabase/server';
 import type { Address } from '@/lib/supabase/types';
 import type { CartItem } from '@/stores/cartStore';
+import type Stripe from 'stripe';
 import { stripe, STRIPE_CONFIG } from './config';
+
+type ApplyPromoMode = 'FIELD' | 'AUTO' | 'NONE';
 
 interface CreateCheckoutSessionParams {
   items: CartItem[];
@@ -10,6 +13,9 @@ interface CreateCheckoutSessionParams {
   address: Address;
   successUrl: string;
   cancelUrl: string;
+  mode?: 'payment' | 'subscription';
+  applyPromoMode?: ApplyPromoMode;
+  promotionCodeId?: string | null;
 }
 
 export async function createCheckoutSession({
@@ -19,6 +25,9 @@ export async function createCheckoutSession({
   address,
   successUrl,
   cancelUrl,
+  mode = 'payment',
+  applyPromoMode = 'NONE',
+  promotionCodeId = null,
 }: CreateCheckoutSessionParams) {
   const supabase = await createServerClient();
 
@@ -156,17 +165,20 @@ export async function createCheckoutSession({
     });
   }
 
-  // Créer la session Stripe Checkout
-  const session = await stripe.checkout.sessions.create({
+  // Préparer les paramètres communs
+  const baseSessionParams: Stripe.Checkout.SessionCreateParams = {
     customer: customerId,
     payment_method_types: [...STRIPE_CONFIG.payment_method_types],
     line_items: lineItems,
-    mode: 'payment',
+    mode,
     success_url: successUrl,
     cancel_url: cancelUrl,
     metadata: {
       order_id: order.id,
       user_id: userId,
+      applyPromoMode,
+      promotionCodeId: promotionCodeId || '',
+      mode,
     },
     shipping_address_collection: {
       allowed_countries: [...STRIPE_CONFIG.allowed_countries],
@@ -187,7 +199,35 @@ export async function createCheckoutSession({
     automatic_tax: {
       enabled: true, // Activez si vous voulez la gestion automatique de la TVA
     },
-  });
+  };
+
+  // Logique promotions
+  const promoLogs: Record<string, any> = { stage: 'promo_config', applyPromoMode, promotionCodeId };
+  try {
+    if (STRIPE_CONFIG.promotions.enabled) {
+      if (applyPromoMode === 'FIELD') {
+        (baseSessionParams as any).allow_promotion_codes = true;
+      } else if (applyPromoMode === 'AUTO') {
+        (baseSessionParams as any).allow_promotion_codes = true; // on peut laisser le champ actif
+        if (!promotionCodeId || !promotionCodeId.startsWith('promo_')) {
+          throw new Error('PromotionCodeId invalide (attendu: id commençant par promo_)');
+        }
+        // Validation optionnelle côté backend (redeemable)
+        const promo = await stripe.promotionCodes.retrieve(promotionCodeId);
+        promoLogs.promo = { id: promo.id, active: promo.active, code: promo.code, coupon: promo.coupon?.id };
+        if (!promo.active) {
+          throw new Error('Le code promotionnel est inactif ou expiré');
+        }
+        (baseSessionParams as any).discounts = [{ promotion_code: promotionCodeId }];
+      }
+    }
+  } catch (promoError: any) {
+    console.error('StripePromo validation error:', { message: promoError.message, ...promoLogs });
+    throw new Error(promoError.message || 'Code promotionnel invalide');
+  }
+
+  // Créer la session Stripe Checkout
+  const session = await stripe.checkout.sessions.create(baseSessionParams);
 
   // Mettre à jour la commande avec l'ID de session Stripe
   await supabase
