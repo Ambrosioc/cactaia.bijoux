@@ -11,7 +11,7 @@ interface CachedData<T> {
   version: string;
 }
 
-const CACHE_VERSION = '1.0.0';
+const CACHE_VERSION = '1.0.2';
 
 // Fonctions utilitaires pour le cache
 function getCachedData<T>(key: string, duration: number): T | null {

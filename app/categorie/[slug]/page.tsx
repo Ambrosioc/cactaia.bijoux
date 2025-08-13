@@ -30,7 +30,9 @@ export default function CategoryPage() {
             'boucles-d-oreilles': 'Boucles d\'oreilles',
             'accessoires': 'Accessoires'
         };
-        return categoryMap[slug] || slug;
+        // Normaliser: première lettre en majuscule, gérer apostrophes typographiques
+        const label = categoryMap[slug] || slug;
+        return label.replace(/\b\w/g, (c) => c.toUpperCase()).replace(/’/g, "'");
     };
 
     // Utiliser le hook optimisé
@@ -280,8 +282,8 @@ export default function CategoryPage() {
                                                 key={page}
                                                 onClick={() => handlePageChange(page)}
                                                 className={`px-3 py-2 rounded-lg transition-colors ${currentPage === page
-                                                        ? 'bg-primary text-white'
-                                                        : 'border border-border hover:bg-accent'
+                                                    ? 'bg-primary text-white'
+                                                    : 'border border-border hover:bg-accent'
                                                     }`}
                                             >
                                                 {page}

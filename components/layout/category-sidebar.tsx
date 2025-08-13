@@ -16,6 +16,17 @@ const CategorySidebar = ({ isOpen, onClose }: CategorySidebarProps) => {
     const [loading, setLoading] = useState(true);
     const supabase = createClient();
 
+    const toSlug = (label: string) => {
+        return label
+            .toLowerCase()
+            .normalize('NFD')
+            .replace(/[\u0300-\u036f]/g, '') // remove accents
+            .replace(/[’']/g, ' ') // replace apostrophes by space
+            .replace(/&/g, 'et')
+            .replace(/[^a-z0-9]+/g, '-')
+            .replace(/^-+|-+$/g, '');
+    };
+
     useEffect(() => {
         if (isOpen) {
             loadCategories();
@@ -90,7 +101,7 @@ const CategorySidebar = ({ isOpen, onClose }: CategorySidebarProps) => {
                                     {categories.map((category) => (
                                         <Link
                                             key={category}
-                                            href={`/categorie/${category.toLowerCase().replace(/\s+/g, '-')}`}
+                                            href={`/categorie/${toSlug(category)}`}
                                             onClick={() => handleCategoryClick(category)}
                                             className="block p-4 rounded-lg hover:bg-gray-50 transition-colors group"
                                         >
