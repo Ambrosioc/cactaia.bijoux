@@ -13,7 +13,6 @@ interface CreateCheckoutSessionParams {
   address: Address;
   successUrl: string;
   cancelUrl: string;
-  mode?: 'payment' | 'subscription';
   applyPromoMode?: ApplyPromoMode;
   promotionCodeId?: string | null;
 }
@@ -25,7 +24,6 @@ export async function createCheckoutSession({
   address,
   successUrl,
   cancelUrl,
-  mode = 'payment',
   applyPromoMode = 'NONE',
   promotionCodeId = null,
 }: CreateCheckoutSessionParams) {
@@ -170,7 +168,7 @@ export async function createCheckoutSession({
     customer: customerId,
     payment_method_types: [...STRIPE_CONFIG.payment_method_types],
     line_items: lineItems,
-    mode,
+    mode: 'payment',
     success_url: successUrl,
     cancel_url: cancelUrl,
     metadata: {
@@ -178,7 +176,6 @@ export async function createCheckoutSession({
       user_id: userId,
       applyPromoMode,
       promotionCodeId: promotionCodeId || '',
-      mode,
     },
     shipping_address_collection: {
       allowed_countries: [...STRIPE_CONFIG.allowed_countries],
@@ -208,21 +205,21 @@ export async function createCheckoutSession({
       if (applyPromoMode === 'FIELD') {
         (baseSessionParams as any).allow_promotion_codes = true;
       } else if (applyPromoMode === 'AUTO') {
-        // Si aucun code fourni, n'applique rien mais laisse le champ actif
+        // Si aucun code fourni, on permet la saisie côté Checkout
         if (!promotionCodeId) {
           (baseSessionParams as any).allow_promotion_codes = true;
         } else {
-        (baseSessionParams as any).allow_promotion_codes = true; // on peut laisser le champ actif
-        if (!promotionCodeId || !promotionCodeId.startsWith('promo_')) {
-          throw new Error('PromotionCodeId invalide (attendu: id commençant par promo_)');
-        }
-        // Validation optionnelle côté backend (redeemable)
-        const promo = await stripe.promotionCodes.retrieve(promotionCodeId);
-        promoLogs.promo = { id: promo.id, active: promo.active, code: promo.code, coupon: promo.coupon?.id };
-        if (!promo.active) {
-          throw new Error('Le code promotionnel est inactif ou expiré');
-        }
-        (baseSessionParams as any).discounts = [{ promotion_code: promotionCodeId }];
+          // Uniquement appliquer le code (ne PAS définir allow_promotion_codes en même temps)
+          if (!promotionCodeId.startsWith('promo_')) {
+            throw new Error('PromotionCodeId invalide (attendu: id commençant par promo_)');
+          }
+          // Validation optionnelle côté backend (redeemable)
+          const promo = await stripe.promotionCodes.retrieve(promotionCodeId);
+          promoLogs.promo = { id: promo.id, active: promo.active, code: promo.code, coupon: promo.coupon?.id };
+          if (!promo.active) {
+            throw new Error('Le code promotionnel est inactif ou expiré');
+          }
+          (baseSessionParams as any).discounts = [{ promotion_code: promotionCodeId }];
         }
       }
     }
@@ -231,8 +228,23 @@ export async function createCheckoutSession({
     throw new Error(promoError.message || 'Code promotionnel invalide');
   }
 
-  // Créer la session Stripe Checkout
-  const session = await stripe.checkout.sessions.create(baseSessionParams);
+  // Créer la session Stripe Checkout avec stratégie de repli si promo non éligible (ex: first-time only)
+  let session: Stripe.Checkout.Session;
+  try {
+    session = await stripe.checkout.sessions.create(baseSessionParams);
+  } catch (err: any) {
+    const msg = err?.message || '';
+    const priorTxPattern = 'associated customer has prior transactions';
+    if (applyPromoMode === 'AUTO' && msg.includes(priorTxPattern)) {
+      // Repli: ne pas appliquer la réduction, permettre la saisie côté Checkout
+      delete (baseSessionParams as any).discounts;
+      (baseSessionParams as any).allow_promotion_codes = true;
+      (baseSessionParams.metadata as any).promo_fallback = 'first_time_restriction';
+      session = await stripe.checkout.sessions.create(baseSessionParams);
+    } else {
+      throw err;
+    }
+  }
 
   // Mettre à jour la commande avec l'ID de session Stripe
   await supabase

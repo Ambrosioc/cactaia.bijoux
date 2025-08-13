@@ -234,6 +234,8 @@ export async function handleWebhook(request: NextRequest) {
         break;
       }
 
+      
+
       case WEBHOOK_EVENTS.PAYMENT_INTENT_CREATED:
       case WEBHOOK_EVENTS.INVOICE_CREATED:
       case WEBHOOK_EVENTS.INVOICE_FINALIZED:

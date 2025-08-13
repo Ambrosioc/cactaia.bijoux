@@ -1,5 +1,6 @@
 'use client';
 
+import { useToast } from '@/hooks/use-toast';
 import { formatPrice } from '@/lib/utils';
 import { useAddresses } from '@/stores/addressStore';
 import { useCart } from '@/stores/cartStore';
@@ -26,6 +27,9 @@ export default function CheckoutPage() {
     const [showAddressForm, setShowAddressForm] = useState(false);
     const [applyPromoMode, setApplyPromoMode] = useState<'NONE' | 'FIELD' | 'AUTO'>('NONE');
     const [promotionCodeId, setPromotionCodeId] = useState<string>('');
+    const [promoOptions, setPromoOptions] = useState<Array<{ id: string; code: string }>>([]);
+    const [loadingPromos, setLoadingPromos] = useState(false);
+    const { toast } = useToast();
     const router = useRouter();
 
     useEffect(() => {
@@ -50,6 +54,21 @@ export default function CheckoutPage() {
         }
     }, [primaryAddress, selectedAddressId]);
 
+    const loadPromotionCodes = async () => {
+        try {
+            setLoadingPromos(true);
+            const res = await fetch('/api/stripe/promotion-codes');
+            const data = await res.json();
+            if (res.ok) {
+                setPromoOptions((data?.data || []).map((p: any) => ({ id: p.id, code: p.code })));
+            }
+        } catch (e) {
+            // silencieux
+        } finally {
+            setLoadingPromos(false);
+        }
+    };
+
     const getImageUrl = (images: string[]): string => {
         return images?.length > 0 ? images[0] : '/placeholder.jpg';
     };
@@ -60,8 +79,21 @@ export default function CheckoutPage() {
             : product.prix;
     };
 
-    const shipping = totalPrice >= 50 ? 0 : 4.95;
-    const total = totalPrice + shipping;
+    const shippingBase = totalPrice >= 50 ? 0 : 4.95;
+    const [appliedDiscount, setAppliedDiscount] = useState<{ type: 'percent' | 'amount' | null; value: number } | null>(null);
+    const computeDiscountedSubtotal = () => {
+        if (!appliedDiscount) return totalPrice;
+        if (appliedDiscount.type === 'percent') {
+            return Math.max(0, totalPrice * (1 - appliedDiscount.value / 100));
+        }
+        if (appliedDiscount.type === 'amount') {
+            return Math.max(0, totalPrice - appliedDiscount.value);
+        }
+        return totalPrice;
+    };
+    const discountedSubtotal = computeDiscountedSubtotal();
+    const shipping = discountedSubtotal >= 50 ? 0 : shippingBase;
+    const total = discountedSubtotal + shipping;
 
     const handleNextStep = () => {
         if (currentStep === 1) {
@@ -108,7 +140,6 @@ export default function CheckoutPage() {
                 body: JSON.stringify({
                     items,
                     addressId: selectedAddressId,
-                    mode: 'payment',
                     applyPromoMode,
                     promotionCodeId: applyPromoMode === 'AUTO' && promotionCodeId ? promotionCodeId : null,
                 }),
@@ -117,7 +148,14 @@ export default function CheckoutPage() {
             const data = await response.json();
 
             if (!response.ok) {
-                throw new Error(data.error || 'Erreur lors de la création de la session de paiement');
+                const userMessage = data?.error || 'Erreur lors de la création de la session de paiement';
+                // toast d'erreur UX
+                toast({
+                    title: 'Paiement',
+                    description: userMessage,
+                    variant: 'destructive',
+                } as any);
+                throw new Error(userMessage);
             }
 
             const stripe = await stripePromise;
@@ -137,6 +175,12 @@ export default function CheckoutPage() {
         } catch (error) {
             console.error('Erreur checkout:', error);
             setError(error instanceof Error ? error.message : 'Une erreur est survenue');
+            // Toast fallback
+            toast({
+                title: 'Erreur',
+                description: error instanceof Error ? error.message : 'Une erreur est survenue',
+                variant: 'destructive',
+            } as any);
         } finally {
             setLoading(false);
         }
@@ -444,15 +488,67 @@ export default function CheckoutPage() {
                                         </div>
                                         {applyPromoMode === 'AUTO' && (
                                             <div className="mt-3">
-                                                <input
-                                                    type="text"
-                                                    className="w-full border rounded px-3 py-2 text-sm"
-                                                    placeholder="ID du code promotionnel (promo_...)"
-                                                    value={promotionCodeId}
-                                                    onChange={(e) => setPromotionCodeId(e.target.value)}
-                                                />
-                                                <p className="text-xs text-muted-foreground mt-1">
-                                                    Utilisez l’identifiant Stripe du promotion code (ex: promo_...). Le champ de saisie restera disponible sur Checkout.
+                                                <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                                                    <div className="md:col-span-2">
+                                                        <input
+                                                            type="text"
+                                                            className="w-full border rounded px-3 py-2 text-sm"
+                                                            placeholder="ID du code promotionnel (promo_...)"
+                                                            value={promotionCodeId}
+                                                            onChange={(e) => setPromotionCodeId(e.target.value)}
+                                                        />
+                                                    </div>
+                                                    <button
+                                                        type="button"
+                                                        onClick={loadPromotionCodes}
+                                                        className="btn btn-outline text-sm px-3 py-2"
+                                                        disabled={loadingPromos}
+                                                    >
+                                                        {loadingPromos ? 'Chargement...' : 'Charger la liste'}
+                                                    </button>
+                                                </div>
+                                                {promoOptions.length > 0 && (
+                                                    <div className="mt-2">
+                                                        <select
+                                                            className="w-full border rounded px-3 py-2 text-sm"
+                                                            onChange={(e) => setPromotionCodeId(e.target.value)}
+                                                            value={promotionCodeId}
+                                                        >
+                                                            <option value="">Sélectionner un code promo</option>
+                                                            {promoOptions.map((p) => (
+                                                                <option key={p.id} value={p.id}>{p.code} ({p.id})</option>
+                                                            ))}
+                                                        </select>
+                                                        <div className="mt-2">
+                                                            <button
+                                                                type="button"
+                                                                className="btn btn-outline text-sm px-3 py-2"
+                                                                onClick={async () => {
+                                                                    try {
+                                                                        if (!promotionCodeId) return;
+                                                                        const res = await fetch(`/api/stripe/promotion-codes/${promotionCodeId}`);
+                                                                        const data = await res.json();
+                                                                        if (res.ok) {
+                                                                            const c = data.coupon;
+                                                                            if (c?.percent_off) {
+                                                                                setAppliedDiscount({ type: 'percent', value: c.percent_off });
+                                                                            } else if (c?.amount_off) {
+                                                                                // Stripe amount_off est en centimes
+                                                                                setAppliedDiscount({ type: 'amount', value: (c.amount_off / 100) });
+                                                                            } else {
+                                                                                setAppliedDiscount(null);
+                                                                            }
+                                                                        }
+                                                                    } catch { }
+                                                                }}
+                                                            >
+                                                                Prévisualiser la remise
+                                                            </button>
+                                                        </div>
+                                                    </div>
+                                                )}
+                                                <p className="text-xs text-muted-foreground mt-2">
+                                                    Vous pouvez soit saisir un identifiant Stripe (promo_...), soit charger et sélectionner un code existant. Le champ restera aussi disponible sur la page Checkout.
                                                 </p>
                                             </div>
                                         )}
@@ -531,6 +627,16 @@ export default function CheckoutPage() {
                                 <div className="flex justify-between text-sm">
                                     <span>Sous-total</span>
                                     <span>{formatPrice(totalPrice)}</span>
+                                </div>
+                                {appliedDiscount && (
+                                    <div className="flex justify-between text-sm text-green-700">
+                                        <span>Remise appliquée {appliedDiscount.type === 'percent' ? `(${appliedDiscount.value}%)` : ''}</span>
+                                        <span>-{formatPrice(Math.max(0, totalPrice - discountedSubtotal))}</span>
+                                    </div>
+                                )}
+                                <div className="flex justify-between text-sm">
+                                    <span>Sous-total après remise</span>
+                                    <span>{formatPrice(discountedSubtotal)}</span>
                                 </div>
                                 <div className="flex justify-between text-sm">
                                     <span>Livraison</span>
