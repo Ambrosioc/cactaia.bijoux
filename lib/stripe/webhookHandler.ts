@@ -198,6 +198,20 @@ export async function handleWebhook(request: NextRequest) {
             console.error('Erreur mise à jour facture commande (invoice.paid):', error);
           }
         }
+        // Log discount récurrent
+        try {
+          await supabase.from('analytics_events').insert({
+            event_type: 'invoice.paid',
+            order_id: invoice.metadata?.order_id || null,
+            order_total: invoice.total ? invoice.total / 100 : null,
+            metadata: {
+              total_discount_amounts: invoice.total_discount_amounts || [],
+              customer_email: (invoice.customer_email as any) || null,
+            } as any,
+          });
+        } catch (e) {
+          console.error('Erreur log analytics invoice.paid:', e);
+        }
         break;
       }
 

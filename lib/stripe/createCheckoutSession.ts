@@ -208,6 +208,10 @@ export async function createCheckoutSession({
       if (applyPromoMode === 'FIELD') {
         (baseSessionParams as any).allow_promotion_codes = true;
       } else if (applyPromoMode === 'AUTO') {
+        // Si aucun code fourni, n'applique rien mais laisse le champ actif
+        if (!promotionCodeId) {
+          (baseSessionParams as any).allow_promotion_codes = true;
+        } else {
         (baseSessionParams as any).allow_promotion_codes = true; // on peut laisser le champ actif
         if (!promotionCodeId || !promotionCodeId.startsWith('promo_')) {
           throw new Error('PromotionCodeId invalide (attendu: id commençant par promo_)');
@@ -219,6 +223,7 @@ export async function createCheckoutSession({
           throw new Error('Le code promotionnel est inactif ou expiré');
         }
         (baseSessionParams as any).discounts = [{ promotion_code: promotionCodeId }];
+        }
       }
     }
   } catch (promoError: any) {

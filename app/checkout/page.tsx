@@ -90,6 +90,12 @@ export default function CheckoutPage() {
             return;
         }
 
+        const isAutoPromoInvalid = applyPromoMode === 'AUTO' && (!promotionCodeId || !promotionCodeId.startsWith('promo_'));
+        if (isAutoPromoInvalid) {
+            setError("Veuillez saisir un identifiant Stripe valide pour le code promotionnel (ex: 'promo_...').");
+            return;
+        }
+
         setLoading(true);
         setError(null);
 
