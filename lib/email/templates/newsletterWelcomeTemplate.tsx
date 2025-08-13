@@ -2,18 +2,16 @@ import { createEmailHTML } from './baseTemplate';
 
 interface NewsletterWelcomeTemplateProps {
     customerName: string;
-    discountCode: string;
     collectionsUrl: string;
     subscriptionDate: string;
 }
 
 export function renderNewsletterWelcomeEmail(props: NewsletterWelcomeTemplateProps): string {
-    const { customerName, discountCode, collectionsUrl, subscriptionDate } = props;
+    const { customerName, collectionsUrl, subscriptionDate } = props;
     const currentYear = new Date().getFullYear();
-    const expiryDate = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toLocaleDateString('fr-FR');
 
     const content = `
-        <h1 style="font-size: 24px; margin-bottom: 20px; font-family: 'Playfair Display', Georgia, serif; color: #333333;">Bienvenue dans la famille Cactaia ! 🎁</h1>
+        <h1 style="font-size: 24px; margin-bottom: 20px; font-family: 'Playfair Display', Georgia, serif; color: #333333;">Bienvenue dans la famille Cactaia ! 💌</h1>
 
         <p>Bonjour ${customerName},</p>
 
@@ -27,16 +25,9 @@ export function renderNewsletterWelcomeEmail(props: NewsletterWelcomeTemplatePro
             />
         </div>
 
-        <div style="margin: 30px 0; padding: 25px; background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%); border: 2px solid #f59e0b; border-radius: 12px; text-align: center;">
-            <h3 style="margin: 0 0 15px 0; color: #92400e; font-family: 'Playfair Display', Georgia, serif;">🎁 Votre cadeau de bienvenue</h3>
-            <p style="margin: 0 0 15px 0; color: #92400e;">Pour vous remercier de votre confiance, voici votre code de réduction exclusif :</p>
-            <div style="background: linear-gradient(135deg, #d97706 0%, #ea580c 100%); color: white; font-family: 'Courier New', monospace; font-size: 24px; font-weight: bold; padding: 15px 25px; border-radius: 8px; display: inline-block; margin: 15px 0; letter-spacing: 2px;">
-                ${discountCode}
-            </div>
-            <p style="margin: 15px 0 0 0; font-size: 14px; color: #92400e;">
-                <strong>Réduction de 15% sur votre première commande</strong><br />
-                Valable jusqu'au ${expiryDate}
-            </p>
+        <div style="margin: 30px 0; padding: 25px; background: #f9fafb; border: 1px solid #e5e7eb; border-radius: 12px; text-align: center;">
+            <h3 style="margin: 0 0 10px 0; color: #111827; font-family: 'Playfair Display', Georgia, serif;">Merci pour votre inscription</h3>
+            <p style="margin: 0; color: #374151;">Vous recevrez nos nouveautés, coulisses d'atelier et offres exclusives directement par email.</p>
         </div>
 
         <div style="margin: 20px 0; padding: 15px; background-color: #f9f9f9; border-radius: 4px;">

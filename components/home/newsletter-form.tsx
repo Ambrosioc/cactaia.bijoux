@@ -56,7 +56,7 @@ const NewsletterForm = () => {
             }
 
             setIsSuccess(true);
-            setDiscountCode(data.code_reduction);
+            setDiscountCode(null);
 
             // Reset form
             setFormData({
@@ -100,17 +100,7 @@ const NewsletterForm = () => {
                             Merci de vous être inscrit à notre newsletter. Vous recevrez bientôt nos dernières actualités !
                         </p>
 
-                        {discountCode && (
-                            <div className="bg-white p-4 rounded-lg border border-green-200 mb-6">
-                                <p className="text-sm text-gray-600 mb-2">Votre code de réduction :</p>
-                                <div className="bg-gradient-to-r from-pink-500 to-purple-600 text-white px-4 py-2 rounded-lg font-mono text-lg font-bold">
-                                    {discountCode}
-                                </div>
-                                <p className="text-xs text-gray-500 mt-2">
-                                    Utilisez ce code lors de votre première commande
-                                </p>
-                            </div>
-                        )}
+
 
                         <Button
                             onClick={() => setIsSuccess(false)}
@@ -141,7 +131,7 @@ const NewsletterForm = () => {
                             Newsletter
                         </h3>
                         <p className="text-gray-600">
-                            Inscrivez-vous à notre newsletter et obtenez une réduction sur votre première commande !
+                            Inscrivez-vous à notre newsletter pour recevoir nos nouveautés, offres et coulisses de l’atelier.
                         </p>
                     </div>
 
