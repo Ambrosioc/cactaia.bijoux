@@ -23,6 +23,7 @@ export default function ProductsManagementPage() {
     const { isActiveAdmin } = useUser();
     const [products, setProducts] = useState<Product[]>([]);
     const [loading, setLoading] = useState(true);
+    const [mounted, setMounted] = useState(false);
     const [searchTerm, setSearchTerm] = useState('');
     const [selectedCategory, setSelectedCategory] = useState<string>('all');
     const [selectedStatus, setSelectedStatus] = useState<string>('all');
@@ -30,6 +31,10 @@ export default function ProductsManagementPage() {
     const [actionLoading, setActionLoading] = useState<string | null>(null);
 
     const supabase = createClient();
+
+    useEffect(() => {
+        setMounted(true);
+    }, []);
 
     useEffect(() => {
         if (isActiveAdmin) {
@@ -167,6 +172,26 @@ export default function ProductsManagementPage() {
     });
 
     const categories = [...new Set(products.map(product => product.categorie))];
+
+    // Éviter le mismatch SSR/CSR en rendant un état neutre avant le montage client
+    if (!mounted) {
+        return (
+            <div className="p-8">
+                <div className="flex justify-between items-center mb-8">
+                    <div>
+                        <h1 className="text-3xl font-medium mb-2">Gestion des produits</h1>
+                        <p className="text-muted-foreground">Chargement…</p>
+                    </div>
+                </div>
+                <div className="bg-white rounded-lg shadow-sm overflow-hidden">
+                    <div className="p-8 text-center">
+                        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
+                        <p className="text-muted-foreground">Préparation de l’interface…</p>
+                    </div>
+                </div>
+            </div>
+        );
+    }
 
     if (!isActiveAdmin) {
         return (
