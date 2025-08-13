@@ -118,12 +118,15 @@ export async function createCheckoutSession({
   }
 
   // Créer les line items pour Stripe
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000';
   const lineItems = orderProducts.map(product => ({
     price_data: {
       currency: STRIPE_CONFIG.currency,
       product_data: {
         name: product.nom,
-        images: product.image ? [product.image] : [],
+        images: product.image
+          ? [new URL(product.image.startsWith('http') ? product.image : `${siteUrl}${product.image}`).toString()]
+          : [],
         metadata: {
           product_id: product.product_id,
           sku: product.sku || '',
