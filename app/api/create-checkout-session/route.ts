@@ -25,11 +25,35 @@ function isRateLimited(ip: string | null): boolean {
   return entry.count > RL_MAX_REQ;
 }
 
+// Mapping d'erreurs -> messages et codes côté client
+function mapCheckoutError(errorMessage: string) {
+  const normalized = (errorMessage || '').toLowerCase();
+  if (normalized.includes('associated customer has prior transactions') || normalized.includes('premier achat')) {
+    return { code: 'PROMO_FIRST_TIME_ONLY', userMessage: "Ce code est réservé au premier achat. Choisissez un autre code ou laissez le champ pour en saisir un sur la page de paiement." };
+  }
+  if (normalized.includes('promotioncodeid invalide')) {
+    return { code: 'INVALID_PROMOTION_CODE_ID', userMessage: "Identifiant du code promotionnel invalide (format attendu: 'promo_...')." };
+  }
+  if (normalized.includes('inactif') || normalized.includes('expiré')) {
+    return { code: 'PROMO_INACTIVE', userMessage: "Ce code promotionnel est inactif ou expiré." };
+  }
+  if (normalized.includes('montant minimum')) {
+    return { code: 'PROMO_MINIMUM_NOT_REACHED', userMessage: "Le montant minimum d'achat pour ce code n'est pas atteint." };
+  }
+  if (normalized.includes('stock insuffisant')) {
+    return { code: 'OUT_OF_STOCK', userMessage: "Stock insuffisant pour l'un des articles du panier." };
+  }
+  if (normalized.includes('ne sont plus disponibles')) {
+    return { code: 'PRODUCT_UNAVAILABLE', userMessage: "Certains produits ne sont plus disponibles." };
+  }
+  return { code: 'CHECKOUT_SESSION_FAILED', userMessage: "Impossible de créer la session de paiement. Réessayez ou contactez le support." };
+}
+
 export async function POST(request: NextRequest) {
   try {
     const supabase = await createServerClient();
     const payload = await request.json();
-    const { items, addressId, mode = 'payment', applyPromoMode = 'NONE', promotionCodeId = null } = payload;
+    const { items, addressId, applyPromoMode = 'NONE', promotionCodeId = null } = payload;
 
     // Rate limit
     const ip = (request.headers.get('x-forwarded-for') || request.headers.get('x-real-ip') || '')
@@ -90,7 +114,6 @@ export async function POST(request: NextRequest) {
       address,
       successUrl: `${siteUrl}/confirmation?session_id={CHECKOUT_SESSION_ID}`,
       cancelUrl: `${siteUrl}/panier`,
-      mode,
       applyPromoMode,
       promotionCodeId,
     });
@@ -101,15 +124,14 @@ export async function POST(request: NextRequest) {
     });
 
   } catch (error: any) {
+    const mapped = mapCheckoutError(error?.message || '');
     console.error('Erreur création session Stripe:', {
       message: error?.message,
-      applyPromoMode: 'body-parsed',
+      code: mapped.code,
     });
     
-    const errorMessage = error instanceof Error ? error.message : 'Erreur interne du serveur';
-    
     return NextResponse.json(
-      { error: errorMessage },
+      { error: mapped.userMessage, code: mapped.code },
       { status: 500 }
     );
   }
