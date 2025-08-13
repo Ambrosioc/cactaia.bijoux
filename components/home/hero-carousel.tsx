@@ -58,7 +58,7 @@ export default function HeroCarousel() {
                         src={image.src}
                         alt={image.alt}
                         fill
-                        className="object-cover"
+                        className="object-cover scale-110 hover:scale-105 transition-transform duration-[3000ms] ease-out"
                         priority={index === 0}
                         sizes="100vw"
                     />

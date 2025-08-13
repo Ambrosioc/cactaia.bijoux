@@ -5,30 +5,51 @@ export const IMAGE_CONFIG = {
   
   // Tailles d'écran pour les responsive images
   breakpoints: {
-    mobile: 768,
-    tablet: 1024,
-    desktop: 1200,
-    large: 1920,
+    mobile: 640,    // Plus précis pour mobile
+    tablet: 768,    // Tablette
+    desktop: 1024,  // Desktop
+    large: 1200,    // Large desktop
+    xl: 1920,       // Extra large
   },
   
-  // Qualité par défaut
-  defaultQuality: 85,
+  // Qualité par défaut (plus élevée sur mobile pour éviter la compression)
+  defaultQuality: 90,
   
-  // Tailles d'images par contexte
+  // Tailles d'images par contexte - optimisées pour éviter la compression
   sizes: {
-    hero: '(max-width: 768px) 100vw, 100vw',
+    // Images hero - pleine largeur sur mobile
+    hero: '(max-width: 640px) 100vw, (max-width: 768px) 100vw, (max-width: 1024px) 100vw, 100vw',
+    
+    // Images de produits
     product: {
-      main: '(max-width: 768px) 100vw, 50vw',
-      thumbnail: '(max-width: 768px) 33vw, 15vw',
-      gallery: '(max-width: 768px) 50vw, (max-width: 1200px) 25vw, 20vw',
+      // Image principale - pleine largeur sur mobile, pas de compression
+      main: '(max-width: 640px) 100vw, (max-width: 768px) 100vw, (max-width: 1024px) 50vw, 50vw',
+      // Thumbnail - taille fixe sur mobile
+      thumbnail: '(max-width: 640px) 80px, (max-width: 768px) 100px, (max-width: 1024px) 120px, 150px',
+      // Galerie - grille responsive
+      gallery: '(max-width: 640px) 50vw, (max-width: 768px) 50vw, (max-width: 1024px) 33vw, 25vw',
     },
+    
+    // Grilles d'images
     grid: {
-      small: '(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw',
-      medium: '(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 25vw',
-      large: '(max-width: 768px) 100vw, (max-width: 1200px) 33vw, 20vw',
+      // Petite grille - 1 colonne sur mobile
+      small: '(max-width: 640px) 100vw, (max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw',
+      // Grille moyenne - 1 colonne sur mobile, 2 sur tablette
+      medium: '(max-width: 640px) 100vw, (max-width: 768px) 100vw, (max-width: 1024px) 50vw, 25vw',
+      // Grande grille - 1 colonne sur mobile, 2 sur tablette
+      large: '(max-width: 640px) 100vw, (max-width: 768px) 100vw, (max-width: 1024px) 50vw, 20vw',
     },
+    
+    // Images de collection - optimisées pour mobile
+    collection: {
+      card: '(max-width: 640px) 100vw, (max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw',
+      hero: '(max-width: 640px) 100vw, (max-width: 768px) 100vw, (max-width: 1024px) 100vw, 100vw',
+    },
+    
+    // Images utilitaires
     cart: '64px',
     avatar: '40px',
+    icon: '24px',
   },
   
   // Placeholder par défaut
@@ -53,11 +74,33 @@ export const IMAGE_CONFIG = {
     priority: ['hero', 'product-main'],
     delay: 100, // ms
   },
+  
+  // Configuration responsive spécifique
+  responsive: {
+    // Qualité par breakpoint (plus élevée sur mobile)
+    quality: {
+      mobile: 95,    // Haute qualité sur mobile
+      tablet: 90,    // Qualité élevée sur tablette
+      desktop: 85,   // Qualité standard sur desktop
+    },
+    
+    // Formats prioritaires par breakpoint
+    formats: {
+      mobile: ['webp', 'avif'],  // Formats modernes sur mobile
+      tablet: ['webp', 'avif'],  // Formats modernes sur tablette
+      desktop: ['webp', 'avif'], // Formats modernes sur desktop
+    },
+  },
 } as const;
 
 // Fonction utilitaire pour obtenir la taille appropriée
 export function getImageSizes(context: keyof typeof IMAGE_CONFIG.sizes): string {
   return IMAGE_CONFIG.sizes[context] as string;
+}
+
+// Fonction pour obtenir la qualité optimale selon le breakpoint
+export function getOptimalQuality(breakpoint: keyof typeof IMAGE_CONFIG.responsive.quality): number {
+  return IMAGE_CONFIG.responsive.quality[breakpoint];
 }
 
 // Fonction pour vérifier si une URL d'image est autorisée
@@ -87,4 +130,24 @@ export function optimizeImageUrl(url: string, options?: {
   // Pour les images externes, retourner l'URL originale
   // Next.js s'occupera de l'optimisation via la configuration
   return url;
+}
+
+// Fonction pour obtenir les tailles d'images optimisées selon le contexte
+export function getResponsiveImageSizes(
+  context: 'hero' | 'product' | 'grid' | 'collection',
+  variant?: string
+): string {
+  if (context === 'product' && variant) {
+    return IMAGE_CONFIG.sizes.product[variant as keyof typeof IMAGE_CONFIG.sizes.product] || IMAGE_CONFIG.sizes.product.main;
+  }
+  
+  if (context === 'grid' && variant) {
+    return IMAGE_CONFIG.sizes.grid[variant as keyof typeof IMAGE_CONFIG.sizes.grid] || IMAGE_CONFIG.sizes.grid.medium;
+  }
+  
+  if (context === 'collection' && variant) {
+    return IMAGE_CONFIG.sizes.collection[variant as keyof typeof IMAGE_CONFIG.sizes.collection] || IMAGE_CONFIG.sizes.collection.card;
+  }
+  
+  return IMAGE_CONFIG.sizes[context] as string;
 } 
