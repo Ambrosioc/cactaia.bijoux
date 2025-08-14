@@ -21,6 +21,7 @@ const heroImages = [
 
 export default function HeroCarousel() {
     const [currentIndex, setCurrentIndex] = useState(0);
+    const [imagesLoaded, setImagesLoaded] = useState<boolean[]>(new Array(heroImages.length).fill(false));
 
     // Auto-advance carousel
     useEffect(() => {
@@ -30,6 +31,15 @@ export default function HeroCarousel() {
 
         return () => clearInterval(interval);
     }, []);
+
+    // Gérer le chargement des images
+    const handleImageLoad = (index: number) => {
+        setImagesLoaded(prev => {
+            const newState = [...prev];
+            newState[index] = true;
+            return newState;
+        });
+    };
 
     const goToPrevious = () => {
         setCurrentIndex((prevIndex) =>
@@ -46,35 +56,53 @@ export default function HeroCarousel() {
     };
 
     return (
-        <section className="relative h-screen w-full overflow-hidden">
-            {/* Carousel Images */}
-            {heroImages.map((image, index) => (
-                <div
-                    key={index}
-                    className={`absolute inset-0 transition-opacity duration-1000 ${index === currentIndex ? 'opacity-100' : 'opacity-0'
-                        }`}
-                >
-                    <OptimizedImage
-                        src={image.src}
-                        alt={image.alt}
-                        fill
-                        className="object-cover scale-110 hover:scale-105 transition-transform duration-[3000ms] ease-out"
-                        priority={index === 0}
-                        sizes="100vw"
-                    />
-                    <div className="absolute inset-0 bg-black/30" />
-                </div>
-            ))}
+        <section className="relative h-screen w-full overflow-hidden hero-carousel">
+            {/* Container fixe pour éviter les changements de dimensions */}
+            <div className="absolute inset-0 w-full h-full hero-container">
+                {/* Carousel Images avec dimensions stables */}
+                {heroImages.map((image, index) => (
+                    <div
+                        key={index}
+                        className={`absolute inset-0 transition-all duration-1000 ease-in-out hero-image-container ${index === currentIndex
+                                ? 'opacity-100 scale-100'
+                                : 'opacity-0 scale-105'
+                            }`}
+                        style={{
+                            width: '100vw',
+                            height: '100vh',
+                            minWidth: '100vw',
+                            maxWidth: '100vw',
+                            minHeight: '100vh',
+                            maxHeight: '100vh'
+                        }}
+                    >
+                        <div className="optimized-image-container w-full h-full">
+                            <OptimizedImage
+                                src={image.src}
+                                alt={image.alt}
+                                fill
+                                className="object-cover transition-transform duration-[3000ms] ease-out"
+                                priority={index === 0}
+                                sizes="100vw"
+                                onLoad={() => handleImageLoad(index)}
+                            />
+                        </div>
+                        <div className="absolute inset-0 bg-black/30" />
+                    </div>
+                ))}
+            </div>
 
-            {/* Content */}
-            <div className="relative container mx-auto h-full flex flex-col justify-center items-start px-4 sm:px-6 lg:px-8 z-10">
+            {/* Content avec position stable */}
+            <div className="relative w-full h-full flex flex-col justify-center items-start px-4 sm:px-6 lg:px-8 z-10">
                 <div className="max-w-lg animate-fadeIn">
-                    <h1 className="heading-xl text-white mb-6">
-                        {heroImages[currentIndex].title}
-                    </h1>
-                    <p className="text-white/90 mb-8 text-lg">
-                        {heroImages[currentIndex].subtitle}
-                    </p>
+                    <div className="h-32 flex flex-col justify-center">
+                        <h1 className="heading-xl text-white mb-6 transition-all duration-500">
+                            {heroImages[currentIndex].title}
+                        </h1>
+                        <p className="text-white/90 mb-8 text-lg transition-all duration-500 min-h-[4.5rem]">
+                            {heroImages[currentIndex].subtitle}
+                        </p>
+                    </div>
                     <a
                         href="/collections"
                         className="btn btn-primary px-8 py-3"
@@ -108,8 +136,8 @@ export default function HeroCarousel() {
                         key={index}
                         onClick={() => goToSlide(index)}
                         className={`w-3 h-3 rounded-full transition-all duration-300 ${index === currentIndex
-                            ? 'bg-white scale-125'
-                            : 'bg-white/50 hover:bg-white/75'
+                                ? 'bg-white scale-125'
+                                : 'bg-white/50 hover:bg-white/75'
                             }`}
                         aria-label={`Aller à l'image ${index + 1}`}
                     />
