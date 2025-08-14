@@ -96,7 +96,7 @@ SELECT
   p.prix_promo as product_promo_price,
   p.categorie as product_category,
   p.images as product_images,
-  p.slug as product_slug,
+  p.sku as product_sku,
   p.stock as product_stock,
   p.est_actif as product_active
 FROM public.wishlist_items wi

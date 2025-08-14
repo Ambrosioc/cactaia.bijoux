@@ -80,23 +80,25 @@ export default function CollectionPage() {
 
     if (error) {
         return (
-            <div className="container-custom py-12">
-                <div className="text-center">
-                    <h1 className="heading-lg mb-4">Erreur</h1>
-                    <p className="text-muted-foreground mb-6">{error}</p>
-                    <button
-                        onClick={() => window.location.reload()}
-                        className="btn-primary"
-                    >
-                        Réessayer
-                    </button>
+            <div className="min-h-screen bg-background pt-24">
+                <div className="container-custom py-12">
+                    <div className="text-center">
+                        <h1 className="heading-lg mb-4">Erreur</h1>
+                        <p className="text-muted-foreground mb-6">{error}</p>
+                        <button
+                            onClick={() => window.location.reload()}
+                            className="btn-primary"
+                        >
+                            Réessayer
+                        </button>
+                    </div>
                 </div>
             </div>
         );
     }
 
     return (
-        <div className="min-h-screen bg-background">
+        <div className="min-h-screen bg-background pt-24">
             {/* Header de la collection */}
             <div className="bg-gradient-to-br from-primary/5 to-secondary/5 border-b">
                 <div className="container-custom py-12">
@@ -275,8 +277,8 @@ export default function CollectionPage() {
                                                 key={page}
                                                 onClick={() => handlePageChange(page)}
                                                 className={`px-3 py-2 rounded-lg transition-colors ${currentPage === page
-                                                        ? 'bg-primary text-white'
-                                                        : 'border border-border hover:bg-accent'
+                                                    ? 'bg-primary text-white'
+                                                    : 'border border-border hover:bg-accent'
                                                     }`}
                                             >
                                                 {page}

@@ -23,11 +23,16 @@ const Footer = () => {
               Des bijoux écoresponsables, mixtes et élégants avec des valeurs de durabilité, simplicité et force symbolique.
             </p>
             <div className="flex space-x-4">
-              <Link href="https://instagram.com" target="_blank" rel="noopener noreferrer" className="text-foreground hover:text-primary transition-colors">
+              <Link href="https://instagram.com/cactaia.bijoux" target="_blank" rel="noopener noreferrer" className="text-foreground hover:text-primary transition-colors">
                 <Instagram className="h-5 w-5" />
                 <span className="sr-only">Instagram</span>
               </Link>
-              {/* Facebook supprimé */}
+              <Link href="https://www.tiktok.com/@cactaiabijoux" target="_blank" rel="noopener noreferrer" className="text-foreground hover:text-primary transition-colors">
+                <svg className="h-5 w-5" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-5.2 1.74 2.89 2.89 0 0 1 2.31-4.64 2.93 2.93 0 0 1 .88.13V9.4a6.84 6.84 0 0 0-.88-.05A6.33 6.33 0 0 0 4 15.38a6.33 6.33 0 0 0 10.86 4.43l.02-.02a6.188 6.188 0 0 0 1.74-4.31V6.69a8.2 8.2 0 0 0 2.97.56z" />
+                </svg>
+                <span className="sr-only">TikTok</span>
+              </Link>
             </div>
           </div>
 
