@@ -81,16 +81,18 @@ export default function CategoryPage() {
 
     if (error) {
         return (
-            <div className="container-custom py-12">
-                <div className="text-center">
-                    <h1 className="heading-lg mb-4">Erreur</h1>
-                    <p className="text-muted-foreground mb-6">{error}</p>
-                    <button
-                        onClick={() => window.location.reload()}
-                        className="btn-primary"
-                    >
-                        Réessayer
-                    </button>
+            <div className="min-h-screen bg-background">
+                <div className="container-custom py-12">
+                    <div className="text-center">
+                        <h1 className="heading-lg mb-4">Erreur</h1>
+                        <p className="text-muted-foreground mb-6">{error}</p>
+                        <button
+                            onClick={() => window.location.reload()}
+                            className="btn-primary"
+                        >
+                            Réessayer
+                        </button>
+                    </div>
                 </div>
             </div>
         );
