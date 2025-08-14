@@ -9,6 +9,7 @@ import { useCart } from '@/stores/cartStore';
 import { useUser } from '@/stores/userStore';
 import { motion } from 'framer-motion';
 import { Heart, Menu, Search, ShoppingBag, User, X } from 'lucide-react';
+import { useTheme } from 'next-themes';
 import Image from 'next/image';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
@@ -21,6 +22,7 @@ const Header = () => {
   const { user, isAuthenticated, displayName } = useUser();
   const { totalItems, toggleCart } = useCart();
   const { wishlistCount } = useWishlist();
+  const { theme } = useTheme();
   const supabase = createClient();
   const [mounted, setMounted] = useState(false);
   const pathname = usePathname();
@@ -291,84 +293,125 @@ const Header = () => {
         {/* Mobile menu */}
         {mobileMenuOpen && (
           <motion.div
-            className="fixed inset-0 bg-white z-40 pt-20 px-4 flex flex-col"
-            initial={{ opacity: 0, y: -10 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -10 }}
-            transition={{ duration: 0.2 }}
+            className="fixed inset-0 bg-gradient-to-br from-white via-gray-50 to-gray-100 z-40 mobile-menu-modern"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.3 }}
           >
-            {/* Mobile Site Name */}
-            <div className="text-center mb-6">
-              <h1 className="text-2xl font-bold text-black">
-                Cactaia Bijoux
-              </h1>
+            {/* Header du menu mobile avec logo et croix */}
+            <div className="flex items-center justify-between p-6 border-b border-gray-200 bg-white/80 backdrop-blur-sm mobile-menu-header">
+              {/* Logo centré */}
+              <div className="flex-1" />
+              <div className="flex items-center justify-center flex-1 mobile-menu-logo">
+                <Image
+                  src="/menu-logo.png"
+                  alt="Cactaia Bijoux"
+                  width={120}
+                  height={40}
+                  className="h-10 w-auto"
+                />
+              </div>
+
+              {/* Bouton fermer */}
+              <div className="flex-1 flex justify-end">
+                <button
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="p-2 rounded-full bg-gray-100 hover:bg-gray-200 transition-colors duration-200 mobile-close-btn"
+                  aria-label="Fermer le menu"
+                >
+                  <X className="h-6 w-6 text-gray-600" />
+                </button>
+              </div>
             </div>
 
-            <nav className="flex flex-col space-y-6 py-8">
-              {navLinks.map((link) => (
-                link.onClick ? (
-                  <button
-                    key={link.name}
-                    onClick={() => {
-                      link.onClick();
-                      setMobileMenuOpen(false);
-                    }}
-                    className="text-lg font-medium text-black hover:text-primary transition-colors text-left"
-                  >
-                    {link.name}
-                  </button>
-                ) : (
-                  <Link
-                    key={link.name}
-                    href={link.href}
-                    className="text-lg font-medium text-black hover:text-primary transition-colors"
-                    onClick={() => setMobileMenuOpen(false)}
-                  >
-                    {link.name}
-                  </Link>
-                )
-              ))}
+            {/* Contenu du menu */}
+            <div className="flex-1 overflow-y-auto px-6 py-8 mobile-menu-scroll bg-white">
+              {/* Navigation principale */}
+              <nav className="space-y-2 mb-8">
+                {navLinks.map((link) => (
+                  link.onClick ? (
+                    <button
+                      key={link.name}
+                      onClick={() => {
+                        link.onClick();
+                        setMobileMenuOpen(false);
+                      }}
+                      className="w-full text-left px-4 py-3 rounded-xl text-lg font-medium text-gray-800 hover:text-primary hover:bg-white/60 transition-all duration-200 flex items-center justify-between group mobile-menu-item"
+                    >
+                      <span>{link.name}</span>
+                      <div className="w-2 h-2 rounded-full bg-gray-300 group-hover:bg-primary transition-colors duration-200 nav-indicator" />
+                    </button>
+                  ) : (
+                    <Link
+                      key={link.name}
+                      href={link.href}
+                      className="block px-4 py-3 rounded-xl text-lg font-medium text-gray-800 hover:text-primary hover:bg-white/60 transition-all duration-200 flex items-center justify-between group mobile-menu-item"
+                      onClick={() => setMobileMenuOpen(false)}
+                    >
+                      <span>{link.name}</span>
+                      <div className="w-2 h-2 rounded-full bg-gray-300 group-hover:bg-primary transition-colors duration-200 nav-indicator" />
+                    </Link>
+                  )
+                ))}
+              </nav>
 
+              {/* Séparateur */}
+              <div className="gradient-separator" />
+
+              {/* Section authentification */}
               {isAuthenticated ? (
-                <>
+                <div className="space-y-2 mb-8">
                   <Link
                     href={getAccountLink()}
-                    className="text-lg font-medium text-black hover:text-primary transition-colors"
+                    className="block px-4 py-3 rounded-xl text-lg font-medium text-gray-800 hover:text-primary hover:bg-white/60 transition-all duration-200 flex items-center justify-between group mobile-menu-item"
                     onClick={() => setMobileMenuOpen(false)}
                   >
-                    {getAccountLabel()}
+                    <span>{getAccountLabel()}</span>
+                    <div className="w-2 h-2 rounded-full bg-gray-300 group-hover:bg-primary transition-colors duration-200 nav-indicator" />
                   </Link>
 
                   <button
                     onClick={handleSignOut}
-                    className="text-lg font-medium text-red-600 hover:text-red-700 transition-colors text-left"
+                    className="w-full text-left px-4 py-3 rounded-xl text-lg font-medium text-red-600 hover:text-red-700 hover:bg-red-50 transition-all duration-200 flex items-center justify-between group mobile-menu-item"
                   >
-                    Déconnexion
+                    <span>Déconnexion</span>
+                    <div className="w-2 h-2 rounded-full bg-red-300 group-hover:bg-red-500 transition-colors duration-200 nav-indicator" />
                   </button>
-                </>
+                </div>
               ) : (
-                <>
+                <div className="space-y-3 mb-8">
                   <Link
                     href="/connexion"
-                    className="text-lg font-medium text-black hover:text-primary transition-colors"
+                    className="block px-4 py-3 rounded-xl text-lg font-medium text-gray-800 hover:text-primary hover:bg-white/60 transition-all duration-200 flex items-center justify-between group mobile-menu-item"
                     onClick={() => setMobileMenuOpen(false)}
                   >
-                    Connexion
+                    <span>Connexion</span>
+                    <div className="w-2 h-2 rounded-full bg-gray-300 group-hover:bg-primary transition-colors duration-200 nav-indicator" />
                   </Link>
+
                   <Link
                     href="/inscription"
-                    className="text-lg font-medium text-primary hover:text-primary/80 transition-colors"
+                    className="btn btn-primary px-6 py-3 rounded-xl text-lg font-medium text-center shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200"
                     onClick={() => setMobileMenuOpen(false)}
                   >
                     Inscription
                   </Link>
-                </>
+                </div>
               )}
-            </nav>
-            <div className="mt-auto pb-8">
-              <p className="text-muted-foreground text-sm">
-                © 2025 Cactaia.Bijoux
-              </p>
+
+              {/* Séparateur */}
+              <div className="gradient-separator" />
+
+              {/* Footer */}
+              <div className="text-center">
+                <p className="text-gray-500 text-sm">
+                  © 2025 Cactaia.Bijoux
+                </p>
+                <p className="text-gray-400 text-xs mt-1">
+                  Créations uniques et écoresponsables
+                </p>
+              </div>
             </div>
           </motion.div>
         )}

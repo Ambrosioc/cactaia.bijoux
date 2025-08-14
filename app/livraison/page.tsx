@@ -1,5 +1,6 @@
 "use client";
 
+import HeroImage from '@/components/ui/hero-image';
 import { motion } from 'framer-motion';
 import { Truck } from 'lucide-react';
 import Image from 'next/image';
@@ -71,18 +72,15 @@ export default function LivraisonPage() {
 
             {/* Section droite - Image immersive */}
             <div className="hidden lg:block lg:w-1/2 relative overflow-hidden">
-                <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-transparent to-secondary/10"></div>
-                <Image
+                <HeroImage
                     src="/images/cactaïa-11.jpg"
                     alt="Bijoux Cactaia"
-                    fill
-                    className="object-cover"
                     priority
-                />
-                <div className="absolute inset-0 bg-black/20"></div>
-
-                {/* Overlay avec texte */}
-                <div className="absolute inset-0 flex items-center justify-center">
+                    zoomEffect={true}
+                    zoomIntensity="medium"
+                    overlayOpacity={0.2}
+                    showGradient={true}
+                >
                     <motion.div
                         initial={{ opacity: 0, y: 30 }}
                         animate={{ opacity: 1, y: 0 }}
@@ -97,7 +95,7 @@ export default function LivraisonPage() {
                             Vos bijoux vous parviennent en toute sécurité, partout en France
                         </p>
                     </motion.div>
-                </div>
+                </HeroImage>
             </div>
         </div>
     );

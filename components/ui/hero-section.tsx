@@ -9,6 +9,7 @@ interface HeroSectionProps {
     overlayClassName?: string;
     className?: string;
     priority?: boolean;
+    zoomEffect?: boolean;
 }
 
 export default function HeroSection({
@@ -18,16 +19,23 @@ export default function HeroSection({
     overlayClassName = 'bg-black/40',
     className = '',
     priority = false,
+    zoomEffect = true,
 }: HeroSectionProps) {
+
     return (
-        <section className={cn('relative h-screen w-full', className)}>
-            <Image
-                src={image}
-                alt={alt}
-                fill
-                className="object-cover"
-                priority={priority}
-            />
+        <section className={cn('relative h-screen w-full overflow-hidden', className)}>
+            <div className="relative w-full h-full">
+                <Image
+                    src={image}
+                    alt={alt}
+                    fill
+                    className={cn(
+                        'object-cover transition-transform duration-[3000ms] ease-out',
+                        zoomEffect && 'scale-110 hover:scale-105'
+                    )}
+                    priority={priority}
+                />
+            </div>
             {/* Overlay */}
             <div className={cn('absolute inset-0 z-10', overlayClassName)} />
             {/* Centred content */}

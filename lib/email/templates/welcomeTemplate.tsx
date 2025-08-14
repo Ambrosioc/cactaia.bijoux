@@ -16,12 +16,9 @@ export function renderWelcomeEmail(props: WelcomeTemplateProps): string {
 
         <p>Nous sommes ravis de vous accueillir dans la communauté Cactaia.Bijoux ! Votre compte a été créé avec succès.</p>
 
-        <div style="margin: 30px 0; text-align: center;">
-            <img
-                src="https://images.pexels.com/photos/5370795/pexels-photo-5370795.jpeg"
-                alt="Bijoux Cactaia"
-                style="max-width: 100%; height: auto; border-radius: 8px; max-height: 200px; object-fit: cover;"
-            />
+        <div style="margin: 30px 0; text-align: center; padding: 20px; background-color: #f5f5f4; border-radius: 8px;">
+            <h2 style="color: #4A7C59; margin: 0;">🌵✨</h2>
+            <p style="margin: 10px 0 0 0; font-style: italic; color: #666;">Bienvenue dans notre univers de bijoux écoresponsables</p>
         </div>
 
         <p>Chez Cactaia.Bijoux, nous créons des bijoux écoresponsables, mixtes et élégants avec des valeurs de durabilité, simplicité et force symbolique.</p>
@@ -29,7 +26,7 @@ export function renderWelcomeEmail(props: WelcomeTemplateProps): string {
         <p>Découvrez dès maintenant notre collection de bijoux inspirés par la nature :</p>
 
         <div style="text-align: center; margin: 30px 0;">
-            <a href="${collectionsUrl}" class="button">
+            <a href="${collectionsUrl}" style="display: inline-block; background-color: #4A7C59; color: #ffffff !important; text-decoration: none; padding: 12px 24px; border-radius: 4px; font-weight: 500;">
                 Découvrir nos collections
             </a>
         </div>

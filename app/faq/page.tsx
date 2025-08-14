@@ -1,6 +1,7 @@
 "use client"
 
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
+import HeroImage from '@/components/ui/hero-image';
 import { motion } from 'framer-motion';
 import { ArrowRight, HelpCircle } from 'lucide-react';
 import Image from 'next/image';
@@ -44,8 +45,8 @@ export default function FaqPage() {
                   key={category.category}
                   onClick={() => setActiveCategory(category.category)}
                   className={`px-3 py-2 text-xs rounded-lg transition-all duration-200 ${activeCategory === category.category
-                      ? 'bg-primary text-white shadow-lg'
-                      : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                    ? 'bg-primary text-white shadow-lg'
+                    : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
                     }`}
                 >
                   {category.category}
@@ -109,18 +110,15 @@ export default function FaqPage() {
 
       {/* Section droite - Image immersive */}
       <div className="hidden lg:block lg:w-1/2 relative overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-transparent to-secondary/10"></div>
-        <Image
+        <HeroImage
           src="/images/cactaïa-13.jpg"
           alt="Bijoux Cactaia"
-          fill
-          className="object-cover"
           priority
-        />
-        <div className="absolute inset-0 bg-black/20"></div>
-
-        {/* Overlay avec texte */}
-        <div className="absolute inset-0 flex items-center justify-center">
+          zoomEffect={true}
+          zoomIntensity="medium"
+          overlayOpacity={0.2}
+          showGradient={true}
+        >
           <motion.div
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
@@ -135,7 +133,7 @@ export default function FaqPage() {
               Trouvez rapidement des réponses à toutes vos questions sur nos bijoux et services
             </p>
           </motion.div>
-        </div>
+        </HeroImage>
       </div>
     </div>
   );

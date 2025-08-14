@@ -136,7 +136,9 @@ const FeaturedProductsOptimized = () => {
                                             alt={product.nom}
                                             fill
                                             className="object-cover group-hover:scale-105 transition-transform duration-300"
-                                            sizes="(max-width: 768px) 100vw, 33vw"
+                                            context="product"
+                                            variant="main"
+                                            responsive={true}
                                             priority={i < 2} // Priorité pour les 2 premiers produits
                                         />
                                     </div>

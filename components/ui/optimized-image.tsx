@@ -1,8 +1,9 @@
 "use client";
 
 import { cn } from '@/lib/utils';
+import { getResponsiveImageSizes, getOptimalQuality } from '@/lib/config/image-optimization';
 import Image from 'next/image';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 
 interface OptimizedImageProps {
     src: string;
@@ -18,6 +19,9 @@ interface OptimizedImageProps {
     blurDataURL?: string;
     onLoad?: () => void;
     onError?: () => void;
+    context?: 'hero' | 'product' | 'grid' | 'collection';
+    variant?: string;
+    responsive?: boolean;
 }
 
 export default function OptimizedImage({
@@ -28,14 +32,33 @@ export default function OptimizedImage({
     height,
     className,
     priority = false,
-    sizes = '(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw',
-    quality = 85,
+    sizes,
+    quality,
     placeholder = 'empty',
     blurDataURL,
     onLoad,
     onError,
+    context,
+    variant,
+    responsive = true,
     ...props
 }: OptimizedImageProps) {
+    const [isLoading, setIsLoading] = useState(true);
+    const [hasError, setHasError] = useState(false);
+    const [isMobile, setIsMobile] = useState(false);
+
+    // Détecter si on est sur mobile
+    useEffect(() => {
+        const checkMobile = () => {
+            setIsMobile(window.innerWidth <= 640);
+        };
+        
+        checkMobile();
+        window.addEventListener('resize', checkMobile);
+        
+        return () => window.removeEventListener('resize', checkMobile);
+    }, []);
+
     // Fonction pour obtenir les formats optimisés
     const getOptimizedSrc = (originalSrc: string) => {
         if (!originalSrc || originalSrc.startsWith('http')) {
@@ -50,9 +73,38 @@ export default function OptimizedImage({
         };
     };
 
+    // Obtenir les tailles responsive optimales
+    const getOptimalSizes = () => {
+        if (sizes) return sizes;
+        
+        if (context && variant) {
+            return getResponsiveImageSizes(context, variant);
+        }
+        
+        if (context) {
+            return getResponsiveImageSizes(context);
+        }
+        
+        // Tailles par défaut optimisées pour mobile
+        return isMobile 
+            ? '(max-width: 640px) 100vw, (max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw'
+            : '(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw';
+    };
+
+    // Obtenir la qualité optimale
+    const getOptimalQualityValue = () => {
+        if (quality) return quality;
+        
+        if (isMobile) {
+            return getOptimalQuality('mobile');
+        }
+        
+        return getOptimalQuality('desktop');
+    };
+
     const optimizedSrcs = getOptimizedSrc(src);
-    const [isLoading, setIsLoading] = useState(true);
-    const [hasError, setHasError] = useState(false);
+    const optimalSizes = getOptimalSizes();
+    const optimalQuality = getOptimalQualityValue();
 
     const handleLoad = () => {
         setIsLoading(false);
@@ -69,7 +121,12 @@ export default function OptimizedImage({
     const imageSrc = hasError ? '/placeholder.jpg' : (typeof optimizedSrcs === 'string' ? optimizedSrcs : optimizedSrcs.original);
 
     return (
-        <div className={cn('relative overflow-hidden', fill ? 'w-full h-full' : '', className)}>
+        <div className={cn(
+            'relative overflow-hidden',
+            fill ? 'w-full h-full' : '',
+            responsive && isMobile ? 'mobile-optimized' : '',
+            className
+        )}>
             <Image
                 src={imageSrc}
                 alt={alt}
@@ -78,11 +135,12 @@ export default function OptimizedImage({
                 height={!fill ? height : undefined}
                 className={cn(
                     'transition-opacity duration-300',
-                    isLoading ? 'opacity-0' : 'opacity-100'
+                    isLoading ? 'opacity-0' : 'opacity-100',
+                    responsive && isMobile ? 'object-cover' : 'object-cover'
                 )}
                 priority={priority}
-                sizes={sizes}
-                quality={quality}
+                sizes={optimalSizes}
+                quality={optimalQuality}
                 placeholder={placeholder}
                 blurDataURL={blurDataURL}
                 onLoad={handleLoad}

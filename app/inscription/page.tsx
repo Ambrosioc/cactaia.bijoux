@@ -1,5 +1,6 @@
 'use client';
 
+import HeroImage from '@/components/ui/hero-image';
 import { createClient } from '@/lib/supabase/client';
 import { useUser } from '@/stores/userStore';
 import { motion } from 'framer-motion';
@@ -214,15 +215,22 @@ export default function SignupPage() {
 
       // Déclencher l'envoi de l'email de bienvenue
       try {
-        await fetch('/api/emails/welcome', {
+        const emailResponse = await fetch('/api/emails/welcome', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
           },
           body: JSON.stringify({
-            userId: user.id,
+            user_id: user.id,
           }),
         });
+
+        if (!emailResponse.ok) {
+          const emailError = await emailResponse.json();
+          console.error('Erreur API email de bienvenue:', emailError);
+        } else {
+          console.log('✅ Email de bienvenue envoyé avec succès');
+        }
       } catch (emailError) {
         console.error('Erreur lors de l\'envoi de l\'email de bienvenue:', emailError);
       }
@@ -609,18 +617,16 @@ export default function SignupPage() {
 
       {/* Section droite - Image immersive */}
       <div className="hidden lg:block lg:w-1/2 relative overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-transparent to-secondary/10"></div>
-        <Image
+        <HeroImage
           src="/images/cactaïa-25.jpg"
           alt="Bijoux Cactaia"
-          fill
-          className="object-cover"
           priority
-        />
-        <div className="absolute inset-0 bg-black/20"></div>
-
-        {/* Overlay avec texte */}
-        <div className="absolute inset-0 flex items-center justify-center">
+          zoomEffect={true}
+          zoomIntensity="medium"
+          overlayOpacity={0.2}
+          showGradient={true}
+        >
+          {/* Overlay avec texte */}
           <motion.div
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
@@ -632,7 +638,7 @@ export default function SignupPage() {
               Découvrez notre collection de bijoux écoresponsables, mixtes et élégants
             </p>
           </motion.div>
-        </div>
+        </HeroImage>
       </div>
     </div>
   );

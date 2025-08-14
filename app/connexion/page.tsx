@@ -1,5 +1,6 @@
 'use client';
 
+import HeroImage from '@/components/ui/hero-image';
 import { useSession } from '@/lib/hooks/useSession';
 import { createClient } from '@/lib/supabase/client';
 import { useUser } from '@/stores/userStore';
@@ -82,16 +83,15 @@ function LoginForm() {
     <div className="min-h-screen flex">
       {/* Section gauche - Image */}
       <div className="hidden lg:block lg:w-1/2 relative overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-transparent to-secondary/10"></div>
-        <Image
+        <HeroImage
           src="/images/cactaïa-07.jpg"
           alt="Bijoux Cactaia"
-          fill
-          className="object-cover"
           priority
-        />
-        <div className="absolute inset-0 bg-black/20"></div>
-        <div className="absolute inset-0 flex items-center justify-center">
+          zoomEffect={true}
+          zoomIntensity="medium"
+          overlayOpacity={0.2}
+          showGradient={true}
+        >
           <motion.div
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
@@ -103,7 +103,7 @@ function LoginForm() {
               Découvrez notre collection de bijoux écoresponsables, mixtes et élégants
             </p>
           </motion.div>
-        </div>
+        </HeroImage>
       </div>
 
       {/* Section droite - Formulaire */}
@@ -216,7 +216,7 @@ function LoginForm() {
           <div className="mt-8 pt-8 border-t border-gray-100">
             <div className="flex justify-center space-x-6 text-sm">
               <Link href="/contact" className="text-gray-500 hover:text-primary transition-colors">
-                Besoin d'aide ?
+                Besoin d&apos;aide ?
               </Link>
               <Link href="/collections" className="text-gray-500 hover:text-primary transition-colors">
                 Découvrir nos bijoux
