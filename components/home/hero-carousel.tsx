@@ -64,8 +64,8 @@ export default function HeroCarousel() {
                     <div
                         key={index}
                         className={`absolute inset-0 transition-all duration-1000 ease-in-out hero-image-container ${index === currentIndex
-                                ? 'opacity-100 scale-100'
-                                : 'opacity-0 scale-105'
+                            ? 'opacity-100 scale-100'
+                            : 'opacity-0 scale-105'
                             }`}
                         style={{
                             width: '100vw',
@@ -136,8 +136,8 @@ export default function HeroCarousel() {
                         key={index}
                         onClick={() => goToSlide(index)}
                         className={`w-3 h-3 rounded-full transition-all duration-300 ${index === currentIndex
-                                ? 'bg-white scale-125'
-                                : 'bg-white/50 hover:bg-white/75'
+                            ? 'bg-white scale-125'
+                            : 'bg-white/50 hover:bg-white/75'
                             }`}
                         aria-label={`Aller à l'image ${index + 1}`}
                     />
