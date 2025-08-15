@@ -8,7 +8,7 @@ export interface SitemapUrl {
 }
 
 export async function generateSitemap(): Promise<string> {
-  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://cactaia.bijoux';
+  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://www.cactaiabijoux.fr';
   const supabase = await createServerClient();
 
   // URLs statiques
@@ -104,7 +104,7 @@ ${allUrls
 }
 
 export async function generateRobotsTxt(): Promise<string> {
-  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://cactaia.bijoux';
+  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://www.cactaiabijoux.fr';
   
   return `User-agent: *
 Allow: /

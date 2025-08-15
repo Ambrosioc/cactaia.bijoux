@@ -155,7 +155,7 @@ const InstagramFeed = () => {
                                     <div className="absolute bottom-6 left-6 right-6">
                                         <div className="flex items-center gap-3 text-white">
                                             <Instagram className="h-6 w-6" />
-                                            <span className="text-lg font-medium">@cactaia.bijoux</span>
+                                            <span className="text-lg font-medium">@cactaiabijoux</span>
                                         </div>
                                     </div>
                                 </div>
@@ -188,7 +188,7 @@ const InstagramFeed = () => {
                                     <div className="absolute bottom-6 left-6 right-6">
                                         <div className="flex items-center gap-3 text-white">
                                             <Instagram className="h-6 w-6" />
-                                            <span className="text-lg font-medium">@cactaia.bijoux</span>
+                                            <span className="text-lg font-medium">@cactaiabijoux</span>
                                         </div>
                                     </div>
                                 </div>
@@ -208,14 +208,14 @@ const InstagramFeed = () => {
                     transition={{ duration: 0.6, delay: 0.8 }}
                 >
                     <Link
-                        href="https://instagram.com/cactaia.bijoux"
+                        href="https://instagram.com/cactaiabijoux"
                         target="_blank"
                         rel="noopener noreferrer"
                         className="inline-flex items-center gap-3 bg-gradient-to-r from-pink-500 to-purple-600 text-white px-8 py-4 rounded-full font-semibold hover:shadow-lg hover:shadow-pink-500/25 transition-all duration-300 hover:scale-105"
                     >
                         <Instagram className="h-5 w-5" />
                         Suivez-nous sur Instagram
-                        <span className="text-sm opacity-90">@cactaia.bijoux</span>
+                        <span className="text-sm opacity-90">@cactaiabijoux</span>
                     </Link>
                 </motion.div>
 
