@@ -23,7 +23,7 @@ const Footer = () => {
               Des bijoux écoresponsables, mixtes et élégants avec des valeurs de durabilité, simplicité et force symbolique.
             </p>
             <div className="flex space-x-4">
-              <Link href="https://instagram.com/cactaia.bijoux" target="_blank" rel="noopener noreferrer" className="text-foreground hover:text-primary transition-colors">
+              <Link href="https://instagram.com/cactaiabijoux" target="_blank" rel="noopener noreferrer" className="text-foreground hover:text-primary transition-colors">
                 <Instagram className="h-5 w-5" />
                 <span className="sr-only">Instagram</span>
               </Link>

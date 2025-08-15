@@ -126,7 +126,7 @@ export const BaseTemplate: React.FC<BaseTemplateProps> = ({ previewText = 'Email
               © {new Date().getFullYear()} Cactaia.Bijoux. Tous droits réservés.
             </p>
             <div className="social-links">
-              <a href="https://instagram.com/cactaia.bijoux" className="social-link">Instagram</a>
+              <a href="https://instagram.com/cactaiabijoux" className="social-link">Instagram</a>
               <a href="https://www.tiktok.com/@cactaiabijoux" className="social-link">TikTok</a>
             </div>
             <div className="mt-4">
@@ -268,7 +268,7 @@ export function createEmailHTML(content: string, previewText: string = 'Email de
             </p>
 
             <div class="social-links">
-                <a href="https://instagram.com/cactaia.bijoux" class="social-link">Instagram</a>
+                <a href="https://instagram.com/cactaiabijoux" class="social-link">Instagram</a>
                 <a href="https://www.tiktok.com/@cactaiabijoux" class="social-link">TikTok</a>
             </div>
             <div class="mt-4">
