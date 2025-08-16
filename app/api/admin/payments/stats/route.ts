@@ -18,160 +18,118 @@ export async function GET(request: NextRequest) {
             .eq('id', user.id)
             .single();
 
-        if (profileError) {
-            console.error('Erreur lors de la récupération du profil:', profileError);
-            return NextResponse.json({ error: 'Erreur de profil utilisateur' }, { status: 500 });
-        }
-
-        if (!profile || profile.active_role !== 'admin') {
+        if (profileError || !profile || profile.active_role !== 'admin') {
             return NextResponse.json({ error: 'Accès non autorisé' }, { status: 403 });
         }
 
-        // Récupérer les paramètres de requête
         const { searchParams } = new URL(request.url);
         const period = searchParams.get('period') || '30d';
 
         console.log('📊 Calcul des statistiques pour la période:', period);
 
-        // Calculer la date de début selon la période
+        // Calculer la date de début basée sur la période
         const now = new Date();
-        let startDate = new Date();
+        let startDate: Date;
         
         switch (period) {
             case '7d':
-                startDate.setDate(now.getDate() - 7);
+                startDate = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
                 break;
             case '30d':
-                startDate.setDate(now.getDate() - 30);
+                startDate = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
                 break;
             case '90d':
-                startDate.setDate(now.getDate() - 90);
+                startDate = new Date(now.getTime() - 90 * 24 * 60 * 60 * 1000);
                 break;
             case '1y':
-                startDate.setFullYear(now.getFullYear() - 1);
+                startDate = new Date(now.getTime() - 365 * 24 * 60 * 60 * 1000);
                 break;
-            case 'all':
-                startDate = new Date(0); // 1er janvier 1970
-                break;
+            default:
+                startDate = new Date(0); // Depuis le début
         }
 
-        // Récupérer les statistiques de base
+        console.log('📊 Exécution de la requête Supabase...');
+
+        // Récupérer les commandes pour la période
         const { data: orders, error: ordersError } = await supabase
             .from('commandes')
-            .select(`
-                id,
-                montant_total,
-                statut,
-                created_at,
-                stripe_payment_intent_id
-            `)
+            .select('*')
             .gte('created_at', startDate.toISOString())
-            .not('stripe_payment_intent_id', 'is', null);
+            .lte('created_at', now.toISOString());
 
         if (ordersError) {
             console.error('❌ Erreur Supabase:', ordersError);
-            return NextResponse.json({ 
-                error: 'Erreur lors de la récupération des commandes',
-                details: ordersError.message 
-            }, { status: 500 });
+            return NextResponse.json(
+                { error: 'Erreur lors de la récupération des statistiques' },
+                { status: 500 }
+            );
         }
 
         console.log(`✅ ${orders?.length || 0} commandes récupérées pour les statistiques`);
 
-        // Si aucune commande, retourner des statistiques vides
+        // Si aucune commande trouvée, retourner des statistiques vides
         if (!orders || orders.length === 0) {
             return NextResponse.json({
+                success: true,
                 stats: {
                     total_payments: 0,
                     total_amount: 0,
                     successful_payments: 0,
                     failed_payments: 0,
-                    pending_payments: 0,
-                    canceled_payments: 0,
                     average_amount: 0
                 },
-                daily_stats: [],
-                period: period
+                dailyStats: []
             });
         }
 
         // Calculer les statistiques
         const totalPayments = orders.length;
-        const totalAmount = orders.reduce((sum, order) => sum + (order.montant_total || 0), 0);
+        const totalAmount = orders.reduce((sum, order) => sum + order.montant_total, 0);
+        const successfulPayments = orders.filter(order => order.statut === 'payee').length;
+        const failedPayments = orders.filter(order => order.statut === 'echouee').length;
+        const averageAmount = totalAmount / totalPayments;
+
+        // Calculer les statistiques quotidiennes
+        const dailyStatsMap = new Map<string, { count: number; amount: number }>();
         
-        const statusCounts = {
-            succeeded: 0,
-            pending: 0,
-            failed: 0,
-            canceled: 0
-        };
-
-        orders.forEach(order => {
-            // Mapper les statuts de commande vers les statuts de paiement
-            switch (order.statut) {
-                case 'payee':
-                    statusCounts.succeeded++;
-                    break;
-                case 'en_attente':
-                    statusCounts.pending++;
-                    break;
-                case 'echouee':
-                    statusCounts.failed++;
-                    break;
-                case 'annulee':
-                    statusCounts.canceled++;
-                    break;
-                default:
-                    statusCounts.pending++;
-            }
-        });
-
-        const averageAmount = totalPayments > 0 ? totalAmount / totalPayments : 0;
-
-        // Statistiques par jour (pour les graphiques)
-        const dailyStats = {};
         orders.forEach(order => {
             const date = new Date(order.created_at).toISOString().split('T')[0];
-            if (!dailyStats[date]) {
-                dailyStats[date] = { count: 0, amount: 0 };
-            }
-            dailyStats[date].count++;
-            dailyStats[date].amount += order.montant_total || 0;
+            const existing = dailyStatsMap.get(date) || { count: 0, amount: 0 };
+            dailyStatsMap.set(date, {
+                count: existing.count + 1,
+                amount: existing.amount + order.montant_total
+            });
         });
 
-        // Convertir en tableau pour le frontend
-        const dailyStatsArray = Object.entries(dailyStats).map(([date, stats]: [string, any]) => ({
-            date,
-            count: stats.count,
-            amount: stats.amount
-        })).sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+        const dailyStats = Array.from(dailyStatsMap.entries())
+            .map(([date, stats]) => ({
+                date,
+                count: stats.count,
+                amount: stats.amount
+            }))
+            .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
 
-        console.log('📈 Statistiques calculées:', {
-            total: totalPayments,
-            amount: totalAmount,
-            statusCounts,
-            dailyStatsCount: dailyStatsArray.length
-        });
+        const stats = {
+            total_payments: totalPayments,
+            total_amount: totalAmount,
+            successful_payments: successfulPayments,
+            failed_payments: failedPayments,
+            average_amount: averageAmount
+        };
+
+        console.log('✅ Statistiques calculées:', stats);
 
         return NextResponse.json({
-            stats: {
-                total_payments: totalPayments,
-                total_amount: totalAmount,
-                successful_payments: statusCounts.succeeded,
-                failed_payments: statusCounts.failed,
-                pending_payments: statusCounts.pending,
-                canceled_payments: statusCounts.canceled,
-                average_amount: averageAmount
-            },
-            daily_stats: dailyStatsArray,
-            period: period
+            success: true,
+            stats,
+            dailyStats
         });
 
     } catch (error) {
-        console.error('❌ Erreur API payment stats:', error);
+        console.error('❌ Erreur API payments stats GET:', error);
         return NextResponse.json(
             { 
-                error: 'Erreur interne du serveur',
+                error: 'Erreur lors du calcul des statistiques',
                 details: error instanceof Error ? error.message : 'Erreur inconnue'
             },
             { status: 500 }

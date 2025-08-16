@@ -24,11 +24,12 @@ interface PromotionCode {
     code: string;
     name: string;
     discount_type: 'percentage' | 'fixed_amount';
-    discount_amount: number;
-    max_redemptions: number | null;
-    times_redeemed: number;
-    valid: boolean;
-    expires_at: string | null;
+    discount_value: number;
+    max_uses: number | null;
+    used_count: number;
+    active: boolean;
+    valid_from: string;
+    valid_until: string | null;
     created_at: string;
 }
 
@@ -49,7 +50,7 @@ export default function StripeAdminPage() {
     const [newCode, setNewCode] = useState({
         code: '',
         name: '',
-        discount_type: 'percentage' as const,
+        discount_type: 'percentage' as 'percentage' | 'fixed_amount',
         discount_amount: '',
         max_redemptions: '',
         expires_at: ''
@@ -66,8 +67,14 @@ export default function StripeAdminPage() {
             // Récupérer les codes promotionnels
             const codesResponse = await fetch('/api/stripe/promotion-codes');
             if (codesResponse.ok) {
-                const codes = await codesResponse.json();
-                setPromotionCodes(codes);
+                const codesData = await codesResponse.json();
+                // L'API retourne { success: true, promotionCodes: [...], total: X }
+                if (codesData.success && Array.isArray(codesData.promotionCodes)) {
+                    setPromotionCodes(codesData.promotionCodes);
+                } else {
+                    console.warn('Structure de données inattendue:', codesData);
+                    setPromotionCodes([]);
+                }
             }
 
             // Récupérer les statistiques (à implémenter)
@@ -96,8 +103,8 @@ export default function StripeAdminPage() {
                     name: newCode.name,
                     discount_type: newCode.discount_type,
                     discount_amount: parseFloat(newCode.discount_amount),
-                    max_redemptions: newCode.max_redemptions ? parseInt(newCode.max_redemptions) : null,
-                    expires_at: newCode.expires_at || null,
+                    max_uses: newCode.max_redemptions ? parseInt(newCode.max_redemptions) : null,
+                    valid_until: newCode.expires_at || null,
                 }),
             });
 
@@ -336,7 +343,7 @@ export default function StripeAdminPage() {
                             </CardDescription>
                         </CardHeader>
                         <CardContent>
-                            {promotionCodes.length === 0 ? (
+                            {!Array.isArray(promotionCodes) || promotionCodes.length === 0 ? (
                                 <p className="text-muted-foreground text-center py-8">
                                     Aucun code promotionnel créé pour le moment
                                 </p>
@@ -346,16 +353,16 @@ export default function StripeAdminPage() {
                                         <div key={code.id} className="flex items-center justify-between p-4 border rounded-lg">
                                             <div className="flex-1">
                                                 <div className="flex items-center gap-3 mb-2">
-                                                    <Badge variant={code.valid ? 'default' : 'secondary'}>
-                                                        {code.valid ? 'Actif' : 'Inactif'}
+                                                    <Badge variant={code.active ? 'default' : 'secondary'}>
+                                                        {code.active ? 'Actif' : 'Inactif'}
                                                     </Badge>
                                                     <span className="font-mono font-medium">{code.code}</span>
                                                     <span className="text-sm text-muted-foreground">{code.name}</span>
                                                 </div>
                                                 <div className="text-sm text-muted-foreground">
-                                                    Réduction : {code.discount_type === 'percentage' ? `${code.discount_amount}%` : formatCurrency(code.discount_amount)}
-                                                    {code.max_redemptions && ` • Max: ${code.times_redeemed}/${code.max_redemptions}`}
-                                                    {code.expires_at && ` • Expire le: ${formatDate(code.expires_at)}`}
+                                                    Réduction : {code.discount_type === 'percentage' ? `${code.discount_value}%` : formatCurrency(code.discount_value)}
+                                                    {code.max_uses && ` • Max: ${code.used_count}/${code.max_uses}`}
+                                                    {code.valid_until && ` • Expire le: ${formatDate(code.valid_until)}`}
                                                 </div>
                                             </div>
                                             <div className="flex items-center gap-2">

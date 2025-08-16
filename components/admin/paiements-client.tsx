@@ -4,17 +4,12 @@ import { useUser } from '@/stores/userStore';
 import { motion } from 'framer-motion';
 import {
     AlertTriangle,
-    Calendar,
     CheckCircle,
     Clock,
-    CreditCard,
     DollarSign,
-    Eye,
     Filter,
-    Package,
-    Search,
+    RefreshCw,
     TrendingUp,
-    User,
     XCircle
 } from 'lucide-react';
 import Link from 'next/link';
@@ -71,11 +66,14 @@ export default function PaiementsClient() {
     const { isActiveAdmin } = useUser();
     const [payments, setPayments] = useState<Payment[]>([]);
     const [loading, setLoading] = useState(true);
-    const [error, setError] = useState<Error | null>(null);
+    const [error, setError] = useState<string | null>(null);
     const [searchTerm, setSearchTerm] = useState('');
-    const [selectedStatus, setSelectedStatus] = useState<string>('all');
-    const [selectedPeriod, setSelectedPeriod] = useState<string>('30d');
-    const [showCharts, setShowCharts] = useState(true);
+    const [statusFilter, setStatusFilter] = useState<string>('all');
+    const [periodFilter, setPeriodFilter] = useState<string>('30d');
+    const [showCharts, setShowCharts] = useState(false);
+    const [activeTab, setActiveTab] = useState<'payments' | 'refunds' | 'stats'>('payments');
+    const [refunds, setRefunds] = useState<any[]>([]);
+    const [refundLoading, setRefundLoading] = useState(false);
     const [stats, setStats] = useState<PaymentStats>({
         total_payments: 0,
         total_amount: 0,
@@ -101,12 +99,35 @@ export default function PaiementsClient() {
         setMounted(true);
     }, []);
 
+    const loadRefunds = async () => {
+        try {
+            setRefundLoading(true);
+            const response = await fetch('/api/admin/refunds');
+
+            if (!response.ok) {
+                throw new Error(`Erreur ${response.status}: ${response.statusText}`);
+            }
+
+            const data = await response.json();
+            if (data.success) {
+                setRefunds(data.refunds || []);
+            }
+        } catch (error) {
+            console.error('Erreur lors du chargement des remboursements:', error);
+        } finally {
+            setRefundLoading(false);
+        }
+    };
+
     useEffect(() => {
         if (mounted && isActiveAdmin) {
             loadPayments();
             loadStats();
+            if (activeTab === 'refunds') {
+                loadRefunds();
+            }
         }
-    }, [mounted, isActiveAdmin, selectedPeriod, pagination.page, pagination.limit]);
+    }, [mounted, isActiveAdmin, periodFilter, pagination.page, pagination.limit, activeTab]);
 
     const loadPayments = async () => {
         try {
@@ -115,8 +136,8 @@ export default function PaiementsClient() {
 
             // Construire les paramètres de requête
             const params = new URLSearchParams();
-            if (selectedStatus !== 'all') params.append('status', selectedStatus);
-            if (selectedPeriod !== 'all') params.append('period', selectedPeriod);
+            if (statusFilter !== 'all') params.append('status', statusFilter);
+            if (periodFilter !== 'all') params.append('period', periodFilter);
             if (searchTerm) params.append('search', searchTerm);
             params.append('page', pagination.page.toString());
             params.append('limit', pagination.limit.toString());
@@ -142,7 +163,7 @@ export default function PaiementsClient() {
 
         } catch (error) {
             const errorMessage = error instanceof Error ? error.message : 'Erreur inconnue';
-            setError(new Error(errorMessage));
+            setError(errorMessage);
             showError('Erreur de chargement', `Impossible de charger les paiements: ${errorMessage}`);
             handleAsyncError(error, 'loadPayments');
         } finally {
@@ -154,7 +175,7 @@ export default function PaiementsClient() {
         try {
             // Construire les paramètres de requête
             const params = new URLSearchParams();
-            if (selectedPeriod !== 'all') params.append('period', selectedPeriod);
+            if (periodFilter !== 'all') params.append('period', periodFilter);
 
             const response = await fetch(`/api/admin/payments/stats?${params.toString()}`);
 
@@ -183,12 +204,12 @@ export default function PaiementsClient() {
     };
 
     const handleStatusChange = (newStatus: string) => {
-        setSelectedStatus(newStatus);
+        setStatusFilter(newStatus);
         setPagination(prev => ({ ...prev, page: 1 }));
     };
 
     const handlePeriodChange = (newPeriod: string) => {
-        setSelectedPeriod(newPeriod);
+        setPeriodFilter(newPeriod);
         setPagination(prev => ({ ...prev, page: 1 }));
     };
 
@@ -254,14 +275,47 @@ export default function PaiementsClient() {
         });
     };
 
+    const formatCurrency = (amount: number) => {
+        return new Intl.NumberFormat('fr-FR', {
+            style: 'currency',
+            currency: 'EUR'
+        }).format(amount);
+    };
+
+    const getRefundStatusColor = (status: string) => {
+        switch (status) {
+            case 'succeeded':
+                return 'bg-green-100 text-green-800';
+            case 'pending':
+                return 'bg-yellow-100 text-yellow-800';
+            case 'failed':
+                return 'bg-red-100 text-red-800';
+            default:
+                return 'bg-gray-100 text-gray-800';
+        }
+    };
+
+    const getRefundStatusLabel = (status: string) => {
+        switch (status) {
+            case 'succeeded':
+                return 'Réussi';
+            case 'pending':
+                return 'En attente';
+            case 'failed':
+                return 'Échoué';
+            default:
+                return status;
+        }
+    };
+
     const filteredPayments = payments.filter(payment => {
         const matchesSearch =
+            payment.stripe_payment_intent_id.toLowerCase().includes(searchTerm.toLowerCase()) ||
             payment.customer_email.toLowerCase().includes(searchTerm.toLowerCase()) ||
             payment.customer_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            payment.order_number.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            payment.stripe_payment_intent_id.toLowerCase().includes(searchTerm.toLowerCase());
+            payment.order_number.toLowerCase().includes(searchTerm.toLowerCase());
 
-        const matchesStatus = selectedStatus === 'all' || payment.status === selectedStatus;
+        const matchesStatus = statusFilter === 'all' || payment.status === statusFilter;
 
         return matchesSearch && matchesStatus;
     });
@@ -326,284 +380,300 @@ export default function PaiementsClient() {
                 </div>
             </div>
 
-            {/* Statistiques */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-                <motion.div
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    className="bg-white p-6 rounded-lg shadow-sm border"
-                >
-                    <div className="flex items-center justify-between">
-                        <div>
-                            <p className="text-sm text-muted-foreground">Total Paiements</p>
-                            <p className="text-2xl font-bold">{stats.total_payments}</p>
-                        </div>
-                        <div className="p-3 bg-blue-50 rounded-full">
-                            <CreditCard className="h-6 w-6 text-blue-600" />
-                        </div>
-                    </div>
-                </motion.div>
-
-                <motion.div
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.1 }}
-                    className="bg-white p-6 rounded-lg shadow-sm border"
-                >
-                    <div className="flex items-center justify-between">
-                        <div>
-                            <p className="text-sm text-muted-foreground">Montant Total</p>
-                            <p className="text-2xl font-bold">{formatAmount(stats.total_amount, 'eur')}</p>
-                        </div>
-                        <div className="p-3 bg-green-50 rounded-full">
-                            <DollarSign className="h-6 w-6 text-green-600" />
-                        </div>
-                    </div>
-                </motion.div>
-
-                <motion.div
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.2 }}
-                    className="bg-white p-6 rounded-lg shadow-sm border"
-                >
-                    <div className="flex items-center justify-between">
-                        <div>
-                            <p className="text-sm text-muted-foreground">Paiements Réussis</p>
-                            <p className="text-2xl font-bold text-green-600">{stats.successful_payments}</p>
-                        </div>
-                        <div className="p-3 bg-green-50 rounded-full">
-                            <CheckCircle className="h-6 w-6 text-green-600" />
-                        </div>
-                    </div>
-                </motion.div>
-
-                <motion.div
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.3 }}
-                    className="bg-white p-6 rounded-lg shadow-sm border"
-                >
-                    <div className="flex items-center justify-between">
-                        <div>
-                            <p className="text-sm text-muted-foreground">Montant Moyen</p>
-                            <p className="text-2xl font-bold">{formatAmount(stats.average_amount, 'eur')}</p>
-                        </div>
-                        <div className="p-3 bg-purple-50 rounded-full">
-                            <TrendingUp className="h-6 w-6 text-purple-600" />
-                        </div>
-                    </div>
-                </motion.div>
+            {/* Onglets */}
+            <div className="border-b border-gray-200">
+                <nav className="-mb-px flex space-x-8">
+                    <button
+                        onClick={() => setActiveTab('payments')}
+                        className={`py-2 px-1 text-sm font-medium border-b-2 transition-colors ${activeTab === 'payments'
+                            ? 'border-blue-500 text-blue-600'
+                            : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                            }`}
+                    >
+                        Paiements
+                    </button>
+                    <button
+                        onClick={() => setActiveTab('refunds')}
+                        className={`py-2 px-1 text-sm font-medium border-b-2 transition-colors ${activeTab === 'refunds'
+                            ? 'border-blue-500 text-blue-600'
+                            : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                            }`}
+                    >
+                        Remboursements
+                    </button>
+                    <button
+                        onClick={() => setActiveTab('stats')}
+                        className={`py-2 px-1 text-sm font-medium border-b-2 transition-colors ${activeTab === 'stats'
+                            ? 'border-blue-500 text-blue-600'
+                            : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                            }`}
+                    >
+                        Statistiques
+                    </button>
+                </nav>
             </div>
 
-            {/* Graphiques */}
-            {showCharts && (
+            {/* Contenu des onglets */}
+            {activeTab === 'payments' && (
+                <>
+                    {/* Filtres et recherche */}
+                    <div className="flex flex-col md:flex-row gap-4 mb-6">
+                        <div className="flex-1">
+                            <input
+                                type="text"
+                                placeholder="Rechercher par ID, email ou nom..."
+                                value={searchTerm}
+                                onChange={(e) => setSearchTerm(e.target.value)}
+                                className="w-full px-3 py-2 border border-input rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
+                            />
+                        </div>
+                        <select
+                            value={statusFilter}
+                            onChange={(e) => handleStatusChange(e.target.value)}
+                            className="px-3 py-2 border border-input rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
+                        >
+                            <option value="all">Tous les statuts</option>
+                            <option value="payee">Payé</option>
+                            <option value="en_attente">En attente</option>
+                            <option value="echouee">Échoué</option>
+                            <option value="annulee">Annulé</option>
+                        </select>
+                        <select
+                            value={periodFilter}
+                            onChange={(e) => handlePeriodChange(e.target.value)}
+                            className="px-3 py-2 border border-input rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
+                        >
+                            <option value="all">Toutes les périodes</option>
+                            <option value="7d">7 derniers jours</option>
+                            <option value="30d">30 derniers jours</option>
+                            <option value="90d">90 derniers jours</option>
+                            <option value="1y">1 an</option>
+                        </select>
+                    </div>
+
+                    {/* Liste des paiements */}
+                    <div className="bg-white rounded-lg shadow-sm border">
+                        <div className="px-6 py-4 border-b border-gray-200">
+                            <h3 className="text-lg font-semibold">Liste des paiements</h3>
+                            <p className="text-sm text-gray-500">{filteredPayments.length} paiement(s) trouvé(s)</p>
+                        </div>
+                        <div className="p-6">
+                            {loading ? (
+                                <div className="text-center py-8">
+                                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500 mx-auto mb-4"></div>
+                                    <p className="text-gray-500">Chargement des paiements...</p>
+                                </div>
+                            ) : filteredPayments.length === 0 ? (
+                                <div className="text-center py-8">
+                                    <h3 className="text-lg font-medium mb-2">Aucun paiement trouvé</h3>
+                                    <p className="text-muted-foreground">
+                                        {searchTerm || statusFilter !== 'all'
+                                            ? 'Aucun paiement ne correspond à vos critères de recherche.'
+                                            : 'Aucun paiement pour le moment.'
+                                        }
+                                    </p>
+                                </div>
+                            ) : (
+                                <div className="overflow-x-auto">
+                                    <table className="w-full">
+                                        <thead className="border-b border-gray-200">
+                                            <tr>
+                                                <th className="text-left p-4 font-medium">Client</th>
+                                                <th className="text-left p-4 font-medium">Montant</th>
+                                                <th className="text-left p-4 font-medium">Statut</th>
+                                                <th className="text-left p-4 font-medium">Date</th>
+                                                <th className="text-left p-4 font-medium">Actions</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody className="divide-y divide-gray-200">
+                                            {filteredPayments.map((payment) => (
+                                                <tr key={payment.id} className="hover:bg-gray-50">
+                                                    <td className="p-4">
+                                                        <div>
+                                                            <div className="font-medium">{payment.customer_name}</div>
+                                                            <div className="text-sm text-gray-500">{payment.customer_email}</div>
+                                                        </div>
+                                                    </td>
+                                                    <td className="p-4">
+                                                        <div className="font-medium">{formatCurrency(payment.amount)}</div>
+                                                    </td>
+                                                    <td className="p-4">
+                                                        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusColor(payment.status)}`}>
+                                                            {getStatusLabel(payment.status)}
+                                                        </span>
+                                                    </td>
+                                                    <td className="p-4 text-sm text-gray-500">
+                                                        {formatDate(payment.created_at)}
+                                                    </td>
+                                                    <td className="p-4">
+                                                        <Link
+                                                            href={`/admin/paiements/${payment.id}`}
+                                                            className="text-blue-600 hover:text-blue-800 text-sm font-medium"
+                                                        >
+                                                            Voir détails
+                                                        </Link>
+                                                    </td>
+                                                </tr>
+                                            ))}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            )}
+                        </div>
+                    </div>
+
+                    {/* Pagination */}
+                    {filteredPayments.length > 0 && (
+                        <Pagination
+                            currentPage={pagination.page}
+                            totalPages={Math.ceil(pagination.total / pagination.limit)}
+                            onPageChange={handlePageChange}
+                        />
+                    )}
+                </>
+            )}
+
+            {activeTab === 'refunds' && (
+                <div className="space-y-6">
+                    {/* En-tête des remboursements */}
+                    <div className="flex items-center justify-between">
+                        <div>
+                            <h3 className="text-lg font-semibold">Gestion des remboursements</h3>
+                            <p className="text-sm text-gray-500">
+                                Traitez les remboursements et suivez l'historique
+                            </p>
+                        </div>
+                        <button
+                            onClick={loadRefunds}
+                            className="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition-colors flex items-center gap-2"
+                        >
+                            <RefreshCw className="h-4 w-4" />
+                            Actualiser
+                        </button>
+                    </div>
+
+                    {/* Statistiques des remboursements */}
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        <div className="bg-white rounded-lg shadow-sm border p-6">
+                            <div className="flex items-center justify-between">
+                                <div>
+                                    <p className="text-sm font-medium text-gray-600">Total remboursé</p>
+                                    <p className="text-2xl font-bold text-green-600">
+                                        {formatCurrency(refunds.filter(r => r.status === 'succeeded').reduce((sum, r) => sum + r.amount, 0))}
+                                    </p>
+                                </div>
+                                <DollarSign className="h-8 w-8 text-green-500" />
+                            </div>
+                        </div>
+
+                        <div className="bg-white rounded-lg shadow-sm border p-6">
+                            <div className="flex items-center justify-between">
+                                <div>
+                                    <p className="text-sm font-medium text-gray-600">En attente</p>
+                                    <p className="text-2xl font-bold text-yellow-600">
+                                        {refunds.filter(r => r.status === 'pending').length}
+                                    </p>
+                                </div>
+                                <Clock className="h-8 w-8 text-yellow-500" />
+                            </div>
+                        </div>
+
+                        <div className="bg-white rounded-lg shadow-sm border p-6">
+                            <div className="flex items-center justify-between">
+                                <div>
+                                    <p className="text-sm font-medium text-gray-600">Échoués</p>
+                                    <p className="text-2xl font-bold text-red-600">
+                                        {refunds.filter(r => r.status === 'failed').length}
+                                    </p>
+                                </div>
+                                <XCircle className="h-8 w-8 text-red-500" />
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Liste des remboursements */}
+                    <div className="bg-white rounded-lg shadow-sm border">
+                        <div className="px-6 py-4 border-b border-gray-200">
+                            <h3 className="text-lg font-semibold">Historique des remboursements</h3>
+                            <p className="text-sm text-gray-500">{refunds.length} remboursement(s) trouvé(s)</p>
+                        </div>
+                        <div className="p-6">
+                            {refundLoading ? (
+                                <div className="text-center py-8">
+                                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500 mx-auto mb-4"></div>
+                                    <p className="text-gray-500">Chargement des remboursements...</p>
+                                </div>
+                            ) : refunds.length === 0 ? (
+                                <div className="text-center py-8">
+                                    <p className="text-gray-500">Aucun remboursement trouvé</p>
+                                </div>
+                            ) : (
+                                <div className="overflow-x-auto">
+                                    <table className="w-full">
+                                        <thead className="border-b border-gray-200">
+                                            <tr>
+                                                <th className="text-left p-3 font-medium">ID Remboursement</th>
+                                                <th className="text-left p-3 font-medium">ID Paiement</th>
+                                                <th className="text-left p-3 font-medium">Montant</th>
+                                                <th className="text-left p-3 font-medium">Raison</th>
+                                                <th className="text-left p-3 font-medium">Statut</th>
+                                                <th className="text-left p-3 font-medium">Date</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody className="divide-y divide-gray-200">
+                                            {refunds.map((refund) => (
+                                                <tr key={refund.id} className="hover:bg-gray-50">
+                                                    <td className="p-3">
+                                                        <div className="font-mono text-sm">{refund.id}</div>
+                                                    </td>
+                                                    <td className="p-3">
+                                                        <div className="font-mono text-sm">{refund.payment_intent_id}</div>
+                                                    </td>
+                                                    <td className="p-3">
+                                                        <div className="font-medium">{formatCurrency(refund.amount)}</div>
+                                                    </td>
+                                                    <td className="p-3">
+                                                        <div className="text-sm">{refund.reason}</div>
+                                                        {refund.metadata?.reason_detail && (
+                                                            <div className="text-xs text-gray-500 mt-1">
+                                                                {refund.metadata.reason_detail}
+                                                            </div>
+                                                        )}
+                                                    </td>
+                                                    <td className="p-3">
+                                                        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getRefundStatusColor(refund.status)}`}>
+                                                            {getRefundStatusLabel(refund.status)}
+                                                        </span>
+                                                    </td>
+                                                    <td className="p-3">
+                                                        <div className="text-sm text-gray-500">
+                                                            {formatDate(refund.created_at)}
+                                                        </div>
+                                                    </td>
+                                                </tr>
+                                            ))}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            )}
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {activeTab === 'stats' && (
                 <motion.div
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
-                    className="mb-8"
+                    transition={{ duration: 0.5 }}
                 >
                     <PaymentCharts
                         stats={stats}
                         dailyStats={dailyStats}
-                        period={selectedPeriod}
+                        period={periodFilter}
                     />
                 </motion.div>
             )}
-
-            {/* Filtres et recherche */}
-            <div className="bg-white p-6 rounded-lg shadow-sm mb-6">
-                <div className="flex flex-col md:flex-row gap-4">
-                    <div className="flex-1 relative">
-                        <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                        <input
-                            type="text"
-                            placeholder="Rechercher par email, nom, commande..."
-                            value={searchTerm}
-                            onChange={(e) => setSearchTerm(e.target.value)}
-                            onKeyPress={(e) => e.key === 'Enter' && handleSearch()}
-                            className="w-full pl-10 pr-3 py-2 border border-input rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
-                        />
-                    </div>
-
-                    <select
-                        value={selectedStatus}
-                        onChange={(e) => handleStatusChange(e.target.value)}
-                        className="px-3 py-2 border border-input rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
-                    >
-                        <option value="all">Tous les statuts</option>
-                        <option value="succeeded">Réussis</option>
-                        <option value="pending">En attente</option>
-                        <option value="failed">Échoués</option>
-                        <option value="canceled">Annulés</option>
-                    </select>
-
-                    <select
-                        value={selectedPeriod}
-                        onChange={(e) => handlePeriodChange(e.target.value)}
-                        className="px-3 py-2 border border-input rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
-                    >
-                        <option value="7d">7 derniers jours</option>
-                        <option value="30d">30 derniers jours</option>
-                        <option value="90d">90 derniers jours</option>
-                        <option value="1y">1 an</option>
-                        <option value="all">Tout</option>
-                    </select>
-
-                    <button
-                        onClick={handleSearch}
-                        className="px-4 py-2 bg-primary text-white rounded-md hover:bg-primary/90 transition-colors"
-                    >
-                        Rechercher
-                    </button>
-                </div>
-            </div>
-
-            {/* Liste des paiements */}
-            <div className="bg-white rounded-lg shadow-sm overflow-hidden">
-                {loading ? (
-                    <div className="p-8 text-center">
-                        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
-                        <p className="text-muted-foreground">Chargement des paiements...</p>
-                    </div>
-                ) : filteredPayments.length === 0 ? (
-                    <div className="p-8 text-center">
-                        <CreditCard className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
-                        <h3 className="text-lg font-medium mb-2">Aucun paiement trouvé</h3>
-                        <p className="text-muted-foreground">
-                            {searchTerm || selectedStatus !== 'all'
-                                ? 'Aucun paiement ne correspond à vos critères de recherche.'
-                                : 'Aucun paiement pour le moment.'
-                            }
-                        </p>
-                    </div>
-                ) : (
-                    <>
-                        <div className="overflow-x-auto">
-                            <table className="w-full">
-                                <thead className="bg-gray-50 border-b border-border">
-                                    <tr>
-                                        <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
-                                            Paiement
-                                        </th>
-                                        <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
-                                            Client
-                                        </th>
-                                        <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
-                                            Commande
-                                        </th>
-                                        <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
-                                            Montant
-                                        </th>
-                                        <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
-                                            Statut
-                                        </th>
-                                        <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
-                                            Date
-                                        </th>
-                                        <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
-                                            Actions
-                                        </th>
-                                    </tr>
-                                </thead>
-                                <tbody className="divide-y divide-border">
-                                    {filteredPayments.map((payment, i) => (
-                                        <motion.tr
-                                            key={payment.id}
-                                            initial={{ opacity: 0, y: 20 }}
-                                            animate={{ opacity: 1, y: 0 }}
-                                            transition={{ duration: 0.3, delay: i * 0.05 }}
-                                            className="hover:bg-gray-50"
-                                        >
-                                            <td className="px-6 py-4 whitespace-nowrap">
-                                                <div>
-                                                    <div className="text-sm font-medium text-foreground">
-                                                        {payment.stripe_payment_intent_id.slice(-8)}
-                                                    </div>
-                                                    <div className="text-xs text-muted-foreground">
-                                                        {payment.payment_method}
-                                                    </div>
-                                                </div>
-                                            </td>
-                                            <td className="px-6 py-4 whitespace-nowrap">
-                                                <div className="flex items-center">
-                                                    <div className="flex-shrink-0 h-8 w-8">
-                                                        <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center">
-                                                            <User className="h-4 w-4 text-primary" />
-                                                        </div>
-                                                    </div>
-                                                    <div className="ml-3">
-                                                        <div className="text-sm font-medium text-foreground">
-                                                            {payment.customer_name}
-                                                        </div>
-                                                        <div className="text-sm text-muted-foreground">
-                                                            {payment.customer_email}
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            </td>
-                                            <td className="px-6 py-4 whitespace-nowrap">
-                                                <div className="flex items-center">
-                                                    <Package className="h-4 w-4 text-muted-foreground mr-2" />
-                                                    <div className="text-sm">
-                                                        <div className="text-foreground font-medium">
-                                                            {payment.order_number}
-                                                        </div>
-                                                        <div className="text-muted-foreground text-xs">
-                                                            {payment.order_id}
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            </td>
-                                            <td className="px-6 py-4 whitespace-nowrap">
-                                                <div className="text-sm font-medium text-foreground">
-                                                    {formatAmount(payment.amount, payment.currency)}
-                                                </div>
-                                            </td>
-                                            <td className="px-6 py-4 whitespace-nowrap">
-                                                <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusColor(payment.status)}`}>
-                                                    {getStatusIcon(payment.status)}
-                                                    <span className="ml-1">{getStatusLabel(payment.status)}</span>
-                                                </span>
-                                            </td>
-                                            <td className="px-6 py-4 whitespace-nowrap">
-                                                <div className="flex items-center">
-                                                    <Calendar className="h-4 w-4 text-muted-foreground mr-2" />
-                                                    <div className="text-sm">
-                                                        <div className="text-foreground">
-                                                            {formatDate(payment.created_at)}
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            </td>
-                                            <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                                                <Link
-                                                    href={`/admin/paiements/${payment.id}`}
-                                                    className="text-blue-600 hover:text-blue-900 flex items-center gap-1"
-                                                >
-                                                    <Eye className="h-4 w-4" />
-                                                    Détails
-                                                </Link>
-                                            </td>
-                                        </motion.tr>
-                                    ))}
-                                </tbody>
-                            </table>
-                        </div>
-
-                        {/* Pagination */}
-                        <div className="p-6 border-t border-border">
-                            <Pagination
-                                currentPage={pagination.page}
-                                totalPages={pagination.total_pages}
-                                totalItems={pagination.total}
-                                itemsPerPage={pagination.limit}
-                                onPageChange={handlePageChange}
-                            />
-                        </div>
-                    </>
-                )}
-            </div>
         </div>
     );
 }
