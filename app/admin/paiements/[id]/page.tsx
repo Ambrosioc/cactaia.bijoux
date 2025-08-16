@@ -1,14 +1,14 @@
-import StockManagementClient from '@/components/admin/stock-management';
+import PaiementDetailClient from '@/components/admin/paiement-detail-client';
 import ProtectedRoute from '@/components/auth/ProtectedRoute';
 import ClientOnly from '@/components/client/client-only';
 import { Metadata } from 'next';
 
 export const metadata: Metadata = {
-    title: 'Gestion des Stocks - Cactaia.Bijoux',
-    description: 'Gestion avancée des stocks avec alertes et historique pour Cactaia.Bijoux',
+    title: 'Détail du Paiement - Cactaia Bijoux',
+    description: 'Détails complets d\'un paiement avec informations Stripe et commande',
 };
 
-export default function StocksPage() {
+export default function PaiementDetailPage({ params }: { params: { id: string } }) {
     return (
         <ClientOnly
             fallback={
@@ -21,8 +21,8 @@ export default function StocksPage() {
             }
         >
             <ProtectedRoute requireAdmin={true}>
-                <StockManagementClient />
+                <PaiementDetailClient paymentId={params.id} />
             </ProtectedRoute>
         </ClientOnly>
     );
-} 
+}

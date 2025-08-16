@@ -182,10 +182,10 @@ export default function AdminSidebar() {
                         isActive={isActive('/admin/variations')}
                     />
                     <SidebarLink
-                        href="/admin/stock"
+                        href="/admin/stocks"
                         icon={Warehouse}
                         label="Stock"
-                        isActive={isActive('/admin/stock')}
+                        isActive={isActive('/admin/stocks')}
                     />
                     <SidebarLink
                         href="/admin/sku"

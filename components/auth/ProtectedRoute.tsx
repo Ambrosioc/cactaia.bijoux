@@ -1,53 +1,65 @@
 'use client';
 
-import { useSession } from '@/lib/hooks/useSession';
-import { useRouter } from 'next/navigation';
-import { useEffect } from 'react';
+import { useUser } from '@/stores/userStore';
+import { useEffect, useState } from 'react';
 
 interface ProtectedRouteProps {
     children: React.ReactNode;
-    requiredRole?: 'admin' | 'user';
+    requireAdmin?: boolean;
     fallback?: React.ReactNode;
 }
 
-export function ProtectedRoute({
+export default function ProtectedRoute({
     children,
-    requiredRole,
+    requireAdmin = false,
     fallback
 }: ProtectedRouteProps) {
-    const { session, loading, isAdmin, isUser } = useSession();
-    const router = useRouter();
+    const { isAuthenticated, isAdmin, isActiveAdmin, loading } = useUser();
+    const [mounted, setMounted] = useState(false);
 
     useEffect(() => {
-        if (!loading && !session) {
-            // Rediriger vers la connexion avec l'URL de retour
-            const currentPath = window.location.pathname;
-            router.push(`/connexion?redirect=${encodeURIComponent(currentPath)}`);
-            return;
-        }
+        setMounted(true);
+    }, []);
 
-        // Ne pas rediriger automatiquement lors des changements de rôle
-        // Laisser l'utilisateur rester sur la page actuelle
-    }, [session, loading, router]);
-
-    // Afficher le fallback pendant le chargement
-    if (loading) {
-        return fallback || (
-            <div className="min-h-screen flex items-center justify-center">
+    // Pendant l'hydratation, afficher un loader
+    if (!mounted || loading) {
+        return (
+            <div className="flex items-center justify-center min-h-screen">
                 <div className="text-center">
                     <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
-                    <p className="text-muted-foreground">Chargement...</p>
+                    <p className="text-muted-foreground">Vérification de la session...</p>
                 </div>
             </div>
         );
     }
 
-    // Si pas de session, ne rien afficher (redirection en cours)
-    if (!session) {
-        return null;
+    // Vérifier l'authentification
+    if (!isAuthenticated) {
+        return fallback || (
+            <div className="flex items-center justify-center min-h-screen">
+                <div className="text-center">
+                    <h1 className="text-2xl font-medium mb-4">Accès non autorisé</h1>
+                    <p className="text-muted-foreground">
+                        Vous devez être connecté pour accéder à cette page.
+                    </p>
+                </div>
+            </div>
+        );
     }
 
-    // Afficher le contenu même si le rôle ne correspond pas exactement
-    // L'utilisateur peut rester sur la page et changer de rôle
+    // Vérifier les droits admin si requis
+    if (requireAdmin && !isActiveAdmin) {
+        return fallback || (
+            <div className="flex items-center justify-center min-h-screen">
+                <div className="text-center">
+                    <h1 className="text-2xl font-medium mb-4">Accès non autorisé</h1>
+                    <p className="text-muted-foreground">
+                        Vous devez être administrateur pour accéder à cette page.
+                    </p>
+                </div>
+            </div>
+        );
+    }
+
     return <>{children}</>;
 } 

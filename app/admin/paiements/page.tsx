@@ -1,14 +1,14 @@
-import StockManagementClient from '@/components/admin/stock-management';
+import PaiementsClient from '@/components/admin/paiements-client';
 import ProtectedRoute from '@/components/auth/ProtectedRoute';
 import ClientOnly from '@/components/client/client-only';
 import { Metadata } from 'next';
 
 export const metadata: Metadata = {
-    title: 'Gestion des Stocks - Cactaia.Bijoux',
-    description: 'Gestion avancée des stocks avec alertes et historique pour Cactaia.Bijoux',
+    title: 'Gestion des Paiements - Cactaia Bijoux',
+    description: 'Gérez et surveillez tous les paiements de votre boutique en ligne',
 };
 
-export default function StocksPage() {
+export default function PaiementsPage() {
     return (
         <ClientOnly
             fallback={
@@ -21,8 +21,8 @@ export default function StocksPage() {
             }
         >
             <ProtectedRoute requireAdmin={true}>
-                <StockManagementClient />
+                <PaiementsClient />
             </ProtectedRoute>
         </ClientOnly>
     );
-} 
+}
