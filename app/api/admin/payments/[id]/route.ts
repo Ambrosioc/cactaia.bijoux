@@ -1,4 +1,4 @@
-import { createClient } from '@/lib/supabase/server';
+import { createServerClient } from '@/lib/supabase/server';
 import { NextRequest, NextResponse } from 'next/server';
 import Stripe from 'stripe';
 
@@ -11,7 +11,7 @@ export async function GET(
     { params }: { params: { id: string } }
 ) {
     try {
-        const supabase = await createClient();
+        const supabase = await createServerClient();
         
         // Vérifier l'authentification admin
         const { data: { user }, error: authError } = await supabase.auth.getUser();
@@ -20,11 +20,16 @@ export async function GET(
         }
 
         // Vérifier le rôle admin
-        const { data: profile } = await supabase
+        const { data: profile, error: profileError } = await supabase
             .from('users')
             .select('role, active_role')
             .eq('id', user.id)
             .single();
+
+        if (profileError) {
+            console.error('Erreur lors de la récupération du profil:', profileError);
+            return NextResponse.json({ error: 'Erreur de profil utilisateur' }, { status: 500 });
+        }
 
         if (!profile || profile.active_role !== 'admin') {
             return NextResponse.json({ error: 'Accès non autorisé' }, { status: 403 });
@@ -32,19 +37,12 @@ export async function GET(
 
         const paymentId = params.id;
 
-        // Récupérer la commande avec toutes les informations
+        // Récupérer la commande avec les informations utilisateur et adresses
         const { data: order, error: orderError } = await supabase
             .from('commandes')
             .select(`
                 *,
-                users!inner(
-                    id,
-                    nom,
-                    prenom,
-                    email,
-                    telephone,
-                    created_at
-                ),
+                users!inner(id, nom, prenom, email, telephone, created_at),
                 adresses_livraison(*),
                 adresses_facturation(*)
             `)
@@ -59,24 +57,14 @@ export async function GET(
             return NextResponse.json({ error: 'Aucun paiement Stripe associé à cette commande' }, { status: 404 });
         }
 
-        // Récupérer les informations Stripe
+        // Récupérer les données Stripe
         let stripeData = null;
         try {
             const paymentIntent = await stripe.paymentIntents.retrieve(order.stripe_payment_intent_id);
             const customer = paymentIntent.customer ? await stripe.customers.retrieve(paymentIntent.customer as string) : null;
+            const charges = await stripe.charges.list({ payment_intent: order.stripe_payment_intent_id, limit: 10 });
+            const refunds = await stripe.refunds.list({ limit: 10 });
             
-            // Récupérer les charges
-            const charges = await stripe.charges.list({
-                payment_intent: order.stripe_payment_intent_id,
-                limit: 10
-            });
-
-            // Récupérer les remboursements
-            const refunds = await stripe.refunds.list({
-                limit: 10
-            });
-
-            // Récupérer les détails de la méthode de paiement
             let paymentMethodDetails = null;
             if (paymentIntent.payment_method) {
                 try {
@@ -104,74 +92,41 @@ export async function GET(
         // Récupérer les produits de la commande
         const { data: orderProducts } = await supabase
             .from('commandes_produits')
-            .select(`
-                *,
-                produits(
-                    id,
-                    nom,
-                    prix,
-                    variations
-                )
-            `)
+            .select(`*, produits(id, nom, prix, variations)`)
             .eq('commande_id', paymentId);
 
-        // Construire la réponse
+        // Construire l'objet de détail du paiement
         const paymentDetail = {
             id: order.id,
             stripe_payment_intent_id: order.stripe_payment_intent_id,
             amount: order.montant_total,
             currency: 'eur',
-            status: stripeData.payment_intent.status === 'succeeded' ? 'succeeded' : 
-                   stripeData.payment_intent.status === 'processing' ? 'pending' : 
-                   stripeData.payment_intent.status === 'requires_payment_method' ? 'failed' : 'canceled',
-            payment_method: stripeData.payment_intent.payment_method_types?.[0] || 'unknown',
-            customer_email: order.users?.email || '',
-            customer_name: `${order.users?.prenom || ''} ${order.users?.nom || ''}`.trim(),
-            order_id: order.id,
+            status: order.statut,
             order_number: order.numero_commande,
             created_at: order.created_at,
             updated_at: order.updated_at,
-            metadata: {
-                order_id: order.id,
-                customer_id: order.user_id
+            
+            // Informations client
+            customer: {
+                id: order.user_id,
+                name: `${order.users?.prenom || ''} ${order.users?.nom || ''}`.trim(),
+                email: order.users?.email,
+                phone: order.users?.telephone,
+                created_at: order.users?.created_at
             },
-            stripe_data: stripeData,
-            order_data: {
-                id: order.id,
-                numero_commande: order.numero_commande,
-                statut: order.statut,
-                montant_total: order.montant_total,
-                produits: orderProducts?.map(op => ({
-                    id: op.produit_id,
-                    nom: op.produits?.nom || 'Produit inconnu',
-                    prix: op.prix_unitaire,
-                    quantite: op.quantite,
-                    variante: op.variante || 'Standard'
-                })) || [],
-                adresse_livraison: order.adresses_livraison || {
-                    nom: `${order.users?.prenom || ''} ${order.users?.nom || ''}`.trim(),
-                    adresse: order.adresse_livraison || '',
-                    complement: order.complement_livraison || '',
-                    code_postal: order.code_postal_livraison || '',
-                    ville: order.ville_livraison || '',
-                    pays: order.pays_livraison || 'France'
-                },
-                adresse_facturation: order.adresses_facturation || {
-                    nom: `${order.users?.prenom || ''} ${order.users?.nom || ''}`.trim(),
-                    adresse: order.adresse_facturation || '',
-                    complement: order.complement_facturation || '',
-                    code_postal: order.code_postal_facturation || '',
-                    ville: order.ville_facturation || '',
-                    pays: order.pays_facturation || 'France'
-                },
-                created_at: order.created_at,
-                updated_at: order.updated_at
-            }
+            
+            // Adresses
+            shipping_address: order.adresses_livraison?.[0] || null,
+            billing_address: order.adresses_facturation?.[0] || null,
+            
+            // Produits
+            products: orderProducts || [],
+            
+            // Données Stripe
+            stripe: stripeData
         };
 
-        return NextResponse.json({
-            payment: paymentDetail
-        });
+        return NextResponse.json({ payment: paymentDetail });
 
     } catch (error) {
         console.error('Erreur API payment detail:', error);

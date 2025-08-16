@@ -8,40 +8,62 @@ export async function GET(request: NextRequest) {
 		const starting_after = searchParams.get('starting_after') || undefined;
 		const limit = Math.min(parseInt(searchParams.get('limit') || '20', 10), 100);
 
+		console.log('🔍 Récupération des codes promotionnels Stripe...');
+
 		const promos = await stripe.promotionCodes.list({
 			active: true,
 			limit,
 			starting_after: starting_after as any,
 		});
 
+		console.log(`✅ ${promos.data.length} codes promotionnels trouvés dans Stripe`);
+
 		// Récupérer les détails des coupons pour chaque code promotionnel
 		const promosWithDetails = await Promise.all(
 			promos.data.map(async (promo) => {
-				if (promo.coupon) {
-					const coupon = await stripe.coupons.retrieve(promo.coupon.id);
-					return {
-						id: promo.id,
-						code: promo.code,
-						name: promo.code, // Utiliser le code comme nom par défaut
-						discount_type: coupon.percent_off ? 'percentage' : 'fixed_amount',
-						discount_amount: coupon.percent_off || coupon.amount_off || 0,
-						max_redemptions: coupon.max_redemptions,
-						times_redeemed: promo.times_redeemed || 0,
-						valid: promo.active,
-						expires_at: promo.expires_at ? new Date(promo.expires_at * 1000).toISOString() : null,
-						created_at: new Date(promo.created * 1000).toISOString(),
-					};
+				try {
+					if (promo.coupon) {
+						const coupon = await stripe.coupons.retrieve(promo.coupon.id);
+						return {
+							id: promo.id,
+							code: promo.code,
+							name: promo.code, // Utiliser le code comme nom par défaut
+							discount_type: coupon.percent_off ? 'percentage' : 'fixed',
+							discount_value: coupon.percent_off || (coupon.amount_off ? coupon.amount_off / 100 : 0),
+							max_uses: coupon.max_redemptions,
+							used_count: promo.times_redeemed || 0,
+							valid_from: new Date(promo.created * 1000).toISOString(),
+							valid_until: promo.expires_at ? new Date(promo.expires_at * 1000).toISOString() : null,
+							active: promo.active,
+							created_at: new Date(promo.created * 1000).toISOString(),
+						};
+					}
+					return null;
+				} catch (error) {
+					console.error(`Erreur lors de la récupération du coupon ${promo.coupon?.id}:`, error);
+					return null;
 				}
-				return null;
 			})
 		);
 
 		const validPromos = promosWithDetails.filter(promo => promo !== null);
+		console.log(`✅ ${validPromos.length} codes promotionnels traités avec succès`);
 
-		return NextResponse.json(validPromos);
+		// Retourner dans le format attendu par le composant
+		return NextResponse.json({
+			success: true,
+			promotionCodes: validPromos,
+			total: validPromos.length
+		});
+
 	} catch (error: any) {
-		console.error('Erreur lors de la récupération des codes promotionnels:', error);
-		return NextResponse.json({ error: error?.message || 'Erreur serveur' }, { status: 500 });
+		console.error('❌ Erreur lors de la récupération des codes promotionnels:', error);
+		return NextResponse.json({ 
+			error: error?.message || 'Erreur serveur',
+			success: false,
+			promotionCodes: [],
+			total: 0
+		}, { status: 500 });
 	}
 }
 
@@ -58,6 +80,8 @@ export async function POST(request: NextRequest) {
 				{ status: 400 }
 			);
 		}
+
+		console.log('🎫 Création d\'un nouveau code promotionnel:', { code, discount_type, discount_amount });
 
 		// Créer le coupon Stripe
 		const couponData: any = {
@@ -81,6 +105,7 @@ export async function POST(request: NextRequest) {
 
 		// Créer le coupon
 		const coupon = await stripe.coupons.create(couponData);
+		console.log('✅ Coupon Stripe créé:', coupon.id);
 
 		// Créer le code promotionnel
 		const promotionCode = await stripe.promotionCodes.create({
@@ -89,6 +114,8 @@ export async function POST(request: NextRequest) {
 			max_redemptions: max_redemptions || undefined,
 			expires_at: expires_at ? Math.floor(new Date(expires_at).getTime() / 1000) : undefined,
 		});
+
+		console.log('✅ Code promotionnel Stripe créé:', promotionCode.id);
 
 		return NextResponse.json({
 			success: true,
@@ -107,7 +134,7 @@ export async function POST(request: NextRequest) {
 			},
 		});
 	} catch (error: any) {
-		console.error('Erreur lors de la création du code promotionnel:', error);
+		console.error('❌ Erreur lors de la création du code promotionnel:', error);
 		return NextResponse.json(
 			{ error: error?.message || 'Erreur lors de la création du code promotionnel' },
 			{ status: 500 }

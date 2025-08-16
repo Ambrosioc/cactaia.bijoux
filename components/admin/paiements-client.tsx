@@ -19,6 +19,10 @@ import {
 } from 'lucide-react';
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
+import { PaymentErrorFallback, useErrorHandler } from './error-boundary';
+import Pagination from './pagination';
+import PaymentCharts from './payment-charts';
+import { usePaymentNotifications } from './payment-notifications';
 
 interface Payment {
     id: string;
@@ -46,25 +50,52 @@ interface PaymentStats {
     successful_payments: number;
     failed_payments: number;
     pending_payments: number;
+    canceled_payments: number;
     average_amount: number;
+}
+
+interface DailyStats {
+    date: string;
+    count: number;
+    amount: number;
+}
+
+interface PaginationData {
+    page: number;
+    limit: number;
+    total: number;
+    total_pages: number;
 }
 
 export default function PaiementsClient() {
     const { isActiveAdmin } = useUser();
     const [payments, setPayments] = useState<Payment[]>([]);
     const [loading, setLoading] = useState(true);
+    const [error, setError] = useState<Error | null>(null);
     const [searchTerm, setSearchTerm] = useState('');
     const [selectedStatus, setSelectedStatus] = useState<string>('all');
     const [selectedPeriod, setSelectedPeriod] = useState<string>('30d');
+    const [showCharts, setShowCharts] = useState(true);
     const [stats, setStats] = useState<PaymentStats>({
         total_payments: 0,
         total_amount: 0,
         successful_payments: 0,
         failed_payments: 0,
         pending_payments: 0,
+        canceled_payments: 0,
         average_amount: 0
     });
+    const [dailyStats, setDailyStats] = useState<DailyStats[]>([]);
+    const [pagination, setPagination] = useState<PaginationData>({
+        page: 1,
+        limit: 25,
+        total: 0,
+        total_pages: 1
+    });
     const [mounted, setMounted] = useState(false);
+
+    const { showSuccess, showError, showWarning, showInfo } = usePaymentNotifications();
+    const { handleAsyncError } = useErrorHandler();
 
     useEffect(() => {
         setMounted(true);
@@ -75,27 +106,45 @@ export default function PaiementsClient() {
             loadPayments();
             loadStats();
         }
-    }, [mounted, isActiveAdmin, selectedPeriod]);
+    }, [mounted, isActiveAdmin, selectedPeriod, pagination.page, pagination.limit]);
 
     const loadPayments = async () => {
         try {
             setLoading(true);
+            setError(null);
 
             // Construire les paramètres de requête
             const params = new URLSearchParams();
             if (selectedStatus !== 'all') params.append('status', selectedStatus);
             if (selectedPeriod !== 'all') params.append('period', selectedPeriod);
             if (searchTerm) params.append('search', searchTerm);
+            params.append('page', pagination.page.toString());
+            params.append('limit', pagination.limit.toString());
 
             const response = await fetch(`/api/admin/payments?${params.toString()}`);
-            if (response.ok) {
-                const data = await response.json();
-                setPayments(data.payments || []);
-            } else {
-                console.error('Erreur lors du chargement des paiements:', response.statusText);
+
+            if (!response.ok) {
+                throw new Error(`Erreur ${response.status}: ${response.statusText}`);
             }
+
+            const data = await response.json();
+            setPayments(data.payments || []);
+            setPagination(prev => ({
+                ...prev,
+                total: data.pagination?.total || 0,
+                total_pages: data.pagination?.total_pages || 1
+            }));
+
+            showSuccess(
+                'Paiements chargés',
+                `${data.payments?.length || 0} paiements récupérés avec succès`
+            );
+
         } catch (error) {
-            console.error('Erreur lors du chargement des paiements:', error);
+            const errorMessage = error instanceof Error ? error.message : 'Erreur inconnue';
+            setError(new Error(errorMessage));
+            showError('Erreur de chargement', `Impossible de charger les paiements: ${errorMessage}`);
+            handleAsyncError(error, 'loadPayments');
         } finally {
             setLoading(false);
         }
@@ -108,15 +157,39 @@ export default function PaiementsClient() {
             if (selectedPeriod !== 'all') params.append('period', selectedPeriod);
 
             const response = await fetch(`/api/admin/payments/stats?${params.toString()}`);
-            if (response.ok) {
-                const data = await response.json();
-                setStats(data.stats);
-            } else {
-                console.error('Erreur lors du chargement des statistiques:', response.statusText);
+
+            if (!response.ok) {
+                throw new Error(`Erreur ${response.status}: ${response.statusText}`);
             }
+
+            const data = await response.json();
+            setStats(data.stats);
+            setDailyStats(data.daily_stats || []);
+
         } catch (error) {
-            console.error('Erreur lors du chargement des statistiques:', error);
+            const errorMessage = error instanceof Error ? error.message : 'Erreur inconnue';
+            showWarning('Erreur de statistiques', `Impossible de charger les statistiques: ${errorMessage}`);
+            handleAsyncError(error, 'loadStats');
         }
+    };
+
+    const handlePageChange = (newPage: number) => {
+        setPagination(prev => ({ ...prev, page: newPage }));
+    };
+
+    const handleSearch = () => {
+        setPagination(prev => ({ ...prev, page: 1 })); // Retour à la première page
+        loadPayments();
+    };
+
+    const handleStatusChange = (newStatus: string) => {
+        setSelectedStatus(newStatus);
+        setPagination(prev => ({ ...prev, page: 1 }));
+    };
+
+    const handlePeriodChange = (newPeriod: string) => {
+        setSelectedPeriod(newPeriod);
+        setPagination(prev => ({ ...prev, page: 1 }));
     };
 
     const getStatusColor = (status: string) => {
@@ -213,6 +286,18 @@ export default function PaiementsClient() {
         );
     }
 
+    if (error) {
+        return (
+            <PaymentErrorFallback
+                error={error}
+                retry={() => {
+                    setError(null);
+                    loadPayments();
+                }}
+            />
+        );
+    }
+
     return (
         <div className="p-8">
             {/* Header */}
@@ -224,6 +309,12 @@ export default function PaiementsClient() {
                     </p>
                 </div>
                 <div className="flex gap-2">
+                    <button
+                        onClick={() => setShowCharts(!showCharts)}
+                        className="btn btn-outline"
+                    >
+                        {showCharts ? 'Masquer' : 'Afficher'} les graphiques
+                    </button>
                     <button className="btn btn-outline">
                         <Filter className="h-4 w-4 mr-2" />
                         Exporter
@@ -305,6 +396,21 @@ export default function PaiementsClient() {
                 </motion.div>
             </div>
 
+            {/* Graphiques */}
+            {showCharts && (
+                <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className="mb-8"
+                >
+                    <PaymentCharts
+                        stats={stats}
+                        dailyStats={dailyStats}
+                        period={selectedPeriod}
+                    />
+                </motion.div>
+            )}
+
             {/* Filtres et recherche */}
             <div className="bg-white p-6 rounded-lg shadow-sm mb-6">
                 <div className="flex flex-col md:flex-row gap-4">
@@ -315,13 +421,14 @@ export default function PaiementsClient() {
                             placeholder="Rechercher par email, nom, commande..."
                             value={searchTerm}
                             onChange={(e) => setSearchTerm(e.target.value)}
+                            onKeyPress={(e) => e.key === 'Enter' && handleSearch()}
                             className="w-full pl-10 pr-3 py-2 border border-input rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
                         />
                     </div>
 
                     <select
                         value={selectedStatus}
-                        onChange={(e) => setSelectedStatus(e.target.value)}
+                        onChange={(e) => handleStatusChange(e.target.value)}
                         className="px-3 py-2 border border-input rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
                     >
                         <option value="all">Tous les statuts</option>
@@ -333,7 +440,7 @@ export default function PaiementsClient() {
 
                     <select
                         value={selectedPeriod}
-                        onChange={(e) => setSelectedPeriod(e.target.value)}
+                        onChange={(e) => handlePeriodChange(e.target.value)}
                         className="px-3 py-2 border border-input rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
                     >
                         <option value="7d">7 derniers jours</option>
@@ -342,6 +449,13 @@ export default function PaiementsClient() {
                         <option value="1y">1 an</option>
                         <option value="all">Tout</option>
                     </select>
+
+                    <button
+                        onClick={handleSearch}
+                        className="px-4 py-2 bg-primary text-white rounded-md hover:bg-primary/90 transition-colors"
+                    >
+                        Rechercher
+                    </button>
                 </div>
             </div>
 
@@ -364,117 +478,130 @@ export default function PaiementsClient() {
                         </p>
                     </div>
                 ) : (
-                    <div className="overflow-x-auto">
-                        <table className="w-full">
-                            <thead className="bg-gray-50 border-b border-border">
-                                <tr>
-                                    <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
-                                        Paiement
-                                    </th>
-                                    <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
-                                        Client
-                                    </th>
-                                    <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
-                                        Commande
-                                    </th>
-                                    <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
-                                        Montant
-                                    </th>
-                                    <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
-                                        Statut
-                                    </th>
-                                    <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
-                                        Date
-                                    </th>
-                                    <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
-                                        Actions
-                                    </th>
-                                </tr>
-                            </thead>
-                            <tbody className="divide-y divide-border">
-                                {filteredPayments.map((payment, i) => (
-                                    <motion.tr
-                                        key={payment.id}
-                                        initial={{ opacity: 0, y: 20 }}
-                                        animate={{ opacity: 1, y: 0 }}
-                                        transition={{ duration: 0.3, delay: i * 0.05 }}
-                                        className="hover:bg-gray-50"
-                                    >
-                                        <td className="px-6 py-4 whitespace-nowrap">
-                                            <div>
-                                                <div className="text-sm font-medium text-foreground">
-                                                    {payment.stripe_payment_intent_id.slice(-8)}
-                                                </div>
-                                                <div className="text-xs text-muted-foreground">
-                                                    {payment.payment_method}
-                                                </div>
-                                            </div>
-                                        </td>
-                                        <td className="px-6 py-4 whitespace-nowrap">
-                                            <div className="flex items-center">
-                                                <div className="flex-shrink-0 h-8 w-8">
-                                                    <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center">
-                                                        <User className="h-4 w-4 text-primary" />
-                                                    </div>
-                                                </div>
-                                                <div className="ml-3">
+                    <>
+                        <div className="overflow-x-auto">
+                            <table className="w-full">
+                                <thead className="bg-gray-50 border-b border-border">
+                                    <tr>
+                                        <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                                            Paiement
+                                        </th>
+                                        <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                                            Client
+                                        </th>
+                                        <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                                            Commande
+                                        </th>
+                                        <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                                            Montant
+                                        </th>
+                                        <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                                            Statut
+                                        </th>
+                                        <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                                            Date
+                                        </th>
+                                        <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                                            Actions
+                                        </th>
+                                    </tr>
+                                </thead>
+                                <tbody className="divide-y divide-border">
+                                    {filteredPayments.map((payment, i) => (
+                                        <motion.tr
+                                            key={payment.id}
+                                            initial={{ opacity: 0, y: 20 }}
+                                            animate={{ opacity: 1, y: 0 }}
+                                            transition={{ duration: 0.3, delay: i * 0.05 }}
+                                            className="hover:bg-gray-50"
+                                        >
+                                            <td className="px-6 py-4 whitespace-nowrap">
+                                                <div>
                                                     <div className="text-sm font-medium text-foreground">
-                                                        {payment.customer_name}
+                                                        {payment.stripe_payment_intent_id.slice(-8)}
                                                     </div>
-                                                    <div className="text-sm text-muted-foreground">
-                                                        {payment.customer_email}
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </td>
-                                        <td className="px-6 py-4 whitespace-nowrap">
-                                            <div className="flex items-center">
-                                                <Package className="h-4 w-4 text-muted-foreground mr-2" />
-                                                <div className="text-sm">
-                                                    <div className="text-foreground font-medium">
-                                                        {payment.order_number}
-                                                    </div>
-                                                    <div className="text-muted-foreground text-xs">
-                                                        {payment.order_id}
+                                                    <div className="text-xs text-muted-foreground">
+                                                        {payment.payment_method}
                                                     </div>
                                                 </div>
-                                            </div>
-                                        </td>
-                                        <td className="px-6 py-4 whitespace-nowrap">
-                                            <div className="text-sm font-medium text-foreground">
-                                                {formatAmount(payment.amount, payment.currency)}
-                                            </div>
-                                        </td>
-                                        <td className="px-6 py-4 whitespace-nowrap">
-                                            <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusColor(payment.status)}`}>
-                                                {getStatusIcon(payment.status)}
-                                                <span className="ml-1">{getStatusLabel(payment.status)}</span>
-                                            </span>
-                                        </td>
-                                        <td className="px-6 py-4 whitespace-nowrap">
-                                            <div className="flex items-center">
-                                                <Calendar className="h-4 w-4 text-muted-foreground mr-2" />
-                                                <div className="text-sm">
-                                                    <div className="text-foreground">
-                                                        {formatDate(payment.created_at)}
+                                            </td>
+                                            <td className="px-6 py-4 whitespace-nowrap">
+                                                <div className="flex items-center">
+                                                    <div className="flex-shrink-0 h-8 w-8">
+                                                        <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center">
+                                                            <User className="h-4 w-4 text-primary" />
+                                                        </div>
+                                                    </div>
+                                                    <div className="ml-3">
+                                                        <div className="text-sm font-medium text-foreground">
+                                                            {payment.customer_name}
+                                                        </div>
+                                                        <div className="text-sm text-muted-foreground">
+                                                            {payment.customer_email}
+                                                        </div>
                                                     </div>
                                                 </div>
-                                            </div>
-                                        </td>
-                                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                                            <Link
-                                                href={`/admin/paiements/${payment.id}`}
-                                                className="text-blue-600 hover:text-blue-900 flex items-center gap-1"
-                                            >
-                                                <Eye className="h-4 w-4" />
-                                                Détails
-                                            </Link>
-                                        </td>
-                                    </motion.tr>
-                                ))}
-                            </tbody>
-                        </table>
-                    </div>
+                                            </td>
+                                            <td className="px-6 py-4 whitespace-nowrap">
+                                                <div className="flex items-center">
+                                                    <Package className="h-4 w-4 text-muted-foreground mr-2" />
+                                                    <div className="text-sm">
+                                                        <div className="text-foreground font-medium">
+                                                            {payment.order_number}
+                                                        </div>
+                                                        <div className="text-muted-foreground text-xs">
+                                                            {payment.order_id}
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </td>
+                                            <td className="px-6 py-4 whitespace-nowrap">
+                                                <div className="text-sm font-medium text-foreground">
+                                                    {formatAmount(payment.amount, payment.currency)}
+                                                </div>
+                                            </td>
+                                            <td className="px-6 py-4 whitespace-nowrap">
+                                                <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusColor(payment.status)}`}>
+                                                    {getStatusIcon(payment.status)}
+                                                    <span className="ml-1">{getStatusLabel(payment.status)}</span>
+                                                </span>
+                                            </td>
+                                            <td className="px-6 py-4 whitespace-nowrap">
+                                                <div className="flex items-center">
+                                                    <Calendar className="h-4 w-4 text-muted-foreground mr-2" />
+                                                    <div className="text-sm">
+                                                        <div className="text-foreground">
+                                                            {formatDate(payment.created_at)}
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </td>
+                                            <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                                                <Link
+                                                    href={`/admin/paiements/${payment.id}`}
+                                                    className="text-blue-600 hover:text-blue-900 flex items-center gap-1"
+                                                >
+                                                    <Eye className="h-4 w-4" />
+                                                    Détails
+                                                </Link>
+                                            </td>
+                                        </motion.tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                        </div>
+
+                        {/* Pagination */}
+                        <div className="p-6 border-t border-border">
+                            <Pagination
+                                currentPage={pagination.page}
+                                totalPages={pagination.total_pages}
+                                totalItems={pagination.total}
+                                itemsPerPage={pagination.limit}
+                                onPageChange={handlePageChange}
+                            />
+                        </div>
+                    </>
                 )}
             </div>
         </div>
