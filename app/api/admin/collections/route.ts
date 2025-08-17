@@ -29,7 +29,7 @@ export async function GET(request: NextRequest) {
             .from('collections')
             .select(`
                 *,
-                product_collections!inner(
+                product_collections(
                     product_id
                 )
             `)
