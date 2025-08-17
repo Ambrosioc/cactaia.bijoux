@@ -1,5 +1,6 @@
 "use client"
 
+import NotificationsPanel from '@/components/admin/notifications-panel';
 import CartSidebar from '@/components/cart/cart-sidebar';
 import CategorySidebar from '@/components/layout/category-sidebar';
 import { useWishlist } from '@/hooks/use-wishlist';
@@ -268,6 +269,11 @@ const Header = () => {
                   <span className="sr-only">Panier</span>
                 </button>
               </>
+            )}
+
+            {/* Notifications pour les admins */}
+            {isAuthenticated && user?.active_role === 'admin' && (
+              <NotificationsPanel />
             )}
 
             {/* Mobile menu button */}

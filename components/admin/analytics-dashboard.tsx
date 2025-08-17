@@ -259,8 +259,8 @@ export default function AnalyticsDashboard() {
                                 key={tab.id}
                                 onClick={() => setActiveTab(tab.id as any)}
                                 className={`py-2 px-1 flex items-center gap-2 text-sm font-medium border-b-2 transition-colors ${activeTab === tab.id
-                                        ? 'border-blue-500 text-blue-600'
-                                        : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                                    ? 'border-blue-500 text-blue-600'
+                                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
                                     }`}
                             >
                                 <Icon className="h-4 w-4" />
@@ -573,8 +573,8 @@ export default function AnalyticsDashboard() {
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                             {performanceData.insights.map((insight, index) => (
                                 <div key={index} className={`p-4 border rounded-lg ${insight.type === 'positive' ? 'border-green-200 bg-green-50' :
-                                        insight.type === 'negative' ? 'border-red-200 bg-red-50' :
-                                            'border-yellow-200 bg-yellow-50'
+                                    insight.type === 'negative' ? 'border-red-200 bg-red-50' :
+                                        'border-yellow-200 bg-yellow-50'
                                     }`}>
                                     <div className="flex items-start gap-3">
                                         {getInsightIcon(insight.type)}
