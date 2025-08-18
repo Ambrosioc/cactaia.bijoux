@@ -33,23 +33,19 @@ interface FormData {
     images: string[];
 }
 
-const categories = [
-    'Bagues',
-    'Colliers',
-    'Bracelets',
-    'Boucles d\'oreilles',
-    'Accessoires'
-];
+interface Category {
+    id: string;
+    name: string;
+    slug: string;
+    is_active: boolean;
+}
 
-const availableCollections = [
-    'Été 2025',
-    'Nouveautés',
-    'Bestsellers',
-    'Désert',
-    'Mixte',
-    'Femme',
-    'Homme'
-];
+interface Collection {
+    id: string;
+    name: string;
+    slug: string;
+    is_active: boolean;
+}
 
 export default function ProductForm({ product, isEditing = false }: ProductFormProps) {
     const { isActiveAdmin } = useUser();
@@ -57,6 +53,10 @@ export default function ProductForm({ product, isEditing = false }: ProductFormP
     const [saving, setSaving] = useState(false);
     const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
     const [errors, setErrors] = useState<Record<string, string>>({});
+    const [collections, setCollections] = useState<Collection[]>([]);
+    const [collectionsLoading, setCollectionsLoading] = useState(true);
+    const [categories, setCategories] = useState<Category[]>([]);
+    const [categoriesLoading, setCategoriesLoading] = useState(true);
     const router = useRouter();
     const supabase = createClient();
 
@@ -66,7 +66,7 @@ export default function ProductForm({ product, isEditing = false }: ProductFormP
         description_courte: product?.description_courte || '',
         prix: product?.prix?.toString() || '',
         prix_promo: product?.prix_promo?.toString() || '',
-        categorie: product?.categorie || categories[0],
+        categorie: product?.categorie || '',
         collections: product?.collections || [],
         stock: product?.stock?.toString() || '0',
         sku: product?.sku || '',
@@ -82,6 +82,69 @@ export default function ProductForm({ product, isEditing = false }: ProductFormP
             router.push('/compte');
         }
     }, [isActiveAdmin, router]);
+
+    // Charger les collections depuis l'API
+    useEffect(() => {
+        loadCollections();
+    }, []);
+
+    // Charger les catégories depuis l'API
+    useEffect(() => {
+        loadCategories();
+    }, []);
+
+    const loadCollections = async () => {
+        try {
+            setCollectionsLoading(true);
+            const response = await fetch('/api/admin/collections');
+
+            if (response.ok) {
+                const data = await response.json();
+                if (data.success) {
+                    // Filtrer seulement les collections actives
+                    const activeCollections = data.collections.filter((col: Collection) => col.is_active);
+                    setCollections(activeCollections);
+                } else {
+                    console.error('Erreur lors du chargement des collections:', data.error);
+                }
+            } else {
+                console.error('Erreur API collections:', response.status);
+            }
+        } catch (error) {
+            console.error('Erreur lors du chargement des collections:', error);
+        } finally {
+            setCollectionsLoading(false);
+        }
+    };
+
+    const loadCategories = async () => {
+        try {
+            setCategoriesLoading(true);
+            const response = await fetch('/api/admin/categories');
+
+            if (response.ok) {
+                const data = await response.json();
+                if (data.success) {
+                    // Filtrer seulement les catégories actives
+                    const activeCategories = data.categories.filter((cat: Category) => cat.is_active);
+                    setCategories(activeCategories);
+
+                    // Si c'est un nouveau produit et qu'il n'y a pas de catégorie sélectionnée, sélectionner la première
+                    if (!product && activeCategories.length > 0 && !formData.categorie) {
+                        setFormData(prev => ({ ...prev, categorie: activeCategories[0].name }));
+                    }
+                } else {
+                    console.error('Erreur lors du chargement des catégories:', data.error);
+                }
+            } else {
+                console.error('Erreur API categories:', response.status);
+            }
+        } catch (error) {
+            console.error('Erreur lors du chargement des catégories:', error);
+        } finally {
+            setCategoriesLoading(false);
+        }
+    };
 
     const handleInputChange = (field: keyof FormData, value: string | boolean | string[]) => {
         setFormData(prev => ({
@@ -326,9 +389,15 @@ export default function ProductForm({ product, isEditing = false }: ProductFormP
                                             className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-primary ${errors.categorie ? 'border-red-300' : 'border-input'
                                                 }`}
                                         >
-                                            {categories.map(cat => (
-                                                <option key={cat} value={cat}>{cat}</option>
-                                            ))}
+                                            {categoriesLoading ? (
+                                                <option value="">Chargement des catégories...</option>
+                                            ) : categories.length === 0 ? (
+                                                <option value="">Aucune catégorie disponible</option>
+                                            ) : (
+                                                categories.map(cat => (
+                                                    <option key={cat.id} value={cat.name}>{cat.name}</option>
+                                                ))
+                                            )}
                                         </select>
                                         {errors.categorie && (
                                             <p className="text-red-500 text-xs mt-1">{errors.categorie}</p>
@@ -350,28 +419,39 @@ export default function ProductForm({ product, isEditing = false }: ProductFormP
                                 </div>
 
                                 <div>
-                                    <label className="block text-sm font-medium mb-2">
+                                    <label className="block text-sm font-medium text-gray-700 mb-2">
                                         Collections
                                     </label>
                                     <div className="space-y-2">
-                                        {availableCollections.map(collection => (
-                                            <label key={collection} className="flex items-center space-x-2">
-                                                <input
-                                                    type="checkbox"
-                                                    checked={formData.collections.includes(collection)}
-                                                    onChange={(e) => {
-                                                        const newCollections = e.target.checked
-                                                            ? [...formData.collections, collection]
-                                                            : formData.collections.filter(c => c !== collection);
-                                                        handleInputChange('collections', newCollections);
-                                                    }}
-                                                    className="rounded border-gray-300 text-primary focus:ring-primary"
-                                                />
-                                                <span className="text-sm">{collection}</span>
-                                            </label>
-                                        ))}
+                                        {collectionsLoading ? (
+                                            <div className="flex items-center space-x-2 text-sm text-gray-500">
+                                                <Loader2 className="h-4 w-4 animate-spin" />
+                                                <span>Chargement des collections...</span>
+                                            </div>
+                                        ) : collections.length === 0 ? (
+                                            <div className="text-sm text-gray-500">
+                                                Aucune collection disponible
+                                            </div>
+                                        ) : (
+                                            collections.map(collection => (
+                                                <label key={collection.id} className="flex items-center space-x-2">
+                                                    <input
+                                                        type="checkbox"
+                                                        checked={formData.collections.includes(collection.name)}
+                                                        onChange={(e) => {
+                                                            const newCollections = e.target.checked
+                                                                ? [...formData.collections, collection.name]
+                                                                : formData.collections.filter(c => c !== collection.name);
+                                                            handleInputChange('collections', newCollections);
+                                                        }}
+                                                        className="rounded border-gray-300 text-primary focus:ring-primary"
+                                                    />
+                                                    <span className="text-sm">{collection.name}</span>
+                                                </label>
+                                            ))
+                                        )}
                                     </div>
-                                    <p className="text-xs text-muted-foreground mt-2">
+                                    <p className="text-xs text-gray-500 mt-1">
                                         Sélectionnez les collections auxquelles ce produit appartient
                                     </p>
                                 </div>

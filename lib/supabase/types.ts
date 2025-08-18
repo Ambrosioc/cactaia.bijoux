@@ -991,6 +991,10 @@ export type Database = {
         Args: Record<PropertyKey, never>
         Returns: string[]
       }
+      get_collections_with_counts: {
+        Args: Record<PropertyKey, never>
+        Returns: { collection: string; product_count: number }[]
+      }
       is_admin: {
         Args: { user_id?: string }
         Returns: boolean

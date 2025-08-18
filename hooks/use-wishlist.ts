@@ -78,19 +78,31 @@ export function useWishlist() {
     try {
       setWishlistLoading(true);
       const response = await fetch('/api/wishlist');
-      if (!response.ok) {
-        throw new Error('Erreur lors de la récupération de la wishlist');
+      
+      // Vérifier si la réponse est du JSON valide
+      const contentType = response.headers.get('content-type');
+      if (!contentType || !contentType.includes('application/json')) {
+        console.warn('fetchWishlist: Réponse non-JSON reçue, probablement une page d\'erreur');
+        setWishlistItems([]);
+        return;
       }
+
+      if (!response.ok) {
+        if (response.status === 401) {
+          // Utilisateur non authentifié, vider la wishlist
+          setWishlistItems([]);
+          return;
+        }
+        throw new Error(`Erreur ${response.status}: ${response.statusText}`);
+      }
+      
       const data = await response.json();
       setWishlistItems(data.wishlistItems || []);
       setCachedWishlist(user.id, data.wishlistItems || []);
     } catch (error) {
       console.error('Erreur fetchWishlist:', error);
-      toast({
-        title: "Erreur",
-        description: "Impossible de récupérer votre liste de souhaits",
-        variant: "destructive",
-      });
+      // Ne pas afficher d'erreur toast pour éviter le spam
+      setWishlistItems([]);
     } finally {
       setWishlistLoading(false);
     }

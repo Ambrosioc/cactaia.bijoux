@@ -1,6 +1,6 @@
 'use client';
 
-import { ProtectedRoute } from '@/components/auth/ProtectedRoute';
+import ProtectedRoute from '@/components/auth/ProtectedRoute';
 import { RoleSwitcher } from '@/components/ui/role-switcher';
 import { createClient } from '@/lib/supabase/client';
 import { useUser } from '@/stores/userStore';
@@ -67,7 +67,7 @@ export default function AdminDashboard() {
   ];
 
   return (
-    <ProtectedRoute requiredRole="admin">
+    <ProtectedRoute requireAdmin={true}>
       <div className="min-h-screen bg-gray-50">
         <div className="container-custom">
           {/* Header */}

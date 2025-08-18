@@ -80,16 +80,17 @@ export default function UploadImagesProduit({
         if (disabled) return;
 
         try {
-            // Extraire le chemin du fichier depuis l'URL
+            // Extraire le chemin relatif (clé) du fichier depuis l'URL pour le bucket 'produits'
             const urlParts = imageUrl.split('/');
             const bucketIndex = urlParts.findIndex(part => part === 'produits');
             if (bucketIndex !== -1) {
-                const filePath = urlParts.slice(bucketIndex).join('/');
+                // L'API HTTP est /object/{bucket}/{key} → on veut uniquement {key}
+                const relativeKey = urlParts.slice(bucketIndex + 1).join('/');
 
-                // Supprimer le fichier du storage
+                // Supprimer le fichier du storage (clé relative au bucket)
                 await supabase.storage
                     .from('produits')
-                    .remove([filePath]);
+                    .remove([relativeKey]);
             }
 
             // Mettre à jour la liste des images

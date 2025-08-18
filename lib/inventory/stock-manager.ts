@@ -1,5 +1,4 @@
 import { createClient } from '@/lib/supabase/client';
-import { createServerClient } from '@/lib/supabase/server';
 
 export interface StockMovement {
   id?: string;
@@ -40,15 +39,15 @@ export interface ProductStock {
 export class StockManager {
   private supabase;
 
-  constructor(isServer = false) {
-    this.supabase = isServer ? createServerClient() : createClient();
+  constructor() {
+    // Utiliser uniquement le client côté client
+    this.supabase = createClient();
   }
 
   // Obtenir le stock d'un produit
   async getProductStock(productId: string): Promise<ProductStock | null> {
     try {
-      const supabase = await this.supabase;
-      const { data: product, error } = await supabase
+      const { data: product, error } = await this.supabase
         .from('produits')
         .select('id, nom, stock, variations')
         .eq('id', productId)
@@ -59,7 +58,7 @@ export class StockManager {
       }
 
       // Calculer le stock réservé (commandes en cours)
-      const { data: reservedStock } = await supabase
+      const { data: reservedStock } = await this.supabase
         .from('commandes')
         .select('produits')
         .eq('statut', 'en_attente')
@@ -99,8 +98,7 @@ export class StockManager {
   // Ajouter du stock
   async addStock(productId: string, quantity: number, reason: string, userId?: string): Promise<boolean> {
     try {
-      const supabase = await this.supabase;
-      const { data: product, error: productError } = await supabase
+      const { data: product, error: productError } = await this.supabase
         .from('produits')
         .select('stock')
         .eq('id', productId)
@@ -114,7 +112,7 @@ export class StockManager {
       const newStock = previousStock + quantity;
 
       // Mettre à jour le stock du produit
-      const { error: updateError } = await supabase
+      const { error: updateError } = await this.supabase
         .from('produits')
         .update({ stock: newStock })
         .eq('id', productId);
@@ -199,8 +197,7 @@ export class StockManager {
   // Consommer du stock (après paiement)
   async consumeStock(productId: string, quantity: number, orderId: string, userId?: string): Promise<boolean> {
     try {
-      const supabase = await this.supabase;
-      const { data: product, error: productError } = await supabase
+      const { data: product, error: productError } = await this.supabase
         .from('produits')
         .select('stock')
         .eq('id', productId)
@@ -214,7 +211,7 @@ export class StockManager {
       const newStock = Math.max(0, previousStock - quantity);
 
       // Mettre à jour le stock du produit
-      const { error: updateError } = await supabase
+      const { error: updateError } = await this.supabase
         .from('produits')
         .update({ stock: newStock })
         .eq('id', productId);
@@ -248,8 +245,7 @@ export class StockManager {
   // Ajuster le stock (correction manuelle)
   async adjustStock(productId: string, newQuantity: number, reason: string, userId?: string): Promise<boolean> {
     try {
-      const supabase = await this.supabase;
-      const { data: product, error: productError } = await supabase
+      const { data: product, error: productError } = await this.supabase
         .from('produits')
         .select('stock')
         .eq('id', productId)
@@ -263,7 +259,7 @@ export class StockManager {
       const adjustment = newQuantity - previousStock;
 
       // Mettre à jour le stock du produit
-      const { error: updateError } = await supabase
+      const { error: updateError } = await this.supabase
         .from('produits')
         .update({ stock: newQuantity })
         .eq('id', productId);
@@ -296,8 +292,7 @@ export class StockManager {
   // Obtenir l'historique des mouvements de stock
   async getStockHistory(productId: string, limit: number = 50): Promise<StockMovement[]> {
     try {
-      const supabase = await this.supabase;
-      const { data: movements, error } = await supabase
+      const { data: movements, error } = await this.supabase
         .from('stock_movements')
         .select('*')
         .eq('product_id', productId)
@@ -325,8 +320,7 @@ export class StockManager {
   // Obtenir les alertes de stock actives
   async getActiveStockAlerts(): Promise<StockAlert[]> {
     try {
-      const supabase = await this.supabase;
-      const { data: alerts, error } = await supabase
+      const { data: alerts, error } = await this.supabase
         .from('stock_alerts')
         .select('*')
         .eq('is_active', true)
@@ -382,9 +376,7 @@ export class StockManager {
   // Créer une alerte de stock
   private async createStockAlert(productId: string, alertType: string, threshold: number, currentStock: number): Promise<void> {
     try {
-      const supabase = await this.supabase;
-      // Vérifier si une alerte similaire existe déjà
-      const { data: existingAlert } = await supabase
+      const { data: existingAlert } = await this.supabase
         .from('stock_alerts')
         .select('id')
         .eq('product_id', productId)
@@ -393,7 +385,7 @@ export class StockManager {
         .single();
 
       if (!existingAlert) {
-        await supabase
+        await this.supabase
           .from('stock_alerts')
           .insert({
             product_id: productId,
@@ -411,8 +403,7 @@ export class StockManager {
   // Résoudre les alertes de stock
   private async resolveStockAlerts(productId: string): Promise<void> {
     try {
-      const supabase = await this.supabase;
-      await supabase
+      await this.supabase
         .from('stock_alerts')
         .update({
           is_active: false,
@@ -428,8 +419,7 @@ export class StockManager {
   // Enregistrer un mouvement de stock
   private async recordStockMovement(movement: Omit<StockMovement, 'id' | 'created_at'>): Promise<void> {
     try {
-      const supabase = await this.supabase;
-      await supabase
+      await this.supabase
         .from('stock_movements')
         .insert({
           ...movement,
@@ -455,5 +445,4 @@ export class StockManager {
 }
 
 // Instances globales
-export const stockManager = new StockManager(false); // Client-side
-export const serverStockManager = new StockManager(true); // Server-side 
+export const stockManager = new StockManager(); // Client-side 

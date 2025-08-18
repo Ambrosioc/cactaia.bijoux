@@ -7,21 +7,15 @@ import {
     BarChart3,
     Box,
     CreditCard,
-    DollarSign,
-    FileText,
     Folder,
     Image,
-    Layers,
     LogOut,
-    MapPin,
     Package,
     Palette,
     Receipt,
     Settings,
     ShoppingCart,
-    Truck,
-    Users,
-    Warehouse
+    Users
 } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
@@ -170,9 +164,13 @@ export default function AdminSidebar() {
                         isActive={isActive('/admin/produits')}
                     />
                     <SidebarLink
+                        href="/admin/collections"
+                        icon={Folder} label="Collections"
+                        isActive={isActive('/admin/collections')}
+                    />
+                    <SidebarLink
                         href="/admin/categories"
-                        icon={Folder}
-                        label="Catégories"
+                        icon={Folder} label="Catégories"
                         isActive={isActive('/admin/categories')}
                     />
                     <SidebarLink
@@ -180,12 +178,6 @@ export default function AdminSidebar() {
                         icon={Palette}
                         label="Variations"
                         isActive={isActive('/admin/variations')}
-                    />
-                    <SidebarLink
-                        href="/admin/stock"
-                        icon={Warehouse}
-                        label="Stock"
-                        isActive={isActive('/admin/stock')}
                     />
                     <SidebarLink
                         href="/admin/sku"
@@ -224,36 +216,6 @@ export default function AdminSidebar() {
                         icon={Receipt}
                         label="Paiements"
                         isActive={isActive('/admin/paiements')}
-                    />
-                    <SidebarLink
-                        href="/admin/frais-livraison"
-                        icon={DollarSign}
-                        label="Frais de livraison"
-                        isActive={isActive('/admin/frais-livraison')}
-                    />
-                    <SidebarLink
-                        href="/admin/livraison-conditions"
-                        icon={FileText}
-                        label="Conditions de livraison"
-                        isActive={isActive('/admin/livraison-conditions')}
-                    />
-                    <SidebarLink
-                        href="/admin/mondial-relay"
-                        icon={MapPin}
-                        label="Mondial Relay"
-                        isActive={isActive('/admin/mondial-relay')}
-                    />
-                    <SidebarLink
-                        href="/admin/delais"
-                        icon={Truck}
-                        label="Délais"
-                        isActive={isActive('/admin/delais')}
-                    />
-                    <SidebarLink
-                        href="/admin/tva"
-                        icon={Layers}
-                        label="TVA"
-                        isActive={isActive('/admin/tva')}
                     />
                 </SidebarSection>
 
