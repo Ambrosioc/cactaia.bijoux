@@ -4,6 +4,7 @@ import { NextRequest, NextResponse } from 'next/server';
 export async function GET(request: NextRequest) {
     try {
         const supabase = await createServerClient();
+        const db: any = supabase;
         
         // Vérifier l'authentification admin
         const { data: { user }, error: authError } = await supabase.auth.getUser();
@@ -25,7 +26,7 @@ export async function GET(request: NextRequest) {
         console.log('📁 Récupération des collections...');
 
         // Récupérer les collections avec le nombre de produits
-        const { data: collections, error: collectionsError } = await supabase
+        const { data: collections, error: collectionsError } = await db
             .from('collections')
             .select(`
                 *,
@@ -45,7 +46,7 @@ export async function GET(request: NextRequest) {
         }
 
         // Formater les collections avec le nombre de produits
-        const formattedCollections = collections?.map(collection => ({
+        const formattedCollections = collections?.map((collection: any) => ({
             ...collection,
             product_count: collection.product_collections?.length || 0
         })) || [];
@@ -72,6 +73,7 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
     try {
         const supabase = await createServerClient();
+        const db: any = supabase;
         
         // Vérifier l'authentification admin
         const { data: { user }, error: authError } = await supabase.auth.getUser();
@@ -114,7 +116,7 @@ export async function POST(request: NextRequest) {
         console.log('📁 Création d\'une nouvelle collection:', { name, slug });
 
         // Créer la collection
-        const { data: collection, error: createError } = await supabase
+        const { data: collection, error: createError } = await db
             .from('collections')
             .insert({
                 name,

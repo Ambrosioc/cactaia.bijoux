@@ -3,10 +3,12 @@ import { NextRequest, NextResponse } from 'next/server';
 
 export async function GET(
     request: NextRequest,
-    { params }: { params: { id: string } }
+    ctx: any
 ) {
+    const { params } = ctx ?? { params: {} } as any;
     try {
         const supabase = await createServerClient();
+        const db: any = supabase;
         
         // Vérifier l'authentification admin
         const { data: { user }, error: authError } = await supabase.auth.getUser();
@@ -25,7 +27,7 @@ export async function GET(
             return NextResponse.json({ error: 'Accès non autorisé' }, { status: 403 });
         }
 
-        const { data: category, error } = await supabase
+        const { data: category, error } = await db
             .from('categories')
             .select('*')
             .eq('id', params.id)
@@ -54,10 +56,12 @@ export async function GET(
 
 export async function PUT(
     request: NextRequest,
-    { params }: { params: { id: string } }
+    ctx: any
 ) {
+    const { params } = ctx ?? { params: {} } as any;
     try {
         const supabase = await createServerClient();
+        const db: any = supabase;
         
         // Vérifier l'authentification admin
         const { data: { user }, error: authError } = await supabase.auth.getUser();
@@ -78,7 +82,7 @@ export async function PUT(
 
         const updateData = await request.json();
 
-        const { data: category, error } = await supabase
+        const { data: category, error } = await db
             .from('categories')
             .update(updateData)
             .eq('id', params.id)
@@ -108,10 +112,12 @@ export async function PUT(
 
 export async function PATCH(
     request: NextRequest,
-    { params }: { params: { id: string } }
+    ctx: any
 ) {
+    const { params } = ctx ?? { params: {} } as any;
     try {
         const supabase = await createServerClient();
+        const db: any = supabase;
         
         // Vérifier l'authentification admin
         const { data: { user }, error: authError } = await supabase.auth.getUser();
@@ -132,7 +138,7 @@ export async function PATCH(
 
         const updateData = await request.json();
 
-        const { data: category, error } = await supabase
+        const { data: category, error } = await db
             .from('categories')
             .update(updateData)
             .eq('id', params.id)
@@ -162,10 +168,12 @@ export async function PATCH(
 
 export async function DELETE(
     request: NextRequest,
-    { params }: { params: { id: string } }
+    ctx: any
 ) {
+    const { params } = ctx ?? { params: {} } as any;
     try {
         const supabase = await createServerClient();
+        const db: any = supabase;
         
         // Vérifier l'authentification admin
         const { data: { user }, error: authError } = await supabase.auth.getUser();
@@ -184,7 +192,7 @@ export async function DELETE(
             return NextResponse.json({ error: 'Accès non autorisé' }, { status: 403 });
         }
 
-        const { error } = await supabase
+        const { error } = await db
             .from('categories')
             .delete()
             .eq('id', params.id);

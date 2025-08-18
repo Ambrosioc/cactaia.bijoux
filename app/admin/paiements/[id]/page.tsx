@@ -8,7 +8,8 @@ export const metadata: Metadata = {
     description: 'Détails complets d\'un paiement avec informations Stripe et commande',
 };
 
-export default function PaiementDetailPage({ params }: { params: { id: string } }) {
+export default function PaiementDetailPage(props: any) {
+    const params = (props?.params ?? {}) as { id?: string };
     return (
         <ClientOnly
             fallback={
@@ -21,7 +22,7 @@ export default function PaiementDetailPage({ params }: { params: { id: string } 
             }
         >
             <ProtectedRoute requireAdmin={true}>
-                <PaiementDetailClient paymentId={params.id} />
+                <PaiementDetailClient />
             </ProtectedRoute>
         </ClientOnly>
     );

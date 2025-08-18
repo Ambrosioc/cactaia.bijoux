@@ -3,10 +3,12 @@ import { NextRequest, NextResponse } from 'next/server';
 
 export async function DELETE(
     request: NextRequest,
-    { params }: { params: { id: string } }
+    ctx: any
 ) {
+    const { params } = ctx ?? { params: {} } as any;
     try {
         const supabase = await createServerClient();
+        const db: any = supabase;
         
         // Vérifier l'authentification admin
         const { data: { user }, error: authError } = await supabase.auth.getUser();
@@ -37,7 +39,7 @@ export async function DELETE(
         console.log('🗑️ Suppression de la notification:', notificationId);
 
         // Supprimer la notification
-        const { error: deleteError } = await supabase
+        const { error: deleteError } = await db
             .from('notifications')
             .delete()
             .eq('id', notificationId);

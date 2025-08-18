@@ -64,8 +64,14 @@ export default function NotificationsPanel() {
             if (response.ok) {
                 const data = await response.json();
                 if (data.success) {
-                    setNotifications(data.notifications);
-                    setStats(data.stats);
+                    setNotifications(data.notifications || []);
+                    setStats(
+                        data.stats || {
+                            total: 0,
+                            unread: 0,
+                            by_type: { success: 0, warning: 0, error: 0, info: 0 }
+                        }
+                    );
                 }
             }
         } catch (error) {
@@ -184,6 +190,10 @@ export default function NotificationsPanel() {
         return date.toLocaleDateString('fr-FR');
     };
 
+    const unreadCount = stats?.unread ?? 0;
+    const totalCount = stats?.total ?? 0;
+    const byType = stats?.by_type ?? { success: 0, warning: 0, error: 0, info: 0 };
+
     return (
         <div className="relative">
             {/* Bouton de notifications */}
@@ -192,9 +202,9 @@ export default function NotificationsPanel() {
                 className="relative p-2 text-gray-600 hover:text-gray-900 transition-colors"
             >
                 <Bell className="h-6 w-6" />
-                {stats.unread > 0 && (
+                {unreadCount > 0 && (
                     <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
-                        {stats.unread > 99 ? '99+' : stats.unread}
+                        {unreadCount > 99 ? '99+' : unreadCount}
                     </span>
                 )}
             </button>
@@ -214,7 +224,7 @@ export default function NotificationsPanel() {
                             <div>
                                 <h3 className="font-semibold text-gray-900">Notifications</h3>
                                 <p className="text-sm text-gray-500">
-                                    {stats.unread} non lue{stats.unread > 1 ? 's' : ''} sur {stats.total}
+                                    {unreadCount} non lue{unreadCount > 1 ? 's' : ''} sur {totalCount}
                                 </p>
                             </div>
                             <div className="flex items-center gap-2">
@@ -225,7 +235,7 @@ export default function NotificationsPanel() {
                                 >
                                     <RefreshCw className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
                                 </button>
-                                {stats.unread > 0 && (
+                                {unreadCount > 0 && (
                                     <button
                                         onClick={markAllAsRead}
                                         className="text-xs text-blue-600 hover:text-blue-800"
@@ -247,19 +257,19 @@ export default function NotificationsPanel() {
                             <div className="flex gap-4 text-xs">
                                 <div className="flex items-center gap-1">
                                     <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                                    <span>{stats.by_type.success}</span>
+                                    <span>{byType.success}</span>
                                 </div>
                                 <div className="flex items-center gap-1">
                                     <div className="w-2 h-2 bg-yellow-500 rounded-full"></div>
-                                    <span>{stats.by_type.warning}</span>
+                                    <span>{byType.warning}</span>
                                 </div>
                                 <div className="flex items-center gap-1">
                                     <div className="w-2 h-2 bg-red-500 rounded-full"></div>
-                                    <span>{stats.by_type.error}</span>
+                                    <span>{byType.error}</span>
                                 </div>
                                 <div className="flex items-center gap-1">
                                     <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
-                                    <span>{stats.by_type.info}</span>
+                                    <span>{byType.info}</span>
                                 </div>
                             </div>
                         </div>

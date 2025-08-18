@@ -1,5 +1,5 @@
-import { createServerClient } from '@/lib/supabase/server';
 import { stripe } from '@/lib/stripe/config';
+import { createServerClient } from '@/lib/supabase/server';
 import { NextRequest, NextResponse } from 'next/server';
 
 // Récupérer la liste des remboursements
@@ -47,7 +47,7 @@ export async function GET(request: NextRequest) {
             reason: refund.reason || 'other',
             status: refund.status,
             created_at: new Date(refund.created * 1000).toISOString(),
-            updated_at: new Date(refund.updated * 1000).toISOString(),
+            updated_at: new Date(((refund as any).updated ?? refund.created) * 1000).toISOString(),
             metadata: {
                 order_id: refund.metadata?.order_id,
                 customer_email: refund.metadata?.customer_email,
@@ -197,7 +197,7 @@ export async function POST(request: NextRequest) {
         }
 
         // Log du remboursement dans une table dédiée (optionnel)
-        const { error: logError } = await supabase
+        const { error: logError } = await (supabase as any)
             .from('remboursements_log')
             .insert({
                 refund_id: simulatedRefund.id,

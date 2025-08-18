@@ -4,6 +4,7 @@ import { NextRequest, NextResponse } from 'next/server';
 export async function POST(request: NextRequest) {
     try {
         const supabase = await createServerClient();
+        const db: any = supabase;
         
         // Vérifier l'authentification admin
         const { data: { user }, error: authError } = await supabase.auth.getUser();
@@ -22,10 +23,8 @@ export async function POST(request: NextRequest) {
             return NextResponse.json({ error: 'Accès non autorisé' }, { status: 403 });
         }
 
-        console.log('🔔 Marquage de toutes les notifications comme lues...');
-
         // Marquer toutes les notifications non lues comme lues
-        const { data: notifications, error: updateError } = await supabase
+        const { data: notifications, error: updateError } = await db
             .from('notifications')
             .update({ 
                 read: true,
@@ -35,27 +34,22 @@ export async function POST(request: NextRequest) {
             .select();
 
         if (updateError) {
-            console.error('❌ Erreur lors de la mise à jour:', updateError);
             return NextResponse.json(
                 { error: 'Erreur lors de la mise à jour des notifications' },
                 { status: 500 }
             );
         }
 
-        const updatedCount = notifications?.length || 0;
-        console.log(`✅ ${updatedCount} notifications marquées comme lues`);
-
         return NextResponse.json({
             success: true,
-            message: `${updatedCount} notifications marquées comme lues`,
-            updated_count: updatedCount
+            updated_count: notifications?.length || 0
         });
 
     } catch (error) {
         console.error('❌ Erreur API notifications mark-all-read POST:', error);
         return NextResponse.json(
             { 
-                error: 'Erreur lors du marquage des notifications',
+                error: 'Erreur interne du serveur',
                 details: error instanceof Error ? error.message : 'Erreur inconnue'
             },
             { status: 500 }

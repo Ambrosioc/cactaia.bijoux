@@ -343,7 +343,7 @@ export default function PaiementsClient() {
     if (error) {
         return (
             <PaymentErrorFallback
-                error={error}
+                error={new Error(error)}
                 retry={() => {
                     setError(null);
                     loadPayments();
@@ -527,6 +527,8 @@ export default function PaiementsClient() {
                         <Pagination
                             currentPage={pagination.page}
                             totalPages={Math.ceil(pagination.total / pagination.limit)}
+                            totalItems={pagination.total}
+                            itemsPerPage={pagination.limit}
                             onPageChange={handlePageChange}
                         />
                     )}

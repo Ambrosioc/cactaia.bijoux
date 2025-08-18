@@ -3,10 +3,12 @@ import { NextRequest, NextResponse } from 'next/server';
 
 export async function POST(
     request: NextRequest,
-    { params }: { params: { id: string } }
+    ctx: any
 ) {
+    const { params } = ctx ?? { params: {} } as any;
     try {
         const supabase = await createServerClient();
+        const db: any = supabase;
         
         // Vérifier l'authentification admin
         const { data: { user }, error: authError } = await supabase.auth.getUser();
@@ -37,7 +39,7 @@ export async function POST(
         console.log('🔔 Marquage de la notification comme lue:', notificationId);
 
         // Marquer la notification comme lue
-        const { data: notification, error: updateError } = await supabase
+        const { data: notification, error: updateError } = await db
             .from('notifications')
             .update({ 
                 read: true,

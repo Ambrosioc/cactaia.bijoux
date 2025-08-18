@@ -84,7 +84,7 @@ export async function GET(request: NextRequest) {
 
         // Calculer les statistiques
         const totalPayments = orders.length;
-        const totalAmount = orders.reduce((sum, order) => sum + order.montant_total, 0);
+        const totalAmount = orders.reduce((sum, order) => sum + (order.montant_total || 0), 0);
         const successfulPayments = orders.filter(order => order.statut === 'payee').length;
         const failedPayments = orders.filter(order => order.statut === 'echouee').length;
         const averageAmount = totalAmount / totalPayments;
@@ -93,11 +93,12 @@ export async function GET(request: NextRequest) {
         const dailyStatsMap = new Map<string, { count: number; amount: number }>();
         
         orders.forEach(order => {
-            const date = new Date(order.created_at).toISOString().split('T')[0];
+            const createdAt = order.created_at ?? new Date().toISOString();
+            const date = new Date(createdAt as unknown as string).toISOString().split('T')[0];
             const existing = dailyStatsMap.get(date) || { count: 0, amount: 0 };
             dailyStatsMap.set(date, {
                 count: existing.count + 1,
-                amount: existing.amount + order.montant_total
+                amount: existing.amount + (order.montant_total || 0)
             });
         });
 

@@ -8,10 +8,12 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
 
 export async function GET(
     request: NextRequest,
-    { params }: { params: { id: string } }
+    ctx: any
 ) {
     try {
+        const { params } = ctx ?? { params: {} } as any;
         const supabase = await createServerClient();
+        const db: any = supabase;
         
         // Vérifier l'authentification admin
         const { data: { user }, error: authError } = await supabase.auth.getUser();
@@ -35,10 +37,10 @@ export async function GET(
             return NextResponse.json({ error: 'Accès non autorisé' }, { status: 403 });
         }
 
-        const paymentId = params.id;
+        const paymentId = params?.id as string;
 
         // Récupérer la commande avec les informations utilisateur et adresses
-        const { data: order, error: orderError } = await supabase
+        const { data: order, error: orderError } = await db
             .from('commandes')
             .select(`
                 *,
@@ -90,7 +92,7 @@ export async function GET(
         }
 
         // Récupérer les produits de la commande
-        const { data: orderProducts } = await supabase
+        const { data: orderProducts } = await (supabase as any)
             .from('commandes_produits')
             .select(`*, produits(id, nom, prix, variations)`)
             .eq('commande_id', paymentId);

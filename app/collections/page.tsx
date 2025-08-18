@@ -43,16 +43,18 @@ export default function CollectionsPage() {
       setLoading(true);
       setError(null);
 
-      // Récupérer toutes les collections uniques
-      const { data: collectionsData, error: collectionsError } = await supabase
-        .rpc('get_unique_collections');
+      // Récupérer uniquement les collections qui ont au moins 1 produit actif
+      const { data: collectionsWithCounts, error: collectionsError } = await supabase
+        .rpc('get_collections_with_counts');
 
       if (collectionsError) {
         throw collectionsError;
       }
 
-      // Créer les objets collection avec les informations
-      const collectionsWithInfo: Collection[] = collectionsData.map((collectionName: string) => {
+      // Normaliser les données (évite le cas data=null) puis construire les objets collection
+      const rows = (collectionsWithCounts ?? []) as { collection: string; product_count: number }[];
+      const collectionsWithInfo: Collection[] = rows.map((row) => {
+        const collectionName = row.collection;
         const slug = collectionName.toLowerCase()
           .replace(/[éèê]/g, 'e')
           .replace(/[àâ]/g, 'a')
@@ -68,29 +70,11 @@ export default function CollectionsPage() {
           slug,
           description: getCollectionDescription(collectionName),
           image: getCollectionImage(collectionName),
-          productCount: 0 // Sera mis à jour plus tard
+          productCount: row.product_count
         };
       });
 
-      // Compter les produits pour chaque collection
-      const collectionsWithCounts = await Promise.all(
-        collectionsWithInfo.map(async (collection) => {
-          const { count, error: countError } = await supabase
-            .from('produits')
-            .select('*', { count: 'exact', head: true })
-            .eq('est_actif', true)
-            .contains('collections', [collection.name]);
-
-          if (countError) {
-            console.error(`Erreur pour compter les produits de ${collection.name}:`, countError);
-            return { ...collection, productCount: 0 };
-          }
-
-          return { ...collection, productCount: count || 0 };
-        })
-      );
-
-      setCollections(collectionsWithCounts);
+      setCollections(collectionsWithInfo);
     } catch (error) {
       console.error('Erreur lors du chargement des collections:', error);
       setError('Erreur lors du chargement des collections');

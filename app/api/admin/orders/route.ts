@@ -4,6 +4,7 @@ import { NextRequest, NextResponse } from 'next/server';
 export async function GET(request: NextRequest) {
     try {
         const supabase = await createServerClient();
+        const db: any = supabase;
         
         // Vérifier l'authentification admin
         const { data: { user }, error: authError } = await supabase.auth.getUser();
@@ -29,7 +30,7 @@ export async function GET(request: NextRequest) {
         console.log('🔄 Récupération des commandes...');
 
         // Construire la requête
-        let query = supabase
+        let query = db
             .from('commandes')
             .select(`
                 id,
@@ -65,7 +66,7 @@ export async function GET(request: NextRequest) {
         console.log(`✅ ${orders?.length || 0} commandes récupérées`);
 
         // Formater les données pour le frontend
-        const formattedOrders = (orders || []).map(order => ({
+        const formattedOrders = (orders || []).map((order: any) => ({
             id: order.id,
             user_id: order.user_id,
             montant_total: order.montant_total,

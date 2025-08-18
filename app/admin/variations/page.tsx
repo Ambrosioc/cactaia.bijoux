@@ -21,9 +21,9 @@ export default function VariationsPage() {
     const [loading, setLoading] = useState(true);
     const [showForm, setShowForm] = useState(false);
     const [editingVariation, setEditingVariation] = useState<Variation | null>(null);
-    const [formData, setFormData] = useState({
+    const [formData, setFormData] = useState<{ name: string; type: Variation['type']; values: string; is_active: boolean }>({
         name: '',
-        type: 'color' as const,
+        type: 'color',
         values: '',
         is_active: true
     });
@@ -179,7 +179,7 @@ export default function VariationsPage() {
                                     <select
                                         id="type"
                                         value={formData.type}
-                                        onChange={(e) => setFormData({ ...formData, type: e.target.value as any })}
+                                        onChange={(e) => setFormData({ ...formData, type: e.target.value as unknown as Variation['type'] })}
                                         className="w-full px-3 py-2 border border-input rounded-md"
                                         required
                                     >

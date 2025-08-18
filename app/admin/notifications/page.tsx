@@ -1,5 +1,5 @@
 import NotificationsPageClient from '@/components/admin/notifications-page-client';
-import { ProtectedRoute } from '@/components/auth/ProtectedRoute';
+import ProtectedRoute from '@/components/auth/ProtectedRoute';
 import { Metadata } from 'next';
 
 export const metadata: Metadata = {
@@ -9,7 +9,7 @@ export const metadata: Metadata = {
 
 export default function NotificationsPage() {
     return (
-        <ProtectedRoute requiredRole="admin">
+        <ProtectedRoute requireAdmin={true}>
             <NotificationsPageClient />
         </ProtectedRoute>
     );

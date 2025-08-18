@@ -4,6 +4,7 @@ import { NextRequest, NextResponse } from 'next/server';
 export async function GET(request: NextRequest) {
     try {
         const supabase = await createServerClient();
+        const db: any = supabase;
         
         // Vérifier l'authentification admin
         const { data: { user }, error: authError } = await supabase.auth.getUser();
@@ -25,7 +26,7 @@ export async function GET(request: NextRequest) {
         console.log('📁 Récupération des catégories...');
 
         // Récupérer les catégories avec le nombre de produits
-        const { data: categories, error: categoriesError } = await supabase
+        const { data: categories, error: categoriesError } = await db
             .from('categories')
             .select(`
                 *,
@@ -45,7 +46,7 @@ export async function GET(request: NextRequest) {
         }
 
         // Formater les catégories avec le nombre de produits
-        const formattedCategories = categories?.map(category => ({
+        const formattedCategories = categories?.map((category: any) => ({
             ...category,
             product_count: category.product_categories?.length || 0
         })) || [];
@@ -72,6 +73,7 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
     try {
         const supabase = await createServerClient();
+        const db: any = supabase;
         
         // Vérifier l'authentification admin
         const { data: { user }, error: authError } = await supabase.auth.getUser();
@@ -111,7 +113,7 @@ export async function POST(request: NextRequest) {
         console.log('📁 Création d\'une nouvelle catégorie:', { name, slug });
 
         // Créer la catégorie
-        const { data: category, error: createError } = await supabase
+        const { data: category, error: createError } = await db
             .from('categories')
             .insert({
                 name,

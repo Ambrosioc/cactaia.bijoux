@@ -60,10 +60,10 @@ export function NotificationProvider({ children }: NotificationProviderProps) {
         setNotifications(prev => [...prev, newNotification]);
 
         // Auto-remove après la durée spécifiée
-        if (newNotification.duration > 0) {
+        if ((newNotification.duration ?? 0) > 0) {
             setTimeout(() => {
                 removeNotification(id);
-            }, newNotification.duration);
+            }, newNotification.duration as number);
         }
     };
 

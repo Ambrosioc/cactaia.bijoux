@@ -3,10 +3,12 @@ import { NextRequest, NextResponse } from 'next/server';
 
 export async function GET(
     request: NextRequest,
-    { params }: { params: { id: string } }
+    ctx: any
 ) {
+    const { params } = ctx ?? { params: {} } as any;
     try {
         const supabase = await createServerClient();
+        const db: any = supabase;
         
         // Vérifier l'authentification admin
         const { data: { user }, error: authError } = await supabase.auth.getUser();
@@ -30,7 +32,7 @@ export async function GET(
         console.log('📁 Récupération de la collection:', collectionId);
 
         // Récupérer la collection
-        const { data: collection, error: collectionError } = await supabase
+        const { data: collection, error: collectionError } = await db
             .from('collections')
             .select('*')
             .eq('id', collectionId)
@@ -65,10 +67,12 @@ export async function GET(
 
 export async function PUT(
     request: NextRequest,
-    { params }: { params: { id: string } }
+    ctx: any
 ) {
+    const { params } = ctx ?? { params: {} } as any;
     try {
         const supabase = await createServerClient();
+        const db: any = supabase;
         
         // Vérifier l'authentification admin
         const { data: { user }, error: authError } = await supabase.auth.getUser();
@@ -93,7 +97,7 @@ export async function PUT(
         console.log('📁 Mise à jour de la collection:', collectionId);
 
         // Mettre à jour la collection
-        const { data: collection, error: updateError } = await supabase
+        const { data: collection, error: updateError } = await db
             .from('collections')
             .update({
                 ...updateData,
@@ -132,10 +136,12 @@ export async function PUT(
 
 export async function PATCH(
     request: NextRequest,
-    { params }: { params: { id: string } }
+    ctx: any
 ) {
+    const { params } = ctx ?? { params: {} } as any;
     try {
         const supabase = await createServerClient();
+        const db: any = supabase;
         
         // Vérifier l'authentification admin
         const { data: { user }, error: authError } = await supabase.auth.getUser();
@@ -160,7 +166,7 @@ export async function PATCH(
         console.log('📁 Mise à jour partielle de la collection:', collectionId);
 
         // Mettre à jour partiellement la collection
-        const { data: collection, error: updateError } = await supabase
+        const { data: collection, error: updateError } = await db
             .from('collections')
             .update({
                 ...patchData,
@@ -199,10 +205,12 @@ export async function PATCH(
 
 export async function DELETE(
     request: NextRequest,
-    { params }: { params: { id: string } }
+    ctx: any
 ) {
+    const { params } = ctx ?? { params: {} } as any;
     try {
         const supabase = await createServerClient();
+        const db: any = supabase;
         
         // Vérifier l'authentification admin
         const { data: { user }, error: authError } = await supabase.auth.getUser();
@@ -226,7 +234,7 @@ export async function DELETE(
         console.log('🗑️ Suppression de la collection:', collectionId);
 
         // Supprimer la collection
-        const { error: deleteError } = await supabase
+        const { error: deleteError } = await db
             .from('collections')
             .delete()
             .eq('id', collectionId);

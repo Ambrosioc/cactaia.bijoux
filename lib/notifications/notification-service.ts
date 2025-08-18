@@ -18,8 +18,9 @@ export class NotificationService {
     private static async createNotification(data: NotificationData) {
         try {
             const supabase = await createServerClient();
+            const db: any = supabase;
             
-            const { error } = await supabase
+            const { error } = await db
                 .from('notifications')
                 .insert({
                     type: data.type,

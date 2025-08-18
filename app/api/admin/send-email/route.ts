@@ -36,7 +36,8 @@ export async function POST(request: NextRequest) {
 
         console.log('📧 Envoi d\'email:', { type, subject, userIds: userIds?.length, promotionCode });
 
-        let targetUsers = [];
+        type TargetUser = { id: string; email: string; nom?: string | null; prenom?: string | null };
+        let targetUsers: TargetUser[] = [];
 
         if (type === 'individual' && userIds && userIds.length > 0) {
             // Récupérer les utilisateurs spécifiés
@@ -50,7 +51,7 @@ export async function POST(request: NextRequest) {
                 return NextResponse.json({ error: 'Erreur lors de la récupération des utilisateurs' }, { status: 500 });
             }
 
-            targetUsers = users || [];
+            targetUsers = (users || []) as TargetUser[];
         } else if (type === 'group') {
             // Récupérer tous les utilisateurs actifs
             const { data: users, error: usersError } = await supabase
@@ -63,7 +64,7 @@ export async function POST(request: NextRequest) {
                 return NextResponse.json({ error: 'Erreur lors de la récupération des utilisateurs' }, { status: 500 });
             }
 
-            targetUsers = users || [];
+            targetUsers = (users || []) as TargetUser[];
         }
 
         if (targetUsers.length === 0) {
@@ -106,13 +107,14 @@ export async function POST(request: NextRequest) {
                     .from('email_logs')
                     .insert({
                         user_id: user.id,
-                        email: user.email,
+                        recipient: user.email,
                         subject: subject,
-                        content: emailContent,
-                        type: type,
-                        promotion_code: promotionCode || null,
-                        status: 'sent',
-                        sent_at: new Date().toISOString()
+                        email_type: typeof type === 'string' ? type : 'bulk',
+                        success: true,
+                        details: {
+                            promotion_code: promotionCode || null,
+                            content: emailContent
+                        }
                     });
 
                 if (logError) {
@@ -120,9 +122,9 @@ export async function POST(request: NextRequest) {
                 }
 
                 return { success: true, email: user.email };
-            } catch (error) {
+            } catch (error: any) {
                 console.error(`Erreur lors de l'envoi à ${user.email}:`, error);
-                return { success: false, email: user.email, error: error.message };
+                return { success: false, email: user.email, error: error?.message };
             }
         });
 
