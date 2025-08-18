@@ -33,13 +33,12 @@ interface FormData {
     images: string[];
 }
 
-const categories = [
-    'Bagues',
-    'Colliers',
-    'Bracelets',
-    'Boucles d\'oreilles',
-    'Accessoires'
-];
+interface Category {
+    id: string;
+    name: string;
+    slug: string;
+    is_active: boolean;
+}
 
 interface Collection {
     id: string;
@@ -56,6 +55,8 @@ export default function ProductForm({ product, isEditing = false }: ProductFormP
     const [errors, setErrors] = useState<Record<string, string>>({});
     const [collections, setCollections] = useState<Collection[]>([]);
     const [collectionsLoading, setCollectionsLoading] = useState(true);
+    const [categories, setCategories] = useState<Category[]>([]);
+    const [categoriesLoading, setCategoriesLoading] = useState(true);
     const router = useRouter();
     const supabase = createClient();
 
@@ -65,7 +66,7 @@ export default function ProductForm({ product, isEditing = false }: ProductFormP
         description_courte: product?.description_courte || '',
         prix: product?.prix?.toString() || '',
         prix_promo: product?.prix_promo?.toString() || '',
-        categorie: product?.categorie || categories[0],
+        categorie: product?.categorie || '',
         collections: product?.collections || [],
         stock: product?.stock?.toString() || '0',
         sku: product?.sku || '',
@@ -85,6 +86,11 @@ export default function ProductForm({ product, isEditing = false }: ProductFormP
     // Charger les collections depuis l'API
     useEffect(() => {
         loadCollections();
+    }, []);
+
+    // Charger les catégories depuis l'API
+    useEffect(() => {
+        loadCategories();
     }, []);
 
     const loadCollections = async () => {
@@ -108,6 +114,35 @@ export default function ProductForm({ product, isEditing = false }: ProductFormP
             console.error('Erreur lors du chargement des collections:', error);
         } finally {
             setCollectionsLoading(false);
+        }
+    };
+
+    const loadCategories = async () => {
+        try {
+            setCategoriesLoading(true);
+            const response = await fetch('/api/admin/categories');
+
+            if (response.ok) {
+                const data = await response.json();
+                if (data.success) {
+                    // Filtrer seulement les catégories actives
+                    const activeCategories = data.categories.filter((cat: Category) => cat.is_active);
+                    setCategories(activeCategories);
+
+                    // Si c'est un nouveau produit et qu'il n'y a pas de catégorie sélectionnée, sélectionner la première
+                    if (!product && activeCategories.length > 0 && !formData.categorie) {
+                        setFormData(prev => ({ ...prev, categorie: activeCategories[0].name }));
+                    }
+                } else {
+                    console.error('Erreur lors du chargement des catégories:', data.error);
+                }
+            } else {
+                console.error('Erreur API categories:', response.status);
+            }
+        } catch (error) {
+            console.error('Erreur lors du chargement des catégories:', error);
+        } finally {
+            setCategoriesLoading(false);
         }
     };
 
@@ -354,9 +389,15 @@ export default function ProductForm({ product, isEditing = false }: ProductFormP
                                             className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-primary ${errors.categorie ? 'border-red-300' : 'border-input'
                                                 }`}
                                         >
-                                            {categories.map(cat => (
-                                                <option key={cat} value={cat}>{cat}</option>
-                                            ))}
+                                            {categoriesLoading ? (
+                                                <option value="">Chargement des catégories...</option>
+                                            ) : categories.length === 0 ? (
+                                                <option value="">Aucune catégorie disponible</option>
+                                            ) : (
+                                                categories.map(cat => (
+                                                    <option key={cat.id} value={cat.name}>{cat.name}</option>
+                                                ))
+                                            )}
                                         </select>
                                         {errors.categorie && (
                                             <p className="text-red-500 text-xs mt-1">{errors.categorie}</p>

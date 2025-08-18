@@ -22,18 +22,17 @@ export async function GET(request: NextRequest) {
             return NextResponse.json({ error: 'Accès non autorisé' }, { status: 403 });
         }
 
-        console.log('🏷️ Récupération des catégories...');
+        console.log('📁 Récupération des catégories...');
 
         // Récupérer les catégories avec le nombre de produits
         const { data: categories, error: categoriesError } = await supabase
             .from('categories')
             .select(`
                 *,
-                product_categories!inner(
+                product_categories(
                     product_id
                 )
             `)
-            .eq('is_active', true)
             .order('sort_order', { ascending: true })
             .order('name', { ascending: true });
 
@@ -95,9 +94,10 @@ export async function POST(request: NextRequest) {
             name, 
             slug, 
             description, 
-            image_url, 
             is_active, 
-            sort_order 
+            sort_order,
+            meta_title,
+            meta_description
         } = await request.json();
 
         // Validation des données
@@ -108,7 +108,7 @@ export async function POST(request: NextRequest) {
             );
         }
 
-        console.log('🏷️ Création d\'une nouvelle catégorie:', { name, slug });
+        console.log('📁 Création d\'une nouvelle catégorie:', { name, slug });
 
         // Créer la catégorie
         const { data: category, error: createError } = await supabase
@@ -117,9 +117,10 @@ export async function POST(request: NextRequest) {
                 name,
                 slug,
                 description: description || null,
-                image_url: image_url || null,
                 is_active: is_active !== undefined ? is_active : true,
-                sort_order: sort_order || 0
+                sort_order: sort_order || 0,
+                meta_title: meta_title || null,
+                meta_description: meta_description || null
             })
             .select()
             .single();
