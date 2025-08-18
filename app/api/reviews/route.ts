@@ -4,7 +4,8 @@ import { NextRequest, NextResponse } from 'next/server';
 
 export async function GET(request: NextRequest) {
   try {
-    const supabase = createRouteHandlerClient({ cookies });
+    const cookieStore = cookies();
+    const supabase = createRouteHandlerClient({ cookies: () => cookieStore });
     
     // Récupérer les paramètres de requête
     const { searchParams } = new URL(request.url);
@@ -64,7 +65,8 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
-    const supabase = createRouteHandlerClient({ cookies });
+    const cookieStore = cookies();
+    const supabase = createRouteHandlerClient({ cookies: () => cookieStore });
     
     // Vérifier l'authentification
     const { data: { user }, error: authError } = await supabase.auth.getUser();
@@ -155,7 +157,8 @@ export async function POST(request: NextRequest) {
 
 export async function PUT(request: NextRequest) {
   try {
-    const supabase = createRouteHandlerClient({ cookies });
+    const cookieStore = cookies();
+    const supabase = createRouteHandlerClient({ cookies: () => cookieStore });
     
     // Vérifier l'authentification
     const { data: { user }, error: authError } = await supabase.auth.getUser();
@@ -222,7 +225,8 @@ export async function PUT(request: NextRequest) {
 
 export async function DELETE(request: NextRequest) {
   try {
-    const supabase = createRouteHandlerClient({ cookies });
+    const cookieStore = cookies();
+    const supabase = createRouteHandlerClient({ cookies: () => cookieStore });
     
     // Vérifier l'authentification
     const { data: { user }, error: authError } = await supabase.auth.getUser();

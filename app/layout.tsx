@@ -90,6 +90,9 @@ export default function RootLayout({
         <link rel="manifest" href="/site.webmanifest" />
         <meta name="theme-color" content="#ffffff" />
         <meta name="msapplication-TileColor" content="#ffffff" />
+        <link rel="preconnect" href="https://cdn.vercel-insights.com" crossOrigin="anonymous" />
+        <link rel="preconnect" href={process.env.NEXT_PUBLIC_SUPABASE_URL} crossOrigin="anonymous" />
+        <link rel="dns-prefetch" href={process.env.NEXT_PUBLIC_SUPABASE_URL} />
       </head>
       <body className={`${inter.variable} ${playfair.variable} font-sans`}>
         <ThemeProvider

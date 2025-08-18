@@ -6,7 +6,7 @@ import { NextRequest, NextResponse } from 'next/server';
 export async function POST(request: NextRequest) {
   try {
     const cookieStore = cookies();
-    const supabase = createRouteHandlerClient({ cookies: () => cookieStore });
+    const supabase = createRouteHandlerClient({ cookies });
     
     const body = await request.json();
     const { civilite, prenom, nom, date_naissance, email } = body;
@@ -148,7 +148,7 @@ export async function POST(request: NextRequest) {
 export async function GET(request: NextRequest) {
   try {
     const cookieStore = cookies();
-    const supabase = createRouteHandlerClient({ cookies: () => cookieStore });
+    const supabase = createRouteHandlerClient({ cookies });
     
     // Vérifier l'authentification admin
     const { data: { user }, error: authError } = await supabase.auth.getUser();
