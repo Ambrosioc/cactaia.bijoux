@@ -41,15 +41,12 @@ const categories = [
     'Accessoires'
 ];
 
-const availableCollections = [
-    'Été 2025',
-    'Nouveautés',
-    'Bestsellers',
-    'Désert',
-    'Mixte',
-    'Femme',
-    'Homme'
-];
+interface Collection {
+    id: string;
+    name: string;
+    slug: string;
+    is_active: boolean;
+}
 
 export default function ProductForm({ product, isEditing = false }: ProductFormProps) {
     const { isActiveAdmin } = useUser();
@@ -57,6 +54,8 @@ export default function ProductForm({ product, isEditing = false }: ProductFormP
     const [saving, setSaving] = useState(false);
     const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
     const [errors, setErrors] = useState<Record<string, string>>({});
+    const [collections, setCollections] = useState<Collection[]>([]);
+    const [collectionsLoading, setCollectionsLoading] = useState(true);
     const router = useRouter();
     const supabase = createClient();
 
@@ -82,6 +81,35 @@ export default function ProductForm({ product, isEditing = false }: ProductFormP
             router.push('/compte');
         }
     }, [isActiveAdmin, router]);
+
+    // Charger les collections depuis l'API
+    useEffect(() => {
+        loadCollections();
+    }, []);
+
+    const loadCollections = async () => {
+        try {
+            setCollectionsLoading(true);
+            const response = await fetch('/api/admin/collections');
+
+            if (response.ok) {
+                const data = await response.json();
+                if (data.success) {
+                    // Filtrer seulement les collections actives
+                    const activeCollections = data.collections.filter((col: Collection) => col.is_active);
+                    setCollections(activeCollections);
+                } else {
+                    console.error('Erreur lors du chargement des collections:', data.error);
+                }
+            } else {
+                console.error('Erreur API collections:', response.status);
+            }
+        } catch (error) {
+            console.error('Erreur lors du chargement des collections:', error);
+        } finally {
+            setCollectionsLoading(false);
+        }
+    };
 
     const handleInputChange = (field: keyof FormData, value: string | boolean | string[]) => {
         setFormData(prev => ({
@@ -350,28 +378,39 @@ export default function ProductForm({ product, isEditing = false }: ProductFormP
                                 </div>
 
                                 <div>
-                                    <label className="block text-sm font-medium mb-2">
+                                    <label className="block text-sm font-medium text-gray-700 mb-2">
                                         Collections
                                     </label>
                                     <div className="space-y-2">
-                                        {availableCollections.map(collection => (
-                                            <label key={collection} className="flex items-center space-x-2">
-                                                <input
-                                                    type="checkbox"
-                                                    checked={formData.collections.includes(collection)}
-                                                    onChange={(e) => {
-                                                        const newCollections = e.target.checked
-                                                            ? [...formData.collections, collection]
-                                                            : formData.collections.filter(c => c !== collection);
-                                                        handleInputChange('collections', newCollections);
-                                                    }}
-                                                    className="rounded border-gray-300 text-primary focus:ring-primary"
-                                                />
-                                                <span className="text-sm">{collection}</span>
-                                            </label>
-                                        ))}
+                                        {collectionsLoading ? (
+                                            <div className="flex items-center space-x-2 text-sm text-gray-500">
+                                                <Loader2 className="h-4 w-4 animate-spin" />
+                                                <span>Chargement des collections...</span>
+                                            </div>
+                                        ) : collections.length === 0 ? (
+                                            <div className="text-sm text-gray-500">
+                                                Aucune collection disponible
+                                            </div>
+                                        ) : (
+                                            collections.map(collection => (
+                                                <label key={collection.id} className="flex items-center space-x-2">
+                                                    <input
+                                                        type="checkbox"
+                                                        checked={formData.collections.includes(collection.name)}
+                                                        onChange={(e) => {
+                                                            const newCollections = e.target.checked
+                                                                ? [...formData.collections, collection.name]
+                                                                : formData.collections.filter(c => c !== collection.name);
+                                                            handleInputChange('collections', newCollections);
+                                                        }}
+                                                        className="rounded border-gray-300 text-primary focus:ring-primary"
+                                                    />
+                                                    <span className="text-sm">{collection.name}</span>
+                                                </label>
+                                            ))
+                                        )}
                                     </div>
-                                    <p className="text-xs text-muted-foreground mt-2">
+                                    <p className="text-xs text-gray-500 mt-1">
                                         Sélectionnez les collections auxquelles ce produit appartient
                                     </p>
                                 </div>
