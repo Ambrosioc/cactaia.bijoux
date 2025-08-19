@@ -5,7 +5,8 @@ import { NextRequest, NextResponse } from 'next/server';
 // GET - Récupérer la wishlist de l'utilisateur
 export async function GET(request: NextRequest) {
   try {
-    const supabase = createRouteHandlerClient({ cookies });
+    const cookieStore = cookies();
+    const supabase = createRouteHandlerClient({ cookies: () => cookieStore });
     
     // Vérifier l'authentification
     const { data: { user }, error: authError } = await supabase.auth.getUser();
@@ -45,7 +46,8 @@ export async function GET(request: NextRequest) {
 // POST - Ajouter un produit à la wishlist
 export async function POST(request: NextRequest) {
   try {
-    const supabase = createRouteHandlerClient({ cookies });
+    const cookieStore = cookies();
+    const supabase = createRouteHandlerClient({ cookies: () => cookieStore });
     
     // Vérifier l'authentification
     const { data: { user }, error: authError } = await supabase.auth.getUser();
@@ -124,7 +126,8 @@ export async function POST(request: NextRequest) {
 // DELETE - Supprimer un produit de la wishlist
 export async function DELETE(request: NextRequest) {
   try {
-    const supabase = createRouteHandlerClient({ cookies });
+    const cookieStore = cookies();
+    const supabase = createRouteHandlerClient({ cookies: () => cookieStore });
     
     // Vérifier l'authentification
     const { data: { user }, error: authError } = await supabase.auth.getUser();

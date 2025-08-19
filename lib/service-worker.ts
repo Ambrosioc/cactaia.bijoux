@@ -193,7 +193,7 @@ class ServiceWorkerManager {
   // Précharger les ressources importantes
   async preloadCriticalResources(): Promise<void> {
     const criticalUrls = [
-      '/images/placeholder.jpg',
+      '/placeholder.jpg',
       '/favicon.ico',
       '/manifest.json'
     ];

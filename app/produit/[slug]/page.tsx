@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { ImageCarousel } from '@/components/ui/image-carousel';
 import { Separator } from '@/components/ui/separator';
 import { WishlistButton } from '@/components/wishlist/wishlist-button';
+// Revalidation window for PDP. Must be a literal for Next.js static analysis.
 import { createServerClient } from '@/lib/supabase/server';
 import { Metadata } from 'next';
 import { notFound } from 'next/navigation';
@@ -155,3 +156,5 @@ export default async function ProductPage({ params }: PageProps) {
     </div>
   );
 }
+
+export const revalidate = 300;

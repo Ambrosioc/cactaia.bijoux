@@ -7,6 +7,8 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
+    "perf:before": "node scripts/test-performance.js | tee logs/perf-before.txt",
+    "perf:after": "node scripts/test-performance.js | tee logs/perf-after.txt",
     "test": "node scripts/test-features.js",
     "test:features": "node scripts/test-features.js",
     "seed": "node scripts/seed-test-data.js",
