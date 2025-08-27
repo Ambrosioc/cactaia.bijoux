@@ -132,8 +132,8 @@ export class StockManager {
         user_id: userId
       });
 
-      // Vérifier les alertes
-      await this.checkStockAlerts(productId, newStock);
+      // Les alertes sont gérées par les triggers SQL côté base. Optionnellement, activer ci-dessous si vous voulez dupli.
+      // await this.checkStockAlerts(productId, newStock);
 
       return true;
     } catch (error) {
@@ -232,8 +232,8 @@ export class StockManager {
         user_id: userId
       });
 
-      // Vérifier les alertes
-      await this.checkStockAlerts(productId, newStock);
+      // Les alertes sont gérées par les triggers SQL côté base.
+      // await this.checkStockAlerts(productId, newStock);
 
       return true;
     } catch (error) {
@@ -279,8 +279,8 @@ export class StockManager {
         user_id: userId
       });
 
-      // Vérifier les alertes
-      await this.checkStockAlerts(productId, newQuantity);
+      // Les alertes sont gérées par les triggers SQL côté base.
+      // await this.checkStockAlerts(productId, newQuantity);
 
       return true;
     } catch (error) {
@@ -373,48 +373,11 @@ export class StockManager {
     }
   }
 
-  // Créer une alerte de stock
-  private async createStockAlert(productId: string, alertType: string, threshold: number, currentStock: number): Promise<void> {
-    try {
-      const { data: existingAlert } = await this.supabase
-        .from('stock_alerts')
-        .select('id')
-        .eq('product_id', productId)
-        .eq('alert_type', alertType)
-        .eq('is_active', true)
-        .single();
-
-      if (!existingAlert) {
-        await this.supabase
-          .from('stock_alerts')
-          .insert({
-            product_id: productId,
-            alert_type: alertType,
-            threshold,
-            current_stock: currentStock,
-            is_active: true
-          });
-      }
-    } catch (error) {
-      console.error('Erreur lors de la création de l\'alerte:', error);
-    }
-  }
+  // Créer une alerte de stock (désactivé: géré par trigger DB)
+  private async createStockAlert(_: string, __: string, ___: number, ____: number): Promise<void> { return; }
 
   // Résoudre les alertes de stock
-  private async resolveStockAlerts(productId: string): Promise<void> {
-    try {
-      await this.supabase
-        .from('stock_alerts')
-        .update({
-          is_active: false,
-          resolved_at: new Date().toISOString()
-        })
-        .eq('product_id', productId)
-        .eq('is_active', true);
-    } catch (error) {
-      console.error('Erreur lors de la résolution des alertes:', error);
-    }
-  }
+  private async resolveStockAlerts(_: string): Promise<void> { return; }
 
   // Enregistrer un mouvement de stock
   private async recordStockMovement(movement: Omit<StockMovement, 'id' | 'created_at'>): Promise<void> {
