@@ -419,18 +419,6 @@ export default function AboutPage() {
               </span>
             </>
           )}
-
-          <motion.div
-            initial={{ opacity: 0, y: 12 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.5, delay: 0.1 }}
-            className="mt-10 rounded-xl border p-6 bg-secondary/40"
-          >
-            <p className="text-center text-muted-foreground">
-              En résumé, les bijoux en acier inoxydable sont appréciés pour leur durabilité, leur résistance à la corrosion et leur aspect esthétique, ce qui en fait un choix populaire pour de nombreux amateurs de bijoux.
-            </p>
-          </motion.div>
         </div>
       </section>
     </div>
