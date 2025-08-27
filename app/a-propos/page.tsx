@@ -368,6 +368,7 @@ export default function AboutPage() {
               ].map((f, i) => (
                 <motion.div
                   key={f.title}
+                  id={i === 0 ? 'steel-card-0' : undefined}
                   initial={{ opacity: 0, y: 16 }}
                   whileInView={{ opacity: 1, y: 0 }}
                   viewport={{ once: true }}
@@ -389,18 +390,34 @@ export default function AboutPage() {
             </motion.div>
           </div>
 
-          {/* Flèche client-only (no-SSR) */}
+          {/* Flèches client-only: desktop vers la grille, mobile vers la première card */}
           {mounted && (
-            <XarrowNoSSR
-              start="steel-bubble"
-              end="steel-features"
-              startAnchor="right"
-              endAnchor="left"
-              color="#000000"
-              strokeWidth={2.5}
-              headSize={6}
-              curveness={0.6}
-            />
+            <>
+              <span className="hidden lg:block">
+                <XarrowNoSSR
+                  start="steel-bubble"
+                  end="steel-features"
+                  startAnchor="right"
+                  endAnchor="left"
+                  color="#000000"
+                  strokeWidth={2.5}
+                  headSize={6}
+                  curveness={0.6}
+                />
+              </span>
+              <span className="block lg:hidden">
+                <XarrowNoSSR
+                  start="steel-bubble"
+                  end="steel-card-0"
+                  startAnchor="bottom"
+                  endAnchor="top"
+                  color="#000000"
+                  strokeWidth={2.5}
+                  headSize={6}
+                  curveness={0.6}
+                />
+              </span>
+            </>
           )}
 
           <motion.div
