@@ -2,9 +2,16 @@
 
 import HeroSection from '@/components/ui/hero-section';
 import { motion } from 'framer-motion';
+import dynamic from 'next/dynamic';
 import Image from 'next/image';
+import { useEffect, useState } from 'react';
+
+const XarrowNoSSR = dynamic(() => import('react-xarrows').then(m => m.default), { ssr: false });
 
 export default function AboutPage() {
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
+
   return (
     <div className="pb-16">
       {/* Hero Banner */}
@@ -305,6 +312,7 @@ export default function AboutPage() {
             <p className="text-lg text-muted-foreground">Qu’est-ce que des bijoux en acier inoxydable ?</p>
           </motion.div>
 
+          {/* Contenu SSR identique côté serveur/client */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 items-start">
             <motion.div
               initial={{ opacity: 0, x: -16 }}
@@ -316,13 +324,15 @@ export default function AboutPage() {
               <p className="text-muted-foreground">
                 Les bijoux en acier inoxydable sont des accessoires fabriqués à partir d&apos;un alliage de fer, de carbone, de chrome et parfois d&apos;autres métaux. L&apos;acier inoxydable est réputé pour sa résistance à la corrosion, à la rouille et aux taches, ce qui en fait un choix populaire pour les bijoux.
               </p>
-              <p className="text-muted-foreground">
-                Voici quelques caractéristiques importantes des bijoux en acier inoxydable :
-              </p>
+              <div id="steel-bubble" className="relative inline-block max-w-xl rounded-2xl border border-primary/30 bg-secondary/30 p-4 md:p-5 shadow-sm">
+                <p className="text-sm md:text-base font-medium text-foreground">
+                  Voici quelque caractéristiques importantes des bijoux en acier inoxydable
+                </p>
+              </div>
             </motion.div>
 
             {/* Features cards */}
-            <motion.div
+            <motion.div id="steel-features"
               initial={{ opacity: 0, x: 16 }}
               whileInView={{ opacity: 1, x: 0 }}
               viewport={{ once: true }}
@@ -378,6 +388,20 @@ export default function AboutPage() {
               ))}
             </motion.div>
           </div>
+
+          {/* Flèche client-only (no-SSR) */}
+          {mounted && (
+            <XarrowNoSSR
+              start="steel-bubble"
+              end="steel-features"
+              startAnchor="right"
+              endAnchor="left"
+              color="#000000"
+              strokeWidth={2.5}
+              headSize={6}
+              curveness={0.6}
+            />
+          )}
 
           <motion.div
             initial={{ opacity: 0, y: 12 }}
