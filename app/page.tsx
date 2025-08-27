@@ -10,6 +10,14 @@ export default function Home() {
       {/* Hero Section with Carousel */}
       <HeroCarousel />
 
+      <section className="py-20">
+        <div className="container-custom">
+          <h2 className="heading-lg text-center">
+            Des beautés de la nature pour révéler la vôtre✨.
+          </h2>
+        </div>
+      </section>
+
       {/* Collections Highlight */}
       <CollectionShowcase />
 

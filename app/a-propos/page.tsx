@@ -2,9 +2,16 @@
 
 import HeroSection from '@/components/ui/hero-section';
 import { motion } from 'framer-motion';
+import dynamic from 'next/dynamic';
 import Image from 'next/image';
+import { useEffect, useState } from 'react';
+
+const XarrowNoSSR = dynamic(() => import('react-xarrows').then(m => m.default), { ssr: false });
 
 export default function AboutPage() {
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
+
   return (
     <div className="pb-16">
       {/* Hero Banner */}
@@ -305,6 +312,7 @@ export default function AboutPage() {
             <p className="text-lg text-muted-foreground">Qu’est-ce que des bijoux en acier inoxydable ?</p>
           </motion.div>
 
+          {/* Contenu SSR identique côté serveur/client */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 items-start">
             <motion.div
               initial={{ opacity: 0, x: -16 }}
@@ -316,13 +324,15 @@ export default function AboutPage() {
               <p className="text-muted-foreground">
                 Les bijoux en acier inoxydable sont des accessoires fabriqués à partir d&apos;un alliage de fer, de carbone, de chrome et parfois d&apos;autres métaux. L&apos;acier inoxydable est réputé pour sa résistance à la corrosion, à la rouille et aux taches, ce qui en fait un choix populaire pour les bijoux.
               </p>
-              <p className="text-muted-foreground">
-                Voici quelques caractéristiques importantes des bijoux en acier inoxydable :
-              </p>
+              <div id="steel-bubble" className="relative inline-block max-w-xl rounded-2xl border border-primary/30 bg-secondary/30 p-4 md:p-5 shadow-sm">
+                <p className="text-sm md:text-base font-medium text-foreground">
+                  Voici quelque caractéristiques importantes des bijoux en acier inoxydable
+                </p>
+              </div>
             </motion.div>
 
             {/* Features cards */}
-            <motion.div
+            <motion.div id="steel-features"
               initial={{ opacity: 0, x: 16 }}
               whileInView={{ opacity: 1, x: 0 }}
               viewport={{ once: true }}
@@ -358,6 +368,7 @@ export default function AboutPage() {
               ].map((f, i) => (
                 <motion.div
                   key={f.title}
+                  id={i === 0 ? 'steel-card-0' : undefined}
                   initial={{ opacity: 0, y: 16 }}
                   whileInView={{ opacity: 1, y: 0 }}
                   viewport={{ once: true }}
@@ -379,17 +390,35 @@ export default function AboutPage() {
             </motion.div>
           </div>
 
-          <motion.div
-            initial={{ opacity: 0, y: 12 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.5, delay: 0.1 }}
-            className="mt-10 rounded-xl border p-6 bg-secondary/40"
-          >
-            <p className="text-center text-muted-foreground">
-              En résumé, les bijoux en acier inoxydable sont appréciés pour leur durabilité, leur résistance à la corrosion et leur aspect esthétique, ce qui en fait un choix populaire pour de nombreux amateurs de bijoux.
-            </p>
-          </motion.div>
+          {/* Flèches client-only: desktop vers la grille, mobile vers la première card */}
+          {mounted && (
+            <>
+              <span className="hidden lg:block">
+                <XarrowNoSSR
+                  start="steel-bubble"
+                  end="steel-features"
+                  startAnchor="right"
+                  endAnchor="left"
+                  color="#000000"
+                  strokeWidth={2.5}
+                  headSize={6}
+                  curveness={0.6}
+                />
+              </span>
+              <span className="block lg:hidden">
+                <XarrowNoSSR
+                  start="steel-bubble"
+                  end="steel-card-0"
+                  startAnchor="bottom"
+                  endAnchor="top"
+                  color="#000000"
+                  strokeWidth={2.5}
+                  headSize={6}
+                  curveness={0.6}
+                />
+              </span>
+            </>
+          )}
         </div>
       </section>
     </div>

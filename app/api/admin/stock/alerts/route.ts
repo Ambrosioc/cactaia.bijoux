@@ -6,7 +6,7 @@ export async function GET(request: NextRequest) {
     const supabase = await createServerClient();
     const { searchParams } = new URL(request.url);
     
-    const status = searchParams.get('status'); // 'active', 'resolved'
+    const status = searchParams.get('status'); // 'active' | 'resolved'
     const limit = parseInt(searchParams.get('limit') || '50');
     const offset = parseInt(searchParams.get('offset') || '0');
 
@@ -24,8 +24,10 @@ export async function GET(request: NextRequest) {
       .order('created_at', { ascending: false })
       .range(offset, offset + limit - 1);
 
-    if (status) {
-      query = query.eq('status', status);
+    if (status === 'active') {
+      query = query.eq('is_active', true);
+    } else if (status === 'resolved') {
+      query = query.eq('is_active', false);
     }
 
     const { data, error } = await query;
@@ -54,7 +56,7 @@ export async function POST(request: NextRequest) {
     const supabase = await createServerClient();
     const body = await request.json();
     
-    const { alert_id, action, notes } = body;
+    const { alert_id, action } = body as { alert_id?: string; action?: 'resolve' | 'activate' };
 
     // Validation des données requises
     if (!alert_id || !action) {
@@ -88,12 +90,16 @@ export async function POST(request: NextRequest) {
     }
 
     // Mettre à jour l'alerte
-    const updateData: any = {
-      status: action === 'resolve' ? 'resolved' : 'active',
-      resolved_at: action === 'resolve' ? new Date().toISOString() : null,
-      resolved_by: action === 'resolve' ? user.id : null
-      // notes supprimé car non existant dans stock_alerts
-    };
+    const updateData: Record<string, any> = {};
+    if (action === 'resolve') {
+      updateData.is_active = false;
+      updateData.resolved_at = new Date().toISOString();
+    } else if (action === 'activate') {
+      updateData.is_active = true;
+      updateData.resolved_at = null;
+    } else {
+      return NextResponse.json({ error: 'action invalide' }, { status: 400 });
+    }
 
     const { data: updatedAlert, error: updateError } = await supabase
       .from('stock_alerts')

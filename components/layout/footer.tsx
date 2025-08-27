@@ -19,9 +19,11 @@ const Footer = () => {
                 className="object-contain"
               />
             </div>
-            <p className="text-muted-foreground text-sm max-w-xs">
-              Des bijoux écoresponsables, mixtes et élégants avec des valeurs de durabilité, simplicité et force symbolique.
-            </p>
+            <div className="text-muted-foreground text-sm max-w-xs">
+              <p>
+                Rejoignez la grande famille du cactus sur les réseaux et partagez au monde votre expérience Cactaia ✨
+              </p>
+            </div>
             <div className="flex space-x-4">
               <Link href="https://instagram.com/cactaiabijoux" target="_blank" rel="noopener noreferrer" className="text-foreground hover:text-primary transition-colors">
                 <Instagram className="h-5 w-5" />
